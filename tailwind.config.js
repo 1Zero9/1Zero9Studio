@@ -8,12 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'rocket-red': '#E72F2F',
-        'charcoal': '#374151',
+        'rocket-red': '#e60023',
+        'charcoal': '#2d2d2d',
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
-        poppins: ['Poppins', 'sans-serif'],
+        'inter': ['Inter', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
       },
     },
   },

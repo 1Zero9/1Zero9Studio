@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import RocketAnimation from '../components/RocketAnimation';
 
 export default function Home() {
   return (
@@ -14,7 +13,6 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <RocketAnimation />
             <h1 className="text-5xl md:text-6xl font-bold text-charcoal mb-6">
               Design. Code. Launch.
             </h1>
@@ -39,9 +37,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* Services Preview */}
       <section className="bg-gray-50 py-20 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-charcoal mb-4">
               What We Do

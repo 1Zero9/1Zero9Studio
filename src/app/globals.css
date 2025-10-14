@@ -12,17 +12,17 @@
   }
   
   body {
-    @apply bg-white text-gray-700 antialiased;
+    @apply bg-white text-charcoal antialiased;
   }
 }
 
 /* Custom component styles */
 @layer components {
   .btn-primary {
-    @apply bg-red-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-red-700 transition-colors;
+    @apply bg-rocket-red text-white px-8 py-4 rounded-lg font-semibold hover:bg-red-700 transition-colors;
   }
   
   .btn-secondary {
-    @apply border border-gray-700 text-gray-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-700 hover:text-white transition-colors;
+    @apply border border-charcoal text-charcoal px-8 py-4 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors;
   }
 }
