@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 
 interface LandingPageProps {
   onComplete: () => void
@@ -23,30 +22,28 @@ export default function LandingPage({ onComplete }: LandingPageProps) {
 
   if (!showRocket) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50 animate-fadeOut">
+      <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-50 animate-fadeOut">
         <div className="animate-pulse">
-          <Image
-            src="/images/redrocket-logo.jpg"
-            alt="1Zero9 Studio"
-            width={200}
-            height={200}
-            className="opacity-50"
-          />
+          <h1 className="text-6xl font-bold text-white opacity-50">
+            1Zero9 Studio
+          </h1>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-      <div className="animate-pulse-slow">
-        <Image
-          src="/images/redrocket-logo.jpg"
-          alt="1Zero9 Studio"
-          width={300}
-          height={300}
-          className="animate-pulse"
-        />
+    <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+      <div className="animate-pulse-slow text-center">
+        <div className="flex items-center justify-center gap-6 mb-8">
+          <svg className="w-20 h-20 text-red-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <h1 className="text-8xl font-bold text-white mb-4 animate-pulse">
+          1Zero9 Studio
+        </h1>
+        <p className="text-xl text-gray-300">Professional Web Solutions</p>
       </div>
       
       <style jsx>{`

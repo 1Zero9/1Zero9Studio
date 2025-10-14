@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import LandingPage from './LandingPage'
 
 export default function MainApp({ children }: { children: React.ReactNode }) {
@@ -38,70 +37,50 @@ export default function MainApp({ children }: { children: React.ReactNode }) {
       <header className="relative">
         {/* Main Logo Section */}
         <div className="bg-white flex items-center justify-center py-12">
-          <Image
-            src="/images/109-black-bg-whitetext2.png"
-            alt="1Zero9 Studio"
-            width={400}
-            height={200}
-            className="max-w-md"
-          />
+          <div className="flex items-center gap-4">
+            <svg className="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+              1Zero9 Studio
+            </h1>
+          </div>
         </div>
         
-        {/* Cool Navigation */}
-        <nav className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4">
+        {/* Clean Navigation */}
+        <nav className="bg-gray-900 shadow-sm border-t border-gray-200">
+          <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between py-4">
               {/* Small logo in top left when navigated */}
               {showMainLogo && (
                 <div className="flex items-center">
-                  <Image
-                    src="/images/109-black-bg-whitetext2.png"
-                    alt="1Zero9 Studio"
-                    width={120}
-                    height={60}
-                    className="mr-4"
-                  />
+                  <svg className="w-8 h-8 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  <h2 className="text-xl font-bold text-white">
+                    1Zero9 Studio
+                  </h2>
                 </div>
               )}
               
               {/* Main Navigation */}
               <div className="flex-1 flex justify-center">
                 <div className="flex space-x-8">
-                  <a
-                    href="/"
-                    className="relative text-white px-4 py-2 rounded-lg font-semibold hover:text-[#E72F2F] transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-                  >
-                    Home
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#E72F2F] transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                  <a
-                    href="/services"
-                    className="relative text-white px-4 py-2 rounded-lg font-semibold hover:text-[#E72F2F] transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-                  >
-                    Services
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#E72F2F] transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                  <a
-                    href="/portfolio"
-                    className="relative text-white px-4 py-2 rounded-lg font-semibold hover:text-[#E72F2F] transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-                  >
-                    Portfolio
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#E72F2F] transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                  <a
-                    href="/about"
-                    className="relative text-white px-4 py-2 rounded-lg font-semibold hover:text-[#E72F2F] transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-                  >
-                    About
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#E72F2F] transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                  <a
-                    href="/contact"
-                    className="relative text-white px-4 py-2 rounded-lg font-semibold hover:text-[#E72F2F] transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-                  >
-                    Contact
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#E72F2F] transition-all duration-300 group-hover:w-full"></span>
-                  </a>
+                  {[
+                    { href: '/', label: 'Home' },
+                    { href: '/services', label: 'Services' },
+                    { href: '/portfolio', label: 'Portfolio' },
+                    { href: '/about', label: 'About' },
+                    { href: '/contact', label: 'Contact' }
+                  ].map((item) => (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      className="text-white hover:text-red-400 px-3 py-2 text-sm font-medium transition-colors duration-200"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
@@ -114,18 +93,33 @@ export default function MainApp({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-gray-600 text-sm">
-                © 2024 1Zero9 Studio. All rights reserved.
+      {/* Clean Footer */}
+      <footer className="bg-gray-900 text-white border-t border-gray-700">
+        <div className="max-w-6xl mx-auto py-12 px-4">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
+            <div className="flex flex-col items-center lg:items-start">
+              <div className="flex items-center gap-3 mb-4">
+                <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <h3 className="text-2xl font-bold text-white">
+                  1Zero9 Studio
+                </h3>
+              </div>
+              <p className="text-gray-300 text-center lg:text-left max-w-md">
+                Professional web development & management solutions for modern businesses.
               </p>
             </div>
-            <div>
-              <p className="text-gray-600 text-sm">
-                Professional web development & management
+            
+            <div className="flex flex-col items-center lg:items-end gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-400">
+                <span>Professional Design</span>
+                <span>Expert Development</span>
+                <span>Ongoing Support</span>
+              </div>
+              
+              <p className="text-gray-500 text-sm text-center">
+                © 2024 1Zero9 Studio. All rights reserved.
               </p>
             </div>
           </div>

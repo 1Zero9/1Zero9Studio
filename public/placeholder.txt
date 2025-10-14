@@ -1,0 +1,2 @@
+This directory will contain your images and static assets.
+You can delete this file once you add your images.
