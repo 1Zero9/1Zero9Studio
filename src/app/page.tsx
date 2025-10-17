@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-dark-bg text-text-light">
       {/* Logo at top */}
-      <div className={`fixed top-4 md:top-8 z-50 transition-all duration-500 ${scrolled ? 'left-1/2 -translate-x-1/2 scale-[0.4] opacity-0 md:opacity-100 md:left-8 md:scale-[0.3]' : 'left-1/2 -translate-x-1/2 scale-75 md:scale-100 opacity-100'}`}>
+      <div className={`fixed top-4 md:top-8 z-50 transition-all duration-500 ${scrolled ? 'left-1/2 -translate-x-1/2 scale-[0.4] opacity-0 md:opacity-100 md:left-24 md:scale-[0.35]' : 'left-1/2 -translate-x-1/2 scale-75 md:scale-100 opacity-100'}`}>
         <Image
           src="/images/109-logo-circle-white2.png"
           alt="1Zero9 Studio"
@@ -50,9 +50,9 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0 overflow-hidden">
-        {/* Neon pulsing logo in background */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-20 md:opacity-25 pointer-events-none z-0">
+      <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0">
+        {/* Neon pulsing logo in background - fixed position */}
+        <div className="fixed inset-0 flex items-center justify-center opacity-20 md:opacity-25 pointer-events-none z-0">
           <Image
             src="/images/109-logo1.png"
             alt="109 Pulse"
