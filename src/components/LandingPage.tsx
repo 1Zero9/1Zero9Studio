@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface LandingPageProps {
   onComplete: () => void
@@ -14,11 +15,11 @@ export default function LandingPage({ onComplete }: LandingPageProps) {
     const timer = setTimeout(() => {
       setShowRocket(false)
       // Give a small delay for any exit animation, then call onComplete
-      setTimeout(onComplete, 500)
+      setTimeout(() => onComplete(), 500)
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [onComplete])
+  }, [])
 
   if (!showRocket) {
     return (
@@ -36,9 +37,13 @@ export default function LandingPage({ onComplete }: LandingPageProps) {
     <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
       <div className="animate-pulse-slow text-center">
         <div className="flex items-center justify-center gap-6 mb-8">
-          <svg className="w-20 h-20 text-red-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-          </svg>
+          <Image
+            src="/images/109-logo-circle-white2.png"
+            alt="1Zero9 Studio"
+            width={200}
+            height={200}
+            className="animate-pulse"
+          />
         </div>
         <h1 className="text-8xl font-bold text-white mb-4 animate-pulse">
           1Zero9 Studio

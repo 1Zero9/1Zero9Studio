@@ -1,49 +1,35 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Home() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-dark-bg text-text-light">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-dark-bg/95 backdrop-blur-sm border-b border-dark-lighter">
-        <div className="container-custom py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <Image 
-                src="/images/redrocket-logo.jpg" 
-                alt="Red Rocket Logo" 
-                width={40} 
-                height={40} 
-                className="rounded-full glow-effect"
-              />
-              <Image 
-                src="/images/109-black-bg-whitetext.png" 
-                alt="1Zero9 Studio" 
-                width={120} 
-                height={30} 
-                className="logo-title"
-              />
-            </div>
-            <div className="hidden md:flex space-x-8">
-              <a href="#home" className="text-text-light hover:text-rocket-red transition-colors duration-300">Home</a>
-              <a href="#about" className="text-text-light hover:text-rocket-red transition-colors duration-300">About</a>
-              <a href="#services" className="text-text-light hover:text-rocket-red transition-colors duration-300">Services</a>
-              <a href="#contact" className="text-text-light hover:text-rocket-red transition-colors duration-300">Contact</a>
-            </div>
-            <div className="md:hidden">
-              <button className="text-text-light">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Logo at top */}
+      <div className={`fixed top-8 z-50 transition-all duration-500 ${scrolled ? 'left-8 scale-[0.3]' : 'left-1/2 -translate-x-1/2 scale-100'}`}>
+        <Image
+          src="/images/109-logo-circle-white2.png"
+          alt="1Zero9 Studio"
+          width={250}
+          height={250}
+        />
+      </div>
 
       {/* Hero Section */}
-      <section id="home" className="hero-gradient min-h-screen flex items-center pt-20">
+      <section id="home" className="hero-gradient min-h-screen flex items-center relative">
+
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
