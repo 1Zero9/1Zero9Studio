@@ -80,19 +80,50 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-dark-bg text-text-light">
       {/* Header */}
-      <section className="pt-32 pb-16 px-6 md:px-4 bg-gradient-to-b from-dark-bg to-dark-card">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center mb-6">
-            <a href="/" className="hover:scale-110 transition-transform duration-300">
-              <Image
-                src="/images/109-logo-circle-white2.png"
-                alt="Portfolio"
-                width={80}
-                height={80}
-                className="animate-pulse"
-              />
+      <section className="pt-32 pb-16 px-6 md:px-4 bg-gradient-to-b from-dark-bg to-dark-card relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={800}
+            height={800}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex items-center justify-center mb-8">
+            <a href="/" className="hover:scale-110 transition-transform duration-300 relative group">
+              <div className="relative">
+                {/* Neon circle outline */}
+                <div className="absolute inset-0 rounded-full border-4 border-rocket-red opacity-60 group-hover:opacity-100 transition-opacity duration-300" style={{
+                  boxShadow: '0 0 20px rgba(220, 38, 38, 0.6), 0 0 40px rgba(220, 38, 38, 0.4), inset 0 0 20px rgba(220, 38, 38, 0.2)',
+                  animation: 'neonPulse 2s ease-in-out infinite'
+                }}></div>
+
+                <Image
+                  src="/images/109-logo-circle-white2.png"
+                  alt="Portfolio"
+                  width={150}
+                  height={150}
+                  className="relative z-10"
+                />
+              </div>
             </a>
           </div>
+
+          <style jsx>{`
+            @keyframes neonPulse {
+              0%, 100% {
+                box-shadow: 0 0 20px rgba(220, 38, 38, 0.6), 0 0 40px rgba(220, 38, 38, 0.4), inset 0 0 20px rgba(220, 38, 38, 0.2);
+              }
+              50% {
+                box-shadow: 0 0 30px rgba(220, 38, 38, 0.8), 0 0 60px rgba(220, 38, 38, 0.6), inset 0 0 30px rgba(220, 38, 38, 0.3);
+              }
+            }
+          `}</style>
           <h1 className="text-5xl md:text-6xl font-black text-center mb-6">
             <span className="text-text-light">OUR </span>
             <span className="text-rocket-red">PORTFOLIO</span>
@@ -125,8 +156,19 @@ export default function Portfolio() {
       </section>
 
       {/* Portfolio Grid */}
-      <section className="py-16 px-6 md:px-4">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-16 px-6 md:px-4 relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={1000}
+            height={1000}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project) => (
               <a
@@ -212,8 +254,19 @@ export default function Portfolio() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-6 md:px-4 bg-dark-card">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="py-16 px-6 md:px-4 bg-dark-card relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={700}
+            height={700}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-black mb-6">
             <span className="text-text-light">READY TO CREATE</span>
             <br />

@@ -50,19 +50,19 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0">
+      <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0 overflow-hidden">
         {/* Neon pulsing logo in background */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-5 md:opacity-10 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-20 md:opacity-25 pointer-events-none z-0">
           <Image
             src="/images/109-logo1.png"
             alt="109 Pulse"
-            width={800}
-            height={800}
-            className="animate-pulse neon-glow scale-50 md:scale-100"
+            width={1000}
+            height={1000}
+            className="animate-pulse neon-glow scale-75 md:scale-125"
           />
         </div>
 
-        <div className="container-custom px-6 md:px-4">
+        <div className="container-custom px-6 md:px-4 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 md:space-y-8">
               <div className="space-y-4 md:space-y-6">
@@ -90,21 +90,6 @@ export default function Home() {
                 >
                   View Our Work
                 </a>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-start sm:space-x-8 pt-6 md:pt-8">
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-rocket-red">50+</div>
-                  <div className="text-xs md:text-sm text-text-gray">Projects</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-rocket-red">100%</div>
-                  <div className="text-xs md:text-sm text-text-gray">Satisfaction</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-rocket-red">24/7</div>
-                  <div className="text-xs md:text-sm text-text-gray">Support</div>
-                </div>
               </div>
             </div>
             
@@ -148,8 +133,19 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="section-padding bg-dark-bg">
-        <div className="container-custom">
+      <section id="about" className="section-padding bg-dark-bg relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={800}
+            height={800}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+        <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">WHO WE </span>
@@ -201,9 +197,127 @@ export default function Home() {
         </div>
       </section>
 
+      {/* AI Integration Section */}
+      <section className="section-padding bg-gradient-to-b from-dark-bg to-dark-card relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={1000}
+            height={1000}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+        <div className="container-custom relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-6">
+              <span className="text-text-light">POWERED BY </span>
+              <span className="text-rocket-red">AI</span>
+            </h2>
+            <p className="text-xl text-text-gray max-w-4xl mx-auto leading-relaxed">
+              We leverage cutting-edge artificial intelligence to accelerate development, enhance creativity,
+              and deliver smarter solutions faster.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="card group">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-rocket-red to-red-700 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-3 text-text-light">Rapid Development</h3>
+                  <p className="text-text-gray leading-relaxed">
+                    AI-assisted coding accelerates our development process, allowing us to build complex features
+                    faster while maintaining the highest quality standards. What used to take weeks now takes days.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card group">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-rocket-red to-red-700 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-3 text-text-light">Enhanced Creativity</h3>
+                  <p className="text-text-gray leading-relaxed">
+                    AI helps us explore more design possibilities, generate innovative solutions, and provide
+                    personalized recommendations that perfectly match your vision and business goals.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card group">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-rocket-red to-red-700 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-3 text-text-light">Smarter Solutions</h3>
+                  <p className="text-text-gray leading-relaxed">
+                    From intelligent user experiences to automated workflows, we integrate AI where it matters most—
+                    creating applications that learn, adapt, and provide real value to your users.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card group">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-rocket-red to-red-700 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-3 text-text-light">Future-Ready</h3>
+                  <p className="text-text-gray leading-relaxed">
+                    We stay at the forefront of AI technology, ensuring your projects leverage the latest innovations.
+                    Your investment today is built for tomorrow's opportunities.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-16 text-center">
+            <div className="inline-block bg-dark-card border border-dark-lighter rounded-2xl px-8 py-6 max-w-3xl">
+              <p className="text-lg text-text-gray leading-relaxed">
+                <span className="text-rocket-red font-bold">Human creativity</span> meets <span className="text-rocket-red font-bold">AI efficiency</span>.
+                <br className="hidden md:block" />
+                We don't replace developers—we empower them to do more, faster, and better.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
-      <section id="services" className="section-padding bg-gradient-to-b from-dark-bg to-dark-card">
-        <div className="container-custom">
+      <section id="services" className="section-padding bg-gradient-to-b from-dark-bg to-dark-card relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={900}
+            height={900}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+        <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">OUR </span>
@@ -291,8 +405,19 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="section-padding bg-dark-bg">
-        <div className="container-custom">
+      <section id="contact" className="section-padding bg-dark-bg relative overflow-hidden">
+        {/* Background logo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Background"
+            width={800}
+            height={800}
+            className="animate-pulse neon-glow"
+          />
+        </div>
+
+        <div className="container-custom relative z-10">
           <div className="text-center mb-12">
             <div className="flex justify-center mb-6">
               <Image
