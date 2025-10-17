@@ -133,19 +133,8 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="section-padding bg-dark-bg relative overflow-hidden">
-        {/* Background logo */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none">
-          <Image
-            src="/images/109-logo1.png"
-            alt="109 Background"
-            width={800}
-            height={800}
-            className="animate-pulse neon-glow"
-          />
-        </div>
-
-        <div className="container-custom relative z-10">
+      <section id="about" className="section-padding bg-dark-bg">
+        <div className="container-custom">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">WHO WE </span>
@@ -198,19 +187,8 @@ export default function Home() {
       </section>
 
       {/* AI Integration Section */}
-      <section className="section-padding bg-gradient-to-b from-dark-bg to-dark-card relative overflow-hidden">
-        {/* Background logo */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-          <Image
-            src="/images/109-logo1.png"
-            alt="109 Background"
-            width={1000}
-            height={1000}
-            className="animate-pulse neon-glow"
-          />
-        </div>
-
-        <div className="container-custom relative z-10">
+      <section className="section-padding bg-gradient-to-b from-dark-bg to-dark-card">
+        <div className="container-custom">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">POWERED BY </span>
@@ -305,19 +283,8 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="section-padding bg-gradient-to-b from-dark-bg to-dark-card relative overflow-hidden">
-        {/* Background logo */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-          <Image
-            src="/images/109-logo1.png"
-            alt="109 Background"
-            width={900}
-            height={900}
-            className="animate-pulse neon-glow"
-          />
-        </div>
-
-        <div className="container-custom relative z-10">
+      <section id="services" className="section-padding bg-gradient-to-b from-dark-bg to-dark-card">
+        <div className="container-custom">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">OUR </span>
@@ -405,19 +372,8 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="section-padding bg-dark-bg relative overflow-hidden">
-        {/* Background logo */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none">
-          <Image
-            src="/images/109-logo1.png"
-            alt="109 Background"
-            width={800}
-            height={800}
-            className="animate-pulse neon-glow"
-          />
-        </div>
-
-        <div className="container-custom relative z-10">
+      <section id="contact" className="section-padding bg-dark-bg">
+        <div className="container-custom">
           <div className="text-center mb-12">
             <div className="flex justify-center mb-6">
               <Image
