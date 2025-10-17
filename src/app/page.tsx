@@ -52,7 +52,7 @@ export default function Home() {
       {/* Hero Section */}
       <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0">
         {/* Neon pulsing logo in background - fixed position */}
-        <div className="fixed inset-0 flex items-center justify-center opacity-20 md:opacity-25 pointer-events-none z-0">
+        <div className="fixed inset-0 flex items-center justify-center opacity-30 md:opacity-40 pointer-events-none z-0 mix-blend-screen">
           <Image
             src="/images/109-logo1.png"
             alt="109 Pulse"
@@ -96,7 +96,7 @@ export default function Home() {
             <div className="relative hidden lg:block">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-rocket-red to-red-700 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
-                <div className="relative bg-dark-card/70 backdrop-blur-md border border-dark-lighter rounded-3xl p-8 shadow-2xl">
+                <div className="relative bg-dark-card/50 backdrop-blur-md border border-dark-lighter rounded-3xl p-8 shadow-2xl">
                   <div className="flex items-center justify-center mb-6">
                     <Image 
                       src="/images/redrocket-logo.jpg" 
@@ -293,7 +293,7 @@ export default function Home() {
           </div>
 
           <div className="mt-16 text-center">
-            <div className="inline-block bg-dark-card/70 backdrop-blur-md border border-dark-lighter rounded-2xl px-8 py-6 max-w-3xl">
+            <div className="inline-block bg-dark-card/50 backdrop-blur-md border border-dark-lighter rounded-2xl px-8 py-6 max-w-3xl">
               <p className="text-lg text-text-gray leading-relaxed">
                 <span className="text-rocket-red font-bold">Human creativity</span> meets <span className="text-rocket-red font-bold">AI efficiency</span>.
                 <br className="hidden md:block" />

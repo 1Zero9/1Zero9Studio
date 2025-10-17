@@ -71,7 +71,7 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
   }
 
   return (
-    <div className="bg-dark-card/70 backdrop-blur-md border border-dark-lighter rounded-2xl p-6 md:p-8 shadow-2xl">
+    <div className="bg-dark-card/50 backdrop-blur-md border border-dark-lighter rounded-2xl p-6 md:p-8 shadow-2xl">
       {showCloseButton && onClose && (
         <button
           onClick={onClose}

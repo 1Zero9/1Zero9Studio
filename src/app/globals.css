@@ -48,7 +48,7 @@
   }
   
   .card {
-    @apply bg-dark-card/80 backdrop-blur-sm rounded-xl shadow-lg border border-dark-lighter p-6 hover:shadow-2xl hover:bg-slate-700/80 transition-all duration-300;
+    @apply bg-dark-card/60 backdrop-blur-sm rounded-xl shadow-lg border border-dark-lighter p-6 hover:shadow-2xl hover:bg-slate-700/60 transition-all duration-300;
   }
   
   .text-muted {
