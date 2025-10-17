@@ -6,6 +6,7 @@ import ContactForm from '../components/ContactForm';
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,17 +17,100 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const scrollToSection = (sectionId: string) => {
+    setMenuOpen(false);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-dark-bg text-text-light">
-      {/* Logo at top */}
-      <div className={`fixed top-4 md:top-8 z-50 transition-all duration-500 ${scrolled ? 'left-1/2 -translate-x-1/2 scale-[0.4] opacity-0 md:opacity-100 md:left-24 md:scale-[0.35]' : 'left-1/2 -translate-x-1/2 scale-75 md:scale-100 opacity-100'}`}>
-        <Image
-          src="/images/109-logo-circle-white2.png"
-          alt="1Zero9 Studio"
-          width={250}
-          height={250}
-          priority
-        />
+      {/* Logo at top - clickable when scrolled */}
+      <div className="relative">
+        <button
+          onClick={() => scrolled && setMenuOpen(!menuOpen)}
+          className={`fixed top-4 md:top-8 z-50 transition-all duration-500 ${
+            scrolled
+              ? 'left-1/2 -translate-x-1/2 scale-[0.4] opacity-0 md:opacity-100 md:left-24 md:scale-[0.35] md:cursor-pointer md:hover:scale-[0.38]'
+              : 'left-1/2 -translate-x-1/2 scale-75 md:scale-100 opacity-100 cursor-default'
+          }`}
+          aria-label="Toggle menu"
+        >
+          <Image
+            src="/images/109-logo-circle-white2.png"
+            alt="1Zero9 Studio"
+            width={250}
+            height={250}
+            priority
+          />
+        </button>
+
+        {/* Dropdown Menu */}
+        {menuOpen && scrolled && (
+          <div className="fixed top-24 left-24 z-40 bg-dark-card/95 backdrop-blur-md border border-dark-lighter rounded-xl shadow-2xl overflow-hidden animate-fadeIn">
+            <nav className="py-2">
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>Home</span>
+              </button>
+
+              <button
+                onClick={() => scrollToSection('about')}
+                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>About</span>
+              </button>
+
+              <button
+                onClick={() => scrollToSection('services')}
+                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Services</span>
+              </button>
+
+              <a
+                href="/portfolio"
+                className="block w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Portfolio</span>
+              </a>
+
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Contact</span>
+              </button>
+            </nav>
+          </div>
+        )}
+
+        {/* Click outside to close */}
+        {menuOpen && (
+          <div
+            className="fixed inset-0 z-30"
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
       </div>
 
       {/* Simple Navigation - appears when scrolled */}
