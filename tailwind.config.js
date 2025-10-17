@@ -8,8 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'rocket-red': '#e60023',
-        'charcoal': '#2d2d2d',
+        'rocket-red': '#dc2626',   // Red rocket color
+        'dark-bg': '#0f172a',      // Very dark slate
+        'dark-card': '#1e293b',    // Dark card background
+        'dark-lighter': '#334155', // Lighter dark for borders
+        'text-light': '#f1f5f9',   // Light text
+        'text-gray': '#94a3b8',    // Gray text
+        'accent': '#fbbf24',       // Golden accent
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],

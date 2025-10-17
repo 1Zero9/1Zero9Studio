@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 /* Custom base styles */
 @layer base {
@@ -12,17 +12,59 @@
   }
   
   body {
-    @apply bg-white text-charcoal antialiased;
+    @apply bg-dark-bg text-text-light antialiased leading-relaxed;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-text-light leading-tight;
+  }
+  
+  h1 { @apply text-4xl md:text-6xl mb-6; }
+  h2 { @apply text-3xl md:text-4xl mb-5; }
+  h3 { @apply text-2xl md:text-3xl mb-4; }
+  h4 { @apply text-xl md:text-2xl mb-3; }
 }
 
 /* Custom component styles */
 @layer components {
   .btn-primary {
-    @apply bg-rocket-red text-white px-8 py-4 rounded-lg font-semibold hover:bg-red-700 transition-colors;
+    @apply bg-rocket-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-all duration-300 inline-block shadow-lg hover:shadow-xl;
   }
   
   .btn-secondary {
-    @apply border border-charcoal text-charcoal px-8 py-4 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors;
+    @apply border-2 border-rocket-red text-rocket-red px-6 py-3 rounded-lg font-medium hover:bg-rocket-red hover:text-white transition-all duration-300 inline-block;
+  }
+  
+  .btn-large {
+    @apply px-8 py-4 text-lg;
+  }
+  
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4;
+  }
+  
+  .card {
+    @apply bg-dark-card rounded-xl shadow-lg border border-dark-lighter p-6 hover:shadow-2xl hover:bg-slate-700 transition-all duration-300;
+  }
+  
+  .text-muted {
+    @apply text-text-gray;
+  }
+  
+  .logo-title {
+    font-family: 'Orbitron', monospace;
+    @apply font-bold tracking-wide;
+  }
+  
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  }
+  
+  .hero-gradient {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   }
 }
