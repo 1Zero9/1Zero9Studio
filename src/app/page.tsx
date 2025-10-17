@@ -18,59 +18,70 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-dark-bg text-text-light">
       {/* Logo at top */}
-      <div className={`fixed top-8 z-50 transition-all duration-500 ${scrolled ? 'left-8 scale-[0.3]' : 'left-1/2 -translate-x-1/2 scale-100'}`}>
+      <div className={`fixed top-4 md:top-8 z-50 transition-all duration-500 ${scrolled ? 'left-1/2 -translate-x-1/2 scale-[0.4] opacity-0 md:opacity-100 md:left-8 md:scale-[0.3]' : 'left-1/2 -translate-x-1/2 scale-75 md:scale-100 opacity-100'}`}>
         <Image
           src="/images/109-logo-circle-white2.png"
           alt="1Zero9 Studio"
           width={250}
           height={250}
+          priority
         />
       </div>
 
       {/* Hero Section */}
-      <section id="home" className="hero-gradient min-h-screen flex items-center relative">
+      <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0">
+        {/* Neon pulsing logo in background */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 md:opacity-10 pointer-events-none">
+          <Image
+            src="/images/109-logo1.png"
+            alt="109 Pulse"
+            width={800}
+            height={800}
+            className="animate-pulse neon-glow scale-50 md:scale-100"
+          />
+        </div>
 
-        <div className="container-custom">
+        <div className="container-custom px-6 md:px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <h1 className="text-6xl md:text-7xl font-black leading-tight">
+            <div className="space-y-6 md:space-y-8">
+              <div className="space-y-4 md:space-y-6">
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight">
                   <span className="text-text-light">LAUNCH</span>
                   <br />
                   <span className="text-rocket-red">YOUR VISION</span>
                 </h1>
-                <p className="text-xl md:text-2xl text-text-gray leading-relaxed max-w-2xl">
-                  Premium web development and digital solutions that propel your business to new heights. 
+                <p className="text-lg sm:text-xl md:text-2xl text-text-gray leading-relaxed max-w-2xl">
+                  Premium web development and digital solutions that propel your business to new heights.
                   From concept to launch, we make it happen.
                 </p>
               </div>
-              
-              <div className="flex flex-col sm:flex-row gap-6">
-                <button className="btn-primary btn-large glow-effect">
+
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                <button className="btn-primary btn-large glow-effect text-base md:text-lg">
                   🚀 Launch Project
                 </button>
-                <button className="btn-secondary btn-large">
+                <button className="btn-secondary btn-large text-base md:text-lg">
                   View Our Work
                 </button>
               </div>
-              
-              <div className="flex items-center space-x-8 pt-8">
+
+              <div className="flex items-center justify-between sm:justify-start sm:space-x-8 pt-6 md:pt-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-rocket-red">50+</div>
-                  <div className="text-sm text-text-gray">Projects Launched</div>
+                  <div className="text-2xl md:text-3xl font-bold text-rocket-red">50+</div>
+                  <div className="text-xs md:text-sm text-text-gray">Projects</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-rocket-red">100%</div>
-                  <div className="text-sm text-text-gray">Client Satisfaction</div>
+                  <div className="text-2xl md:text-3xl font-bold text-rocket-red">100%</div>
+                  <div className="text-xs md:text-sm text-text-gray">Satisfaction</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-rocket-red">24/7</div>
-                  <div className="text-sm text-text-gray">Support</div>
+                  <div className="text-2xl md:text-3xl font-bold text-rocket-red">24/7</div>
+                  <div className="text-xs md:text-sm text-text-gray">Support</div>
                 </div>
               </div>
             </div>
             
-            <div className="relative">
+            <div className="relative hidden lg:block">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-rocket-red to-red-700 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
                 <div className="relative bg-dark-card border border-dark-lighter rounded-3xl p-8 shadow-2xl">
@@ -294,19 +305,12 @@ export default function Home() {
         <div className="container-custom">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <div className="flex items-center space-x-4 mb-6">
-                <Image 
-                  src="/images/redrocket-logo.jpg" 
-                  alt="1Zero9 Studio" 
-                  width={50} 
-                  height={50} 
-                  className="rounded-full"
-                />
-                <Image 
-                  src="/images/109-black-bg-whitetext.png" 
-                  alt="1Zero9 Studio" 
-                  width={150} 
-                  height={40} 
+              <div className="flex items-center mb-6">
+                <Image
+                  src="/images/109-logo-circle-white2.png"
+                  alt="1Zero9 Studio"
+                  width={60}
+                  height={60}
                 />
               </div>
               <p className="text-text-gray leading-relaxed max-w-md">
@@ -348,7 +352,7 @@ export default function Home() {
           
           <div className="border-t border-dark-lighter mt-12 pt-8 text-center">
             <p className="text-text-gray">
-              &copy; 2024 1Zero9 Studio. All rights reserved. Ready for liftoff? 🚀
+              &copy; 2025 1Zero9 Studio. All rights reserved. Ready for liftoff? 🚀
             </p>
           </div>
         </div>

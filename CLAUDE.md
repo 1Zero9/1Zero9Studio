@@ -61,10 +61,23 @@ The project uses Next.js App Router with the following route structure:
    - Fixed issue: Removed `onComplete` from useEffect dependencies to prevent infinite loop
 
 **Home Page Features:**
-- **Scroll-Reactive Logo**: Large circular logo (250px) at top center that:
-  - Scales down to 30% and moves to top-left when user scrolls past 100px
-  - Smooth 500ms transitions for position and scale changes
-  - Fixed position with z-50 to stay visible while scrolling
+- **Scroll-Reactive Logo**: Large circular logo (250px) at top center with responsive behavior:
+  - **Mobile**: Fades out completely when scrolling (`opacity-0`), stays centered
+  - **Desktop/Tablet**: Scales down to 30% and moves to top-left when scrolling
+  - Smooth 500ms transitions for all changes
+  - Starts at 75% scale on mobile, 100% on desktop
+  - Fixed position with z-50, uses `priority` prop for faster loading
+- **Neon Pulsing Background**: Heartbeat logo (109-logo1.png) in hero section
+  - Large (800px) with custom neon-glow effect using drop-shadows
+  - Animates with 3s pulse cycle, intensifying red glow
+  - Scaled down (50%) and lower opacity (5%) on mobile
+  - Positioned absolutely, non-interactive (`pointer-events-none`)
+- **Mobile Optimizations**:
+  - Responsive typography scaling (5xl → 6xl → 7xl)
+  - Hero section top padding on mobile to accommodate logo
+  - Stats with shorter labels on mobile
+  - Decorative side card hidden on mobile (`hidden lg:block`)
+  - Better spacing and button sizes for touch targets
 - **No Navigation Header**: Clean, immersive design without fixed nav bar
 - **Sections**: Hero, About, Services, CTA, Footer all inline in single page component
 
@@ -112,13 +125,26 @@ Images are stored in `/public/images/`:
 
 1. **Client Components**: Most interactive components use `'use client'` directive since they rely on hooks and browser APIs
 
-2. **Responsive Design**: Mobile-first approach with `md:` and `lg:` breakpoints
+2. **Responsive Design**: Mobile-first approach with breakpoints:
+   - Base: Mobile (<640px)
+   - `sm:`: Small tablets (≥640px)
+   - `md:`: Medium tablets/small desktops (≥768px)
+   - `lg:`: Desktops (≥1024px)
 
 3. **Smooth Scrolling**: Implemented via scroll-into-view with `behavior: 'smooth'`
 
-4. **Glow Effects**: Custom `.glow-effect` class creates red glow around key elements (rocket logo, CTA buttons)
+4. **Visual Effects**:
+   - `.glow-effect`: Red box-shadow glow for key elements
+   - `.neon-glow`: Animated neon effect with pulsing drop-shadows (3s cycle)
+   - Custom animations defined in globals.css
 
 5. **Session-based Landing**: Landing page only shows once per browser session using `sessionStorage`
+
+6. **Mobile-First Responsive Patterns**:
+   - Logo fades out on mobile when scrolling (stays visible on desktop)
+   - Background effects reduced on mobile (lower opacity, smaller scale)
+   - Decorative elements hidden on small screens
+   - Touch-friendly button sizes and spacing
 
 ## Styling Notes
 
@@ -133,3 +159,18 @@ Images are stored in `/public/images/`:
 - Framer Motion is installed as a dependency but not actively used in current implementation
 - There are unused component files (Header.tsx, Footer.tsx) - may be from previous iterations
 - The home page (`page.tsx`) is a large single file with all sections inline - could be refactored into separate section components for better maintainability
+
+## Roadmap / Next Steps
+
+The following features are planned for future development:
+
+1. **Contact Form**: Interactive form for user inquiries and project submissions
+
+2. **AI Integration Section**: Content explaining how the studio uses AI to collaborate with clients and streamline development
+
+3. **Launch Project App**: An intelligent guided wizard that helps users who don't know what they need:
+   - Multi-step questionnaire to understand requirements
+   - AI-powered recommendations for services, features, and solutions
+   - Guides users to appropriate offerings: information pages, services, contact forms, booking systems, custom apps
+   - Personalized project scope and pricing estimates
+   - Progressive disclosure to avoid overwhelming non-technical users
