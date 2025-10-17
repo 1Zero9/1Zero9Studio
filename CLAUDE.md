@@ -36,13 +36,11 @@ npm run lint
 
 The project uses Next.js App Router with the following route structure:
 
-- `src/app/page.tsx` - Home page with hero, about, services, and CTA sections
+- `src/app/page.tsx` - Main home page with hero, about, services, and contact form sections
 - `src/app/layout.tsx` - Root layout with metadata and font setup
-- `src/app/services/page.tsx` - Services page
-- `src/app/portfolio/page.tsx` - Portfolio page
-- `src/app/about/page.tsx` - About page
-- `src/app/contact/page.tsx` - Contact page
+- `src/app/portfolio/page.tsx` - Portfolio page with Netflix-style grid layout
 - `src/app/globals.css` - Global styles with custom Tailwind components
+- **Legacy pages** (not in active use): `services/page.tsx`, `about/page.tsx`, `contact/page.tsx`
 
 ### Component Architecture
 
@@ -67,23 +65,62 @@ The project uses Next.js App Router with the following route structure:
   - Smooth 500ms transitions for all changes
   - Starts at 75% scale on mobile, 100% on desktop
   - Fixed position with z-50, uses `priority` prop for faster loading
+- **Scroll-Triggered Navigation**: Minimal nav bar appears on scroll
+  - Slides down from top-right when user scrolls past 100px
+  - Contains "Portfolio" link and "Contact" button
+  - Backdrop blur effect with dark card background
+  - Fully responsive with smaller text/padding on mobile
 - **Neon Pulsing Background**: Heartbeat logo (109-logo1.png) in hero section
   - Large (800px) with custom neon-glow effect using drop-shadows
   - Animates with 3s pulse cycle, intensifying red glow
   - Scaled down (50%) and lower opacity (5%) on mobile
   - Positioned absolutely, non-interactive (`pointer-events-none`)
+- **Contact Form Integration**: Professional multi-field form with validation
+  - Replaces simple CTA buttons with full contact form
+  - Located at `#contact` section, linked from hero buttons
+  - Form details in ContactForm component section below
 - **Mobile Optimizations**:
   - Responsive typography scaling (5xl → 6xl → 7xl)
   - Hero section top padding on mobile to accommodate logo
   - Stats with shorter labels on mobile
   - Decorative side card hidden on mobile (`hidden lg:block`)
   - Better spacing and button sizes for touch targets
-- **No Navigation Header**: Clean, immersive design without fixed nav bar
-- **Sections**: Hero, About, Services, CTA, Footer all inline in single page component
+- **Sections**: Hero, About, Services, Contact Form, Footer all inline in single page component
+
+**Portfolio Page** (`src/app/portfolio/page.tsx`)
+- **Netflix-Style Design**: Dark theme with grid layout
+- **Category Filtering**: Sticky filter bar at top with categories:
+  - All, E-Commerce, Corporate, Portfolio, SaaS, Hospitality, Mobile
+  - Active category highlighted in rocket-red
+  - Smooth transitions on filter change
+- **Project Grid**:
+  - Responsive grid: `sm:grid-cols-2 lg:grid-cols-3`
+  - 6 sample projects with real metadata structure
+  - Hover effects: scale-105, shadow-2xl, title color change
+  - Play button overlay appears on hover
+  - Each project card shows: title, description, tags (max 3 visible), category badge, year
+- **Navigation**: Clickable logo at top returns to homepage
+- **CTA Section**: Links back to main page contact form
+- **Mobile Optimized**: Touch-friendly cards, proper spacing, responsive typography
+
+**ContactForm Component** (`src/components/ContactForm.tsx`)
+- **Fields**: Name*, Email*, Phone, Company, Project Type*, Message*
+- **Project Types**: Website, Mobile App, E-commerce, Redesign, Maintenance, Consulting, Other
+- **Validation**: HTML5 required fields, email type validation
+- **States**: idle, submitting (with spinner), success (with animation), error
+- **Features**:
+  - Loading spinner during submission
+  - Success animation with checkmark and auto-reset
+  - Error handling with user feedback
+  - Form reset after successful submission
+  - Auto-close support for modal usage
+  - Fully responsive grid layout
+- **Backend**: Currently simulated with setTimeout, includes TODO comments for API integration
 
 **Other Components:**
 - `Header.tsx`, `Footer.tsx` - Legacy components (not currently in use)
 - `RocketAnimation.tsx` - Standalone animation component
+- `LandingPage.tsx` - Splash screen component (described above)
 
 ### Key Design Patterns
 
@@ -160,17 +197,45 @@ Images are stored in `/public/images/`:
 - There are unused component files (Header.tsx, Footer.tsx) - may be from previous iterations
 - The home page (`page.tsx`) is a large single file with all sections inline - could be refactored into separate section components for better maintainability
 
+## Recent Updates (October 2025)
+
+**Main Site Polish Complete:**
+- ✅ Contact form integrated with full validation and states
+- ✅ Netflix-style portfolio page with category filtering
+- ✅ Scroll-triggered navigation with Portfolio and Contact links
+- ✅ All navigation links working (home ↔ portfolio, scroll to contact)
+- ✅ Mobile responsiveness verified across all pages
+- ✅ Consistent dark theme with rocket-red accents throughout
+- ✅ Hero button "View Our Work" now links to portfolio page
+
+**Navigation Flow:**
+- Home page → Portfolio link appears when scrolling
+- Portfolio page → Click logo to return home
+- Hero buttons → "Launch Project" scrolls to contact, "View Our Work" goes to portfolio
+- Contact form accessible from nav bar or hero section
+
 ## Roadmap / Next Steps
 
 The following features are planned for future development:
 
-1. **Contact Form**: Interactive form for user inquiries and project submissions
+1. **Backend Integration for Contact Form**:
+   - Create API endpoint at `/api/contact`
+   - Integrate with email service (SendGrid, Resend, etc.)
+   - Add proper error handling and validation
+   - Consider adding rate limiting
 
-2. **AI Integration Section**: Content explaining how the studio uses AI to collaborate with clients and streamline development
+2. **Portfolio Content Population**:
+   - Replace placeholder images with actual project screenshots
+   - Update project descriptions with real case studies
+   - Add actual project links (currently pointing to "#")
+   - Consider adding project detail pages
 
-3. **Launch Project App**: An intelligent guided wizard that helps users who don't know what they need:
+3. **AI Integration Section**: Content explaining how the studio uses AI to collaborate with clients and streamline development
+
+4. **Launch Project App**: An intelligent guided wizard that helps users who don't know what they need:
    - Multi-step questionnaire to understand requirements
    - AI-powered recommendations for services, features, and solutions
    - Guides users to appropriate offerings: information pages, services, contact forms, booking systems, custom apps
    - Personalized project scope and pricing estimates
    - Progressive disclosure to avoid overwhelming non-technical users
+   - Could be a separate route (e.g., `/launch`) or modal overlay

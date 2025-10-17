@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import ContactForm from '../components/ContactForm';
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
@@ -27,6 +28,26 @@ export default function Home() {
           priority
         />
       </div>
+
+      {/* Simple Navigation - appears when scrolled */}
+      <nav className={`fixed top-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
+        <div className="bg-dark-card/95 backdrop-blur-sm border-b border-l border-dark-lighter rounded-bl-2xl px-4 md:px-6 py-3 md:py-4">
+          <div className="flex items-center space-x-3 md:space-x-6">
+            <a
+              href="/portfolio"
+              className="text-text-gray hover:text-rocket-red transition-colors font-medium text-sm md:text-base"
+            >
+              Portfolio
+            </a>
+            <button
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+              className="bg-rocket-red text-white px-3 md:px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors text-xs md:text-sm"
+            >
+              Contact
+            </button>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
       <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0">
@@ -57,12 +78,18 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                <button className="btn-primary btn-large glow-effect text-base md:text-lg">
+                <button
+                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="btn-primary btn-large glow-effect text-base md:text-lg"
+                >
                   🚀 Launch Project
                 </button>
-                <button className="btn-secondary btn-large text-base md:text-lg">
+                <a
+                  href="/portfolio"
+                  className="btn-secondary btn-large text-base md:text-lg text-center"
+                >
                   View Our Work
-                </button>
+                </a>
               </div>
 
               <div className="flex items-center justify-between sm:justify-start sm:space-x-8 pt-6 md:pt-8">
@@ -263,39 +290,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section id="contact" className="section-padding bg-gradient-to-r from-rocket-red to-red-700">
-        <div className="container-custom text-center">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-center mb-8">
-              <Image 
-                src="/images/redrocket-logo.jpg" 
-                alt="Ready to Launch" 
-                width={100} 
-                height={100} 
-                className="rounded-full glow-effect"
+      {/* Contact Section */}
+      <section id="contact" className="section-padding bg-dark-bg">
+        <div className="container-custom">
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/images/redrocket-logo.jpg"
+                alt="Ready to Launch"
+                width={80}
+                height={80}
+                className="rounded-full glow-effect animate-pulse"
               />
             </div>
-            <h2 className="text-5xl md:text-6xl font-black mb-6 text-white">
-              READY TO LAUNCH?
+            <h2 className="text-4xl md:text-5xl font-black mb-4 text-text-light">
+              READY TO <span className="text-rocket-red">LAUNCH?</span>
             </h2>
-            <p className="text-xl md:text-2xl mb-12 text-red-100 leading-relaxed">
+            <p className="text-lg md:text-xl text-text-gray max-w-2xl mx-auto">
               Let's transform your vision into a digital reality that propels your business forward.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <a 
-                href="mailto:hello@1zero9studio.com" 
-                className="bg-white text-rocket-red px-10 py-5 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1"
-              >
-                🚀 Launch My Project
-              </a>
-              <a 
-                href="tel:+1234567890" 
-                className="border-3 border-white text-white px-10 py-5 rounded-xl font-bold text-lg hover:bg-white hover:text-rocket-red transition-all duration-300"
-              >
-                📞 Call Us Now
-              </a>
-            </div>
+          </div>
+
+          <div className="max-w-3xl mx-auto">
+            <ContactForm />
           </div>
         </div>
       </section>
