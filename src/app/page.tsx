@@ -1,217 +1,14 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import ContactForm from '../components/ContactForm';
 
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToSection = (sectionId: string) => {
-    setMenuOpen(false);
-    setMobileMenuOpen(false);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-dark-bg text-text-light">
-      {/* Logo at top - clickable when scrolled */}
-      <div className="relative">
-        <button
-          onClick={() => scrolled && setMenuOpen(!menuOpen)}
-          className={`fixed top-4 md:top-8 z-50 transition-all duration-500 ${
-            scrolled
-              ? 'left-1/2 -translate-x-1/2 scale-[0.4] opacity-0 md:opacity-100 md:left-24 md:scale-[0.35] md:cursor-pointer md:hover:scale-[0.38]'
-              : 'left-1/2 -translate-x-1/2 scale-75 md:scale-100 opacity-100 cursor-default'
-          }`}
-          aria-label="Toggle menu"
-        >
-          <Image
-            src="/images/109-logo-circle-white2.png"
-            alt="1Zero9 Studio"
-            width={250}
-            height={250}
-            priority
-          />
-        </button>
-
-        {/* Dropdown Menu - Desktop */}
-        {menuOpen && scrolled && (
-          <div className="hidden md:block fixed top-20 left-44 z-40 bg-dark-card/95 backdrop-blur-md border border-dark-lighter rounded-xl shadow-2xl overflow-hidden animate-fadeIn">
-            <nav className="py-2">
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span>Home</span>
-              </button>
-
-              <button
-                onClick={() => scrollToSection('about')}
-                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>About</span>
-              </button>
-
-              <button
-                onClick={() => scrollToSection('services')}
-                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span>Services</span>
-              </button>
-
-              <a
-                href="/portfolio"
-                className="block w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>Portfolio</span>
-              </a>
-
-              <button
-                onClick={() => scrollToSection('contact')}
-                className="w-full px-6 py-3 text-left text-text-gray hover:text-rocket-red hover:bg-dark-lighter transition-colors flex items-center space-x-3"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span>Contact</span>
-              </button>
-            </nav>
-          </div>
-        )}
-
-        {/* Click outside to close */}
-        {menuOpen && (
-          <div
-            className="fixed inset-0 z-30"
-            onClick={() => setMenuOpen(false)}
-          />
-        )}
-      </div>
-
-      {/* Mobile Burger Menu Button */}
-      <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className={`md:hidden fixed top-4 left-4 z-50 transition-all duration-300 ${
-          scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
-        } bg-dark-card/95 backdrop-blur-sm border border-dark-lighter rounded-lg p-3`}
-        aria-label="Toggle mobile menu"
-      >
-        <div className="w-6 h-5 relative flex flex-col justify-between">
-          <span className={`block h-0.5 w-full bg-text-light transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`block h-0.5 w-full bg-text-light transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`block h-0.5 w-full bg-text-light transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-        </div>
-      </button>
-
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-dark-bg/95 backdrop-blur-md animate-fadeIn">
-          <nav className="flex flex-col items-center justify-center h-full space-y-6">
-            <button
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setMobileMenuOpen(false);
-              }}
-              className="text-2xl text-text-gray hover:text-rocket-red transition-colors flex items-center space-x-3"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span>Home</span>
-            </button>
-
-            <button
-              onClick={() => scrollToSection('about')}
-              className="text-2xl text-text-gray hover:text-rocket-red transition-colors flex items-center space-x-3"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>About</span>
-            </button>
-
-            <button
-              onClick={() => scrollToSection('services')}
-              className="text-2xl text-text-gray hover:text-rocket-red transition-colors flex items-center space-x-3"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span>Services</span>
-            </button>
-
-            <a
-              href="/portfolio"
-              className="text-2xl text-text-gray hover:text-rocket-red transition-colors flex items-center space-x-3"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span>Portfolio</span>
-            </a>
-
-            <button
-              onClick={() => scrollToSection('contact')}
-              className="text-2xl text-text-gray hover:text-rocket-red transition-colors flex items-center space-x-3"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span>Contact</span>
-            </button>
-          </nav>
-        </div>
-      )}
-
-      {/* Simple Navigation - appears when scrolled */}
-      <nav className={`fixed top-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
-        <div className="bg-dark-card/95 backdrop-blur-sm border-b border-l border-dark-lighter rounded-bl-2xl px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center space-x-3 md:space-x-6">
-            <a
-              href="/portfolio"
-              className="text-text-gray hover:text-rocket-red transition-colors font-medium text-sm md:text-base"
-            >
-              Portfolio
-            </a>
-            <button
-              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-rocket-red text-white px-3 md:px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors text-xs md:text-sm"
-            >
-              Contact
-            </button>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero Section */}
-      <section id="home" className="hero-gradient min-h-screen flex items-center relative pt-32 md:pt-0">
+      <section id="home" className="min-h-screen flex items-center relative pt-32 md:pt-0 bg-gradient-to-b from-slate-950 via-slate-900 to-dark-bg">
         {/* Neon pulsing logo in background - fixed position */}
         <div className="fixed inset-0 flex items-center justify-center opacity-30 md:opacity-40 pointer-events-none z-0 mix-blend-screen">
           <Image
@@ -223,28 +20,30 @@ export default function Home() {
           />
         </div>
 
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-bg/80 pointer-events-none"></div>
+
         <div className="container-custom px-6 md:px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-4xl mx-auto text-center">
             <div className="space-y-6 md:space-y-8">
               <div className="space-y-4 md:space-y-6">
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight">
+                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight">
                   <span className="text-text-light">LAUNCH</span>
                   <br />
                   <span className="text-rocket-red">YOUR VISION</span>
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-text-gray leading-relaxed max-w-2xl">
+                <p className="text-lg sm:text-xl md:text-2xl text-text-gray leading-relaxed mx-auto max-w-3xl">
                   Premium web development and digital solutions that propel your business to new heights.
                   From concept to launch, we make it happen.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                <button
-                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="btn-primary btn-large glow-effect text-base md:text-lg"
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+                <a
+                  href="/builder"
+                  className="btn-primary btn-large glow-effect text-base md:text-lg text-center"
                 >
-                  🚀 Launch Project
-                </button>
+                  Build Your Site
+                </a>
                 <a
                   href="/portfolio"
                   className="btn-secondary btn-large text-base md:text-lg text-center"
@@ -253,49 +52,14 @@ export default function Home() {
                 </a>
               </div>
             </div>
-            
-            <div className="relative hidden lg:block">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rocket-red to-red-700 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
-                <div className="relative bg-dark-card/50 backdrop-blur-md border border-dark-lighter rounded-3xl p-8 shadow-2xl">
-                  <div className="flex items-center justify-center mb-6">
-                    <Image 
-                      src="/images/redrocket-logo.jpg" 
-                      alt="Red Rocket" 
-                      width={80} 
-                      height={80} 
-                      className="rounded-full glow-effect"
-                    />
-                  </div>
-                  <h3 className="text-2xl font-bold text-center mb-6 text-text-light">Ready for Takeoff?</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-rocket-red rounded-full animate-pulse"></div>
-                      <span className="text-text-gray">Modern Tech Stack</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-rocket-red rounded-full animate-pulse"></div>
-                      <span className="text-text-gray">Lightning Fast Performance</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-rocket-red rounded-full animate-pulse"></div>
-                      <span className="text-text-gray">Mobile-First Design</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-rocket-red rounded-full animate-pulse"></div>
-                      <span className="text-text-gray">SEO Optimized</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="section-padding bg-dark-bg">
-        <div className="container-custom">
+      <section id="about" className="section-padding bg-gradient-to-b from-dark-bg/80 via-dark-bg/70 to-dark-bg/80 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-bg/30 to-transparent pointer-events-none"></div>
+        <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">WHO WE </span>
@@ -348,8 +112,9 @@ export default function Home() {
       </section>
 
       {/* AI Integration Section */}
-      <section className="section-padding bg-gradient-to-b from-dark-bg to-dark-card">
-        <div className="container-custom">
+      <section className="section-padding bg-gradient-to-b from-dark-bg/80 via-dark-card/60 to-dark-card/70 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-card/20 to-transparent pointer-events-none"></div>
+        <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">POWERED BY </span>
@@ -444,8 +209,9 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="section-padding bg-gradient-to-b from-dark-bg to-dark-card">
-        <div className="container-custom">
+      <section id="services" className="section-padding bg-gradient-to-b from-dark-card/70 via-slate-800/60 to-dark-bg/80 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-800/15 to-transparent pointer-events-none"></div>
+        <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">
               <span className="text-text-light">OUR </span>
@@ -533,23 +299,24 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="section-padding bg-dark-bg">
-        <div className="container-custom">
+      <section id="contact" className="section-padding bg-gradient-to-b from-dark-bg/80 via-slate-900/70 to-dark-bg/80 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-rocket-red/3 to-transparent pointer-events-none"></div>
+        <div className="container-custom relative z-10">
           <div className="text-center mb-12">
             <div className="flex justify-center mb-6">
               <Image
-                src="/images/redrocket-logo.jpg"
-                alt="Ready to Launch"
+                src="/images/109-logo-circle-white2.png"
+                alt="Get in Touch"
                 width={80}
                 height={80}
-                className="rounded-full glow-effect animate-pulse"
+                className="glow-effect animate-pulse"
               />
             </div>
             <h2 className="text-4xl md:text-5xl font-black mb-4 text-text-light">
-              READY TO <span className="text-rocket-red">LAUNCH?</span>
+              LET'S <span className="text-rocket-red">CONNECT</span>
             </h2>
             <p className="text-lg md:text-xl text-text-gray max-w-2xl mx-auto">
-              Let's transform your vision into a digital reality that propels your business forward.
+              Have a project in mind? We'd love to hear about it. Get in touch and let's create something amazing together.
             </p>
           </div>
 
@@ -560,8 +327,9 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-dark-bg border-t border-dark-lighter py-12">
-        <div className="container-custom">
+      <footer className="bg-gradient-to-b from-dark-bg/80 to-slate-950/90 border-t border-dark-lighter py-12 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/50 pointer-events-none"></div>
+        <div className="container-custom relative z-10">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center mb-6">
@@ -611,7 +379,7 @@ export default function Home() {
           
           <div className="border-t border-dark-lighter mt-12 pt-8 text-center">
             <p className="text-text-gray">
-              &copy; 2025 1Zero9 Studio. All rights reserved. Ready for liftoff? 🚀
+              &copy; 2025 1Zero9 Studio. All rights reserved.
             </p>
           </div>
         </div>

@@ -85,7 +85,7 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
       )}
 
       <div className="mb-6">
-        <h3 className="text-2xl md:text-3xl font-bold text-text-light mb-2">Let's Launch Your Project</h3>
+        <h3 className="text-2xl md:text-3xl font-bold text-text-light mb-2">Start Your Journey</h3>
         <p className="text-text-gray">Fill out the form below and we'll get back to you within 24 hours.</p>
       </div>
 
@@ -96,7 +96,7 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h4 className="text-xl font-bold text-text-light mb-2">Message Sent! 🚀</h4>
+          <h4 className="text-xl font-bold text-text-light mb-2">Message Sent!</h4>
           <p className="text-text-gray">We'll be in touch soon to discuss your project.</p>
         </div>
       ) : (
@@ -219,7 +219,7 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
                 Sending...
               </span>
             ) : (
-              '🚀 Launch Your Project'
+              'Send Message'
             )}
           </button>
 

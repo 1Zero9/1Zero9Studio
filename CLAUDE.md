@@ -117,6 +117,45 @@ The project uses Next.js App Router with the following route structure:
   - Fully responsive grid layout
 - **Backend**: Currently simulated with setTimeout, includes TODO comments for API integration
 
+**Website Builder Components** (`src/components/builder/` and `/builder` route):
+
+1. **BuilderHeader** (`src/components/builder/BuilderHeader.tsx`)
+   - Fixed header for builder pages only
+   - Logo with link back to home
+   - Auto-save indicator, help button, exit button
+   - Replaces main navigation when on `/builder` routes
+
+2. **BuilderContext** (`src/context/BuilderContext.tsx`)
+   - Global state management using React Context API
+   - Auto-saves to localStorage on every state change
+   - Provides methods: updateState, setSiteType, setDesignStyle, setColorScheme, etc.
+   - Manages currentStep and navigation between wizard steps
+
+3. **Wizard Step Components** (`src/components/builder/steps/`)
+   - **WelcomeStep**: Landing page with feature highlights and "Start Building" button
+   - **PurposeStep**: Site type selection (Portfolio, Store, Blog, Business, Landing)
+   - **StyleStep**: 3-tab interface for Design Style, Colors, Typography selection
+   - Steps 4-6: Placeholder "COMING SOON" screens
+
+4. **Shared Builder Components** (`src/components/builder/`)
+   - **StepIndicator**: Progress bar showing current step and completion
+   - **NavigationControls**: Back/Next buttons with step validation
+
+5. **Builder Types** (`src/types/builder.ts`)
+   - Complete TypeScript definitions for all builder state
+   - Predefined constants: COLOR_SCHEMES, TYPOGRAPHY_PRESETS, DEFAULT_SECTIONS, SECTION_METADATA
+   - 5 site types, 4 design styles, 12 section types
+
+6. **Builder Page** (`src/app/builder/page.tsx`)
+   - Main wizard orchestrator
+   - Renders appropriate step component based on currentStep
+   - Validates user selections before allowing progression
+   - Shows BuilderHeader and progress indicator
+
+**Subpage Components:**
+- `SubpageHeader.tsx` - Reusable header for portfolio and other subpages (title, highlight, description, icon)
+- `ConditionalNavigation.tsx` - Shows/hides main navigation based on route (hides on `/builder`)
+
 **Other Components:**
 - `Header.tsx`, `Footer.tsx` - Legacy components (not currently in use)
 - `RocketAnimation.tsx` - Standalone animation component
@@ -207,12 +246,39 @@ Images are stored in `/public/images/`:
 - ✅ Mobile responsiveness verified across all pages
 - ✅ Consistent dark theme with rocket-red accents throughout
 - ✅ Hero button "View Our Work" now links to portfolio page
+- ✅ Contact form rebranded from "Ready to Launch" to "Let's Connect" (separated from builder app identity)
+- ✅ Fixed navigation logo overlap on subpages (logo only shows large/centered on homepage)
+- ✅ Created reusable SubpageHeader component for consistent subpage layouts
+
+**Navigation Updates:**
+- Main navigation now uses `usePathname()` to detect current route
+- Logo behavior: Large centered on homepage initial load, small/left on all subpages
+- Mobile logo only appears on homepage, hidden on subpages
+- ConditionalNavigation wrapper hides main nav on `/builder` routes
+- Portfolio page uses SubpageHeader with icon to prevent overlap
+
+**Website Builder App (In Progress - Phase 1 ~40% Complete):**
+- ✅ Complete TypeScript type system with BuilderState, SiteType, DesignStyle, ColorScheme, Typography
+- ✅ Context API state management with localStorage persistence
+- ✅ 7-step wizard structure: Welcome → Purpose → Style → Features → Content → Preview → Submit
+- ✅ Steps 0-2 implemented (Welcome, Purpose selection, Style customization)
+- ✅ Dedicated BuilderHeader with exit/help buttons and auto-save indicator
+- ✅ StepIndicator component with progress bar
+- ✅ NavigationControls with validation at each step
+- ✅ 8 predefined color schemes (2 per design style)
+- ✅ 4 typography presets with auto-matching
+- 🚧 Steps 3-6 pending: Features selection, Content upload, Preview, Contact/CTA
+- 🚧 Live preview components pending
+- 🚧 Tailwind theme system for dynamic styling pending
+- 🚧 Supabase integration pending
+- 🚧 Claude AI summary generation pending
 
 **Navigation Flow:**
 - Home page → Portfolio link appears when scrolling
 - Portfolio page → Click logo to return home
-- Hero buttons → "Launch Project" scrolls to contact, "View Our Work" goes to portfolio
+- Hero buttons → "Build Your Site" goes to builder, "View Our Work" goes to portfolio
 - Contact form accessible from nav bar or hero section
+- Builder app → Dedicated header with exit button to return home
 
 ## Roadmap / Next Steps
 

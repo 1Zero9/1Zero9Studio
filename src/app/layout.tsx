@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import MainApp from "../components/MainApp";
+import ConditionalNavigation from "../components/ConditionalNavigation";
 
 const inter = Inter({ subsets: ["latin"] });
 const poppins = Poppins({ 
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <ConditionalNavigation />
         <MainApp>
           {children}
         </MainApp>
