@@ -9,6 +9,7 @@ interface BuilderContextType {
   setCurrentStep: (step: number) => void
   updateState: (updates: Partial<BuilderState>) => void
   setSiteType: (type: SiteType) => void
+  setPurposeDescription: (description: string) => void
   setDesignStyle: (style: DesignStyle) => void
   setColorScheme: (scheme: ColorScheme) => void
   setTypography: (typography: Typography) => void
@@ -32,9 +33,14 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        setState({ ...INITIAL_BUILDER_STATE, ...parsed })
+        // Only load if the session was actually started
+        if (parsed.started) {
+          setState({ ...INITIAL_BUILDER_STATE, ...parsed })
+          console.log('📂 Loaded saved builder state')
+        }
       } catch (error) {
         console.error('Failed to load saved state:', error)
+        localStorage.removeItem('builder-state')
       }
     }
   }, [])
@@ -56,6 +62,10 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
 
   const setSiteType = useCallback((type: SiteType) => {
     updateState({ siteType: type })
+  }, [updateState])
+
+  const setPurposeDescription = useCallback((description: string) => {
+    updateState({ purposeDescription: description })
   }, [updateState])
 
   const setDesignStyle = useCallback((style: DesignStyle) => {
@@ -91,9 +101,11 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const resetBuilder = useCallback(() => {
+    console.log('🔄 Resetting builder state...')
     setState(INITIAL_BUILDER_STATE)
     setCurrentStep(0)
     localStorage.removeItem('builder-state')
+    console.log('✅ Builder state reset complete')
   }, [])
 
   const saveToLocalStorage = useCallback(() => {
@@ -120,6 +132,7 @@ export function BuilderProvider({ children }: { children: React.ReactNode }) {
         setCurrentStep,
         updateState,
         setSiteType,
+        setPurposeDescription,
         setDesignStyle,
         setColorScheme,
         setTypography,

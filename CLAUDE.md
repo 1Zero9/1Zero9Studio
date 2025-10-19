@@ -131,26 +131,85 @@ The project uses Next.js App Router with the following route structure:
    - Provides methods: updateState, setSiteType, setDesignStyle, setColorScheme, etc.
    - Manages currentStep and navigation between wizard steps
 
-3. **Wizard Step Components** (`src/components/builder/steps/`)
-   - **WelcomeStep**: Landing page with feature highlights and "Start Building" button
-   - **PurposeStep**: Site type selection (Portfolio, Store, Blog, Business, Landing)
-   - **StyleStep**: 3-tab interface for Design Style, Colors, Typography selection
-   - Steps 4-6: Placeholder "COMING SOON" screens
+3. **AIAgent Component** (`src/components/builder/AIAgent.tsx`)
+   - Conversational AI assistant "Nova" for gathering user requirements
+   - Chat-style interface with message history and typing indicators
+   - Keyword detection to automatically suggest site types
+   - Integrates with PurposeStep for dual input method (chat + form)
+   - Features: emoji avatars, timestamps, auto-scroll, responsive message bubbles
+   - Uses predefined response patterns (greeting, follow-up, encouragement, clarification)
 
-4. **Shared Builder Components** (`src/components/builder/`)
+4. **Wizard Step Components** (`src/components/builder/steps/`)
+   - **WelcomeStep**: Landing page with feature highlights and "Start Building" button
+   - **PurposeStep**: Dual-interface for site type selection:
+     - Left: AI Agent chat interface with Nova
+     - Right: Traditional form with text input + category buttons
+     - Auto-suggests site type based on keywords in user input
+     - Quick suggestion buttons for common use cases
+     - Live character counter and AI hints
+   - **StyleStep**: 3-tab progressive interface:
+     - Tab 1: Design Style selection (Minimalist, Bold, Futuristic, Classic)
+     - Tab 2: Color schemes (8 palettes per style with color swatches)
+     - Tab 3: Typography presets (8 font pairings per style with live previews)
+     - Auto-selects first color/typography when style chosen, then advances to Colors tab
+   - **FeaturesStep**: Interactive section organizer:
+     - Auto-loads default sections based on site type (from `DEFAULT_SECTIONS`)
+     - Two-column layout: main section list (left) + add sections sidebar (right)
+     - Drag-and-drop reordering using native HTML5 drag API
+     - Enable/disable toggles for each section
+     - Remove button to delete sections completely
+     - Visual order indicators and drag handles
+     - Pro tips card with best practices
+     - Validation warning if no sections enabled
+   - **ContentStep**: Comprehensive content collection form:
+     - Business basics: name (required), tagline (required)
+     - Logo upload with drag-and-drop or click to browse
+     - Image validation: file type (JPG, PNG, SVG, WebP), max 5MB
+     - Base64 encoding for logo preview and storage
+     - Brand color picker with live preview and hex input
+     - Contact info: email, phone
+     - Social media links: Facebook, Instagram, Twitter, LinkedIn
+     - Real-time validation feedback with success/warning messages
+   - **PreviewStep**: Live website preview with dynamic rendering:
+     - Renders actual website sections based on user selections
+     - Applies user's color scheme, typography, and branding
+     - Responsive viewport toggles: desktop (full width), tablet (768px), mobile (375px)
+     - Smooth transitions between viewport sizes
+     - Quick edit panel (fixed bottom-right) to jump to any previous step
+     - Shows logo, business name, tagline, contact info, social links
+     - Conditionally renders sections based on enabled state
+     - Footer with business name and 1Zero9 Studio attribution
+   - **SubmitStep**: Final submission and confirmation:
+     - Contact form: name (required), email (required), phone (optional)
+     - Preferred contact method selector: Email, Phone, Either
+     - Additional notes textarea for special requirements
+     - Terms checkbox for communication consent
+     - Form validation with real-time feedback
+     - Animated submission state with loading spinner
+     - Success screen with:
+       - Animated checkmark icon
+       - "What Happens Next" 3-step roadmap
+       - Email confirmation notice
+       - Return to Home and Start New Project buttons
+
+5. **Shared Builder Components** (`src/components/builder/`)
    - **StepIndicator**: Progress bar showing current step and completion
    - **NavigationControls**: Back/Next buttons with step validation
 
-5. **Builder Types** (`src/types/builder.ts`)
+6. **Builder Types** (`src/types/builder.ts`)
    - Complete TypeScript definitions for all builder state
-   - Predefined constants: COLOR_SCHEMES, TYPOGRAPHY_PRESETS, DEFAULT_SECTIONS, SECTION_METADATA
-   - 5 site types, 4 design styles, 12 section types
+   - Predefined constants: COLOR_SCHEMES (8 per style), TYPOGRAPHY_PRESETS (8 per style), DEFAULT_SECTIONS, SECTION_METADATA
+   - **11 site types**: Portfolio, Online Store, Blog, Business, Landing Page, Restaurant, Nonprofit, Education, Events, Community, SaaS Product
+   - 4 design styles, 12 section types
+   - Color schemes include: Minimalist (Monochrome, Slate Blue, etc.), Bold (Crimson Night, Purple Power, etc.), Futuristic (Cyber Cyan, Matrix, etc.), Classic (Golden Brown, Navy & Cream, etc.)
+   - Typography presets include: Minimalist (Modern Sans, Geometric, etc.), Bold (Impact, Heavy Weight, etc.), Futuristic (Sci-Fi, Tech, etc.), Classic (Elegant Serif, Editorial, etc.)
 
-6. **Builder Page** (`src/app/builder/page.tsx`)
-   - Main wizard orchestrator
+7. **Builder Page** (`src/app/builder/page.tsx`)
+   - Main wizard orchestrator wrapping all steps in BuilderProvider
    - Renders appropriate step component based on currentStep
    - Validates user selections before allowing progression
-   - Shows BuilderHeader and progress indicator
+   - Shows BuilderHeader and progress indicator (hidden on welcome screen)
+   - Debug panel in development mode (shows step, site type, can proceed status)
 
 **Subpage Components:**
 - `SubpageHeader.tsx` - Reusable header for portfolio and other subpages (title, highlight, description, icon)
@@ -222,6 +281,20 @@ Images are stored in `/public/images/`:
    - Decorative elements hidden on small screens
    - Touch-friendly button sizes and spacing
 
+7. **Builder State Management Pattern**:
+   - All builder state lives in BuilderContext and auto-saves to localStorage
+   - Step validation happens before allowing progression (see `canProceed()` in builder/page.tsx)
+   - When selecting a design style, color and typography are auto-populated with first preset
+   - Named properties (like `name` in color schemes) are destructured out before saving to state
+   - State includes timestamps (`createdAt`, `updatedAt`) for tracking changes
+
+8. **AI Agent Pattern**:
+   - Uses keyword detection with regex patterns to identify user intent
+   - Provides contextual responses based on detected site type
+   - Integrates with parent component via callbacks (`onSiteTypeDetected`, `onUserInput`)
+   - Maintains conversation history in component state (not persisted)
+   - Auto-scrolls to latest message using refs and useEffect
+
 ## Styling Notes
 
 - **Theme**: Dark background (#0f172a) with red accents (#dc2626)
@@ -235,8 +308,57 @@ Images are stored in `/public/images/`:
 - Framer Motion is installed as a dependency but not actively used in current implementation
 - There are unused component files (Header.tsx, Footer.tsx) - may be from previous iterations
 - The home page (`page.tsx`) is a large single file with all sections inline - could be refactored into separate section components for better maintainability
+- Builder AI Agent uses simple regex pattern matching - ready for future Claude API integration for smarter responses
+- localStorage for builder state means data is lost on browser clear - Supabase integration planned for persistence
+
+## Working with the Website Builder
+
+When modifying or extending the website builder:
+
+1. **Adding a New Step**:
+   - Create step component in `src/components/builder/steps/`
+   - Update `STEP_NAMES` array in `src/app/builder/page.tsx`
+   - Add validation logic in `canProceed()` function
+   - Add case to `renderStep()` switch statement
+   - Update `BuilderState` type in `src/types/builder.ts` if new state needed
+
+2. **Adding New Design Styles or Presets**:
+   - Color schemes: Add to `COLOR_SCHEMES` object in `src/types/builder.ts`
+   - Typography: Add to `TYPOGRAPHY_PRESETS` object
+   - Always provide 8 options per style for consistency
+   - Include descriptive `name` property for display (will be stripped before saving to state)
+
+3. **Extending the AI Agent**:
+   - Response patterns live in `AGENT_RESPONSES` object
+   - Keyword detection in `detectSiteType()` function uses regex
+   - Add new patterns for more sophisticated detection
+   - For Claude API integration, replace pattern matching in `generateResponse()`
+
+4. **Builder Debug Mode**:
+   - Debug panel automatically appears in development mode (bottom-right)
+   - Shows current step, site type, description preview, validation status
+   - Remove or comment out in production builds
+   - Controlled by `process.env.NODE_ENV === 'development'` check
 
 ## Recent Updates (October 2025)
+
+**Vision Studio v2.0 - Latest Polish (October 19, 2025):**
+- ✅ **Replaced emoji icons with professional SVG icons** for all site types (briefcase, shopping bag, edit, building, lightning, etc.)
+- ✅ **Expanded site types from 5 to 11**: Added Restaurant, Nonprofit, Education, Events, Community, SaaS Product
+- ✅ **Condensed and optimized card layout**: 4-column grid (was 3), compact sizing for better density
+- ✅ **WelcomeStep fits on one page**: Reduced spacing, smaller elements, 4-column "How It Works" section
+- ✅ **Comprehensive mobile responsiveness**: All elements properly scaled for mobile, tablet, desktop
+- ✅ **Improved PurposeStep UX**:
+  - Mode toggle buttons stack vertically on mobile
+  - Browse section with helpful introduction text
+  - Enhanced selection confirmation card with visual hierarchy
+  - Professional SVG icons in rounded containers with color transitions
+- ✅ **Reduced orange intensity**: Switched to pure red (`rocket-red`) throughout, removed orange gradients
+- ✅ **Dark logo implementation**: Switched from white to dark logo version (109-logo-circle1.png) wrapped in white circle for visibility
+- ✅ **NOVA branding complete**: "Needs Oriented Vision Assistant" acronym displayed, fixed double greeting bug with useRef
+- ✅ **Cleaner messaging**: Tool correctly branded as "visualization" not "building" - Vision Studio v2.0.0
+
+## Recent Updates (Pre-Vision Studio Polish)
 
 **Main Site Polish Complete:**
 - ✅ Contact form integrated with full validation and states
@@ -257,21 +379,39 @@ Images are stored in `/public/images/`:
 - ConditionalNavigation wrapper hides main nav on `/builder` routes
 - Portfolio page uses SubpageHeader with icon to prevent overlap
 
-**Website Builder App (In Progress - Phase 1 ~40% Complete):**
+**Website Builder App (COMPLETE - Phase 4 ~95% Complete):**
 - ✅ Complete TypeScript type system with BuilderState, SiteType, DesignStyle, ColorScheme, Typography
 - ✅ Context API state management with localStorage persistence
 - ✅ 7-step wizard structure: Welcome → Purpose → Style → Features → Content → Preview → Submit
-- ✅ Steps 0-2 implemented (Welcome, Purpose selection, Style customization)
+- ✅ ALL STEPS FULLY IMPLEMENTED (0-6):
+  - Step 0: Welcome screen with feature highlights and CTA
+  - Step 1: Purpose selection with dual interface (AI chat + traditional form)
+  - Step 2: Style customization with 3-tab progressive interface (Design → Colors → Typography)
+  - Step 3: Features selection with drag-and-drop section organizer
+  - Step 4: Content upload with business info, logo, contact details, social links
+  - Step 5: Live preview with responsive viewport toggles and quick edit panel
+  - Step 6: Final submission form with contact info and success confirmation
+- ✅ AI Agent "Nova" chat interface for conversational requirement gathering
 - ✅ Dedicated BuilderHeader with exit/help buttons and auto-save indicator
 - ✅ StepIndicator component with progress bar
 - ✅ NavigationControls with validation at each step
-- ✅ 8 predefined color schemes (2 per design style)
-- ✅ 4 typography presets with auto-matching
-- 🚧 Steps 3-6 pending: Features selection, Content upload, Preview, Contact/CTA
-- 🚧 Live preview components pending
-- 🚧 Tailwind theme system for dynamic styling pending
-- 🚧 Supabase integration pending
-- 🚧 Claude AI summary generation pending
+- ✅ 32 predefined color schemes (8 per design style) with visual swatches
+- ✅ 32 typography presets (8 per design style) with live font previews
+- ✅ Auto-suggestion system based on keyword detection
+- ✅ Section selector with drag-and-drop reordering, enable/disable toggles
+- ✅ Default sections auto-populated based on site type
+- ✅ Image upload with preview, validation (file type, size), and base64 encoding
+- ✅ Brand color picker with hex input
+- ✅ Social media links (Facebook, Instagram, Twitter, LinkedIn)
+- ✅ Live website preview with dynamic theming from user selections
+- ✅ Responsive viewport toggles (desktop, tablet, mobile)
+- ✅ Quick edit panel in preview to jump back to any step
+- ✅ Final contact form with preferred contact method
+- ✅ Animated success confirmation screen with next steps
+- ✅ Debug panel for development (shows current state and validation)
+- ✅ Supabase integration for data persistence (fully implemented)
+- ✅ Email notification system with Resend (fully implemented)
+- 🚧 Claude AI API integration for enhanced suggestions (currently using pattern matching)
 
 **Navigation Flow:**
 - Home page → Portfolio link appears when scrolling
@@ -279,6 +419,75 @@ Images are stored in `/public/images/`:
 - Hero buttons → "Build Your Site" goes to builder, "View Our Work" goes to portfolio
 - Contact form accessible from nav bar or hero section
 - Builder app → Dedicated header with exit button to return home
+
+## Supabase & Email Integration
+
+### Database (Supabase)
+
+The website builder saves all submissions to a Supabase database.
+
+**Setup Required:**
+1. Follow instructions in `SUPABASE_SETUP.md`
+2. Create a Supabase project at supabase.com
+3. Run `supabase-schema.sql` in the SQL Editor
+4. Add credentials to `.env.local` (see `.env.example`)
+
+**Database Schema:**
+- Table: `saved_designs`
+- Stores: contact info, design choices, sections, content, full state
+- Includes: Row Level Security, triggers, indexes
+- Admin view: `design_submissions_summary`
+
+**API Endpoints:**
+- `POST /api/save-design` - Saves a completed design + sends emails
+- `GET /api/save-design?id=xxx` - Retrieves a design by ID
+
+**Client Libraries:**
+- `@supabase/supabase-js` for database operations
+- Client utility: `src/lib/supabase.ts`
+- Service client for backend (uses service role key)
+- Public client for frontend (uses anon key)
+
+### Email Notifications (Resend)
+
+The builder sends professional HTML emails for submissions.
+
+**Setup Required:**
+1. Follow instructions in `EMAIL_SETUP.md`
+2. Create Resend account at resend.com (free tier: 3,000/month)
+3. Get API key from Resend dashboard
+4. Add to `.env.local`: RESEND_API_KEY, RESEND_FROM_EMAIL, RESEND_ADMIN_EMAIL
+
+**Email Templates:**
+1. **User Confirmation** (`src/lib/email-templates.ts`)
+   - Sent to user who submitted design
+   - Design summary with all selections
+   - "What Happens Next" 3-step roadmap
+   - Reference number for tracking
+   - Professional HTML + plain text versions
+
+2. **Admin Notification** (`src/lib/email-templates.ts`)
+   - Sent to studio team
+   - Complete client contact information
+   - Full project details and selections
+   - Quick links to Supabase dashboard
+   - Reply-to set as customer email
+
+**Email Service:** (`src/lib/email.ts`)
+- `sendConfirmationEmail()` - User confirmation
+- `sendAdminNotification()` - Team alert
+- `sendBothEmails()` - Parallel sending
+- Non-blocking: Email failures don't break submission
+- Logs results for debugging
+
+**Data Flow:**
+1. User completes all 7 wizard steps
+2. SubmitStep calls `/api/save-design` API
+3. API validates data and inserts into Supabase
+4. API triggers email sending (background, non-blocking)
+5. User receives confirmation email
+6. Admin receives notification email
+7. Returns design ID and success screen
 
 ## Roadmap / Next Steps
 
@@ -305,3 +514,4 @@ The following features are planned for future development:
    - Personalized project scope and pricing estimates
    - Progressive disclosure to avoid overwhelming non-technical users
    - Could be a separate route (e.g., `/launch`) or modal overlay
+- let create this as a placeholder with all steps created before we update

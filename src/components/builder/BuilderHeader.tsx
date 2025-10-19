@@ -2,15 +2,33 @@
 
 import React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { getBuilderVersion } from '@/lib/versions'
+import { useBuilder } from '@/context/BuilderContext'
 
 export default function BuilderHeader() {
+  const version = getBuilderVersion()
+  const router = useRouter()
+  const { resetBuilder } = useBuilder()
+
+  const handleReset = () => {
+    if (confirm('Are you sure you want to reset? This will clear all your progress.')) {
+      // Clear all builder state
+      resetBuilder()
+      console.log('🔄 Builder reset - returning to start')
+    }
+  }
+
+  const handleLogoClick = () => {
+    router.push('/')
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-dark-bg/95 backdrop-blur-md border-b border-dark-lighter">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
-          <Link href="/" className="flex items-center space-x-3 group">
+          <button onClick={handleLogoClick} className="flex items-center space-x-3 group">
             <Image
               src="/images/109-logo-circle-white2.png"
               alt="1Zero9 Studio"
@@ -22,9 +40,9 @@ export default function BuilderHeader() {
               <h1 className="text-lg font-bold text-text-light group-hover:text-rocket-red transition-colors">
                 1Zero9 Studio
               </h1>
-              <p className="text-xs text-text-gray">Website Builder</p>
+              <p className="text-xs text-text-gray">Vision Studio <span className="text-rocket-red/70">v{version}</span></p>
             </div>
-          </Link>
+          </button>
 
           {/* Navigation */}
           <div className="flex items-center space-x-4">
@@ -43,16 +61,17 @@ export default function BuilderHeader() {
               </svg>
             </button>
 
-            {/* Exit to Home */}
-            <Link
-              href="/"
-              className="flex items-center space-x-2 px-4 py-2 bg-dark-card hover:bg-dark-lighter border border-dark-lighter rounded-lg transition-all duration-300"
+            {/* Reset Builder */}
+            <button
+              onClick={handleReset}
+              className="flex items-center space-x-2 px-4 py-2 bg-dark-card hover:bg-dark-lighter border border-dark-lighter rounded-lg transition-all duration-300 hover:border-rocket-red/30"
+              title="Reset and start over"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span className="hidden sm:inline text-sm">Exit</span>
-            </Link>
+              <span className="hidden sm:inline text-sm">Reset</span>
+            </button>
           </div>
         </div>
       </div>

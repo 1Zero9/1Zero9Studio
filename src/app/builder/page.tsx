@@ -7,6 +7,10 @@ import NavigationControls from '@/components/builder/NavigationControls'
 import WelcomeStep from '@/components/builder/steps/WelcomeStep'
 import PurposeStep from '@/components/builder/steps/PurposeStep'
 import StyleStep from '@/components/builder/steps/StyleStep'
+import FeaturesStep from '@/components/builder/steps/FeaturesStep'
+import ContentStep from '@/components/builder/steps/ContentStep'
+import PreviewStep from '@/components/builder/steps/PreviewStep'
+import SubmitStep from '@/components/builder/steps/SubmitStep'
 
 const STEP_NAMES = ['Welcome', 'Purpose', 'Style', 'Features', 'Content', 'Preview', 'Submit']
 
@@ -17,9 +21,13 @@ function BuilderContent() {
     setCurrentStep,
     updateState,
     setSiteType,
+    setPurposeDescription,
     setDesignStyle,
     setColorScheme,
     setTypography,
+    updateSections,
+    updateUserContent,
+    updateContactInfo,
   } = useBuilder()
 
   const handleNext = () => {
@@ -43,7 +51,7 @@ function BuilderContent() {
       case 2:
         return state.designStyle !== null && state.colorScheme !== null && state.typography !== null
       case 3:
-        return state.selectedSections.length > 0
+        return state.selectedSections.some(section => section.enabled)
       case 4:
         return !!state.userContent.businessName && !!state.userContent.tagline
       case 5:
@@ -67,7 +75,14 @@ function BuilderContent() {
           />
         )
       case 1:
-        return <PurposeStep selectedType={state.siteType} onSelect={setSiteType} />
+        return (
+          <PurposeStep
+            selectedType={state.siteType}
+            purposeDescription={state.purposeDescription}
+            onSelect={setSiteType}
+            onDescriptionChange={setPurposeDescription}
+          />
+        )
       case 2:
         return (
           <StyleStep
@@ -81,43 +96,33 @@ function BuilderContent() {
         )
       case 3:
         return (
-          <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-            <h2 className="text-4xl font-black mb-4">
-              <span className="text-text-light">FEATURES STEP </span>
-              <span className="text-rocket-red">COMING SOON</span>
-            </h2>
-            <p className="text-text-gray">This step will let you select website sections</p>
-          </div>
+          <FeaturesStep
+            siteType={state.siteType}
+            selectedSections={state.selectedSections}
+            onUpdateSections={updateSections}
+          />
         )
       case 4:
         return (
-          <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-            <h2 className="text-4xl font-black mb-4">
-              <span className="text-text-light">CONTENT STEP </span>
-              <span className="text-rocket-red">COMING SOON</span>
-            </h2>
-            <p className="text-text-gray">This step will let you upload your content</p>
-          </div>
+          <ContentStep
+            userContent={state.userContent}
+            onUpdateContent={updateUserContent}
+          />
         )
       case 5:
         return (
-          <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-            <h2 className="text-4xl font-black mb-4">
-              <span className="text-text-light">PREVIEW STEP </span>
-              <span className="text-rocket-red">COMING SOON</span>
-            </h2>
-            <p className="text-text-gray">This step will show your live preview</p>
-          </div>
+          <PreviewStep
+            state={state}
+            onEditStep={setCurrentStep}
+          />
         )
       case 6:
         return (
-          <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-            <h2 className="text-4xl font-black mb-4">
-              <span className="text-text-light">SUBMIT STEP </span>
-              <span className="text-rocket-red">COMING SOON</span>
-            </h2>
-            <p className="text-text-gray">This step will capture your contact info</p>
-          </div>
+          <SubmitStep
+            contactInfo={state.contactInfo}
+            builderState={state}
+            onUpdateContact={updateContactInfo}
+          />
         )
       default:
         return null
@@ -162,6 +167,7 @@ function BuilderContent() {
           <h4 className="font-bold text-text-light mb-2">Debug Info</h4>
           <p>Step: {currentStep} ({STEP_NAMES[currentStep]})</p>
           <p>Site Type: {state.siteType || 'Not set'}</p>
+          <p>Purpose: {state.purposeDescription?.substring(0, 30) || 'Not set'}</p>
           <p>Design Style: {state.designStyle || 'Not set'}</p>
           <p>Can Proceed: {canProceed() ? 'Yes' : 'No'}</p>
         </div>

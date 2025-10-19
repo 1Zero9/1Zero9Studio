@@ -56,8 +56,16 @@ export default function StyleStep({
   const handleStyleSelect = (style: DesignStyle) => {
     onSelectStyle(style)
     // Auto-select first color scheme and typography for this style
-    onSelectColorScheme(COLOR_SCHEMES[style][0])
-    onSelectTypography(TYPOGRAPHY_PRESETS[style])
+    const schemes = COLOR_SCHEMES[style]
+    const typos = TYPOGRAPHY_PRESETS[style]
+    if (schemes && schemes[0]) {
+      const { name, ...schemeWithoutName } = schemes[0]
+      onSelectColorScheme(schemeWithoutName)
+    }
+    if (typos && typos[0]) {
+      const { name, ...typoWithoutName } = typos[0]
+      onSelectTypography(typoWithoutName)
+    }
     // Move to colors tab
     setActiveTab('colors')
   }
@@ -164,49 +172,62 @@ export default function StyleStep({
             <p className="text-center text-text-gray mb-8">
               Choose a color palette for your {selectedStyle} design
             </p>
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {COLOR_SCHEMES[selectedStyle].map((scheme, index) => (
-                <button
-                  key={index}
-                  onClick={() => onSelectColorScheme(scheme)}
-                  className={`p-6 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
-                    selectedColorScheme === scheme
-                      ? 'border-rocket-red shadow-lg shadow-rocket-red/20'
-                      : 'border-dark-lighter hover:border-rocket-red/50'
-                  }`}
-                >
-                  <div className="flex space-x-2 mb-4">
-                    <div
-                      className="w-16 h-16 rounded-lg shadow-md"
-                      style={{ backgroundColor: scheme.primary }}
-                    />
-                    <div
-                      className="w-16 h-16 rounded-lg shadow-md"
-                      style={{ backgroundColor: scheme.secondary }}
-                    />
-                    <div
-                      className="w-16 h-16 rounded-lg shadow-md"
-                      style={{ backgroundColor: scheme.accent }}
-                    />
-                  </div>
-                  <div className="text-left space-y-1 text-sm">
-                    <p className="text-text-gray">
-                      <span className="font-semibold">Primary:</span> {scheme.primary}
-                    </p>
-                    <p className="text-text-gray">
-                      <span className="font-semibold">Accent:</span> {scheme.accent}
-                    </p>
-                  </div>
-                  {selectedColorScheme === scheme && (
-                    <div className="mt-4 flex items-center space-x-2 text-rocket-red text-sm font-semibold">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Selected</span>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {COLOR_SCHEMES[selectedStyle].map((scheme, index) => {
+                const { name, ...schemeColors } = scheme
+                const isSelected = selectedColorScheme?.primary === scheme.primary
+                return (
+                  <button
+                    key={index}
+                    onClick={() => onSelectColorScheme(schemeColors)}
+                    className={`bg-dark-card border-2 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
+                      isSelected
+                        ? 'border-rocket-red shadow-2xl'
+                        : 'border-dark-lighter hover:border-text-gray'
+                    }`}
+                  >
+                    {/* Color Swatch Preview */}
+                    <div className="h-32 grid grid-cols-2 grid-rows-2">
+                      <div style={{ backgroundColor: scheme.primary }} className="relative group">
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white">
+                          Primary
+                        </span>
+                      </div>
+                      <div style={{ backgroundColor: scheme.secondary }} className="relative group">
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white">
+                          Secondary
+                        </span>
+                      </div>
+                      <div style={{ backgroundColor: scheme.accent }} className="relative group">
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white">
+                          Accent
+                        </span>
+                      </div>
+                      <div style={{ backgroundColor: scheme.background }} className="relative group border-l border-t border-dark-lighter">
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white">
+                          Background
+                        </span>
+                      </div>
                     </div>
-                  )}
-                </button>
-              ))}
+
+                    {/* Scheme Name */}
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold text-text-light mb-1">{name}</h3>
+                      <div className="flex gap-2 flex-wrap">
+                        <span className="text-xs font-mono text-text-gray">{scheme.primary}</span>
+                      </div>
+                      {isSelected && (
+                        <div className="mt-3 flex items-center justify-center text-rocket-red text-sm font-medium">
+                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Selected
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -215,36 +236,73 @@ export default function StyleStep({
         {activeTab === 'typography' && selectedStyle && (
           <div className="animate-fadeIn">
             <p className="text-center text-text-gray mb-8">
-              Font pairing optimized for your {selectedStyle} style
+              Choose a font pairing for your {selectedStyle} style
             </p>
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-dark-card/50 border border-dark-lighter rounded-xl p-8">
-                <div className="space-y-6">
-                  <div>
-                    <p className="text-text-gray text-sm mb-2">Heading Font:</p>
-                    <h3
-                      className="text-4xl font-bold text-text-light"
-                      style={{ fontFamily: selectedTypography?.headingFont || 'Inter' }}
-                    >
-                      {selectedTypography?.headingFont || 'Inter'}
-                    </h3>
-                  </div>
-                  <div>
-                    <p className="text-text-gray text-sm mb-2">Body Font:</p>
-                    <p
-                      className="text-lg text-text-gray"
-                      style={{ fontFamily: selectedTypography?.bodyFont || 'Inter' }}
-                    >
-                      {selectedTypography?.bodyFont || 'Inter'} - The quick brown fox jumps over the lazy dog.
-                    </p>
-                  </div>
-                  <div className="bg-dark-bg/50 rounded-lg p-4">
-                    <p className="text-xs text-text-gray">
-                      This combination has been carefully selected to match your {selectedStyle} aesthetic
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="grid sm:grid-cols-2 gap-6">
+              {TYPOGRAPHY_PRESETS[selectedStyle].map((typo, index) => {
+                const { name, ...typoFonts } = typo
+                const isSelected = selectedTypography?.headingFont === typo.headingFont
+                return (
+                  <button
+                    key={index}
+                    onClick={() => onSelectTypography(typoFonts)}
+                    className={`bg-dark-card border-2 rounded-xl p-6 text-left transition-all duration-300 hover:scale-[1.02] ${
+                      isSelected
+                        ? 'border-rocket-red shadow-2xl'
+                        : 'border-dark-lighter hover:border-text-gray'
+                    }`}
+                  >
+                    {/* Font Preview */}
+                    <div className="mb-4 pb-4 border-b border-dark-lighter">
+                      <div className="mb-3">
+                        <p className="text-xs text-text-gray mb-1">Heading Font</p>
+                        <h3
+                          className="text-3xl font-bold text-text-light"
+                          style={{ fontFamily: typo.headingFont }}
+                        >
+                          The Quick Brown Fox
+                        </h3>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-gray mb-1">Body Font</p>
+                        <p
+                          className="text-base text-text-gray"
+                          style={{ fontFamily: typo.bodyFont }}
+                        >
+                          The quick brown fox jumps over the lazy dog. Typography matters.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Typography Info */}
+                    <div>
+                      <h4 className="text-lg font-bold text-text-light mb-2">{name}</h4>
+                      <div className="flex gap-4 text-sm text-text-gray">
+                        <div>
+                          <span className="block text-xs text-text-gray/70">Heading</span>
+                          <span className="font-medium">{typo.headingFont}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs text-text-gray/70">Body</span>
+                          <span className="font-medium">{typo.bodyFont}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs text-text-gray/70">Scale</span>
+                          <span className="font-medium capitalize">{typo.scale}</span>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className="mt-4 flex items-center text-rocket-red text-sm font-medium">
+                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Selected
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
