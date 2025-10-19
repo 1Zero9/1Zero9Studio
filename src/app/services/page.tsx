@@ -1,3 +1,5 @@
+'use client'
+
 export default function Services() {
   return (
     <div className="py-16 px-4">

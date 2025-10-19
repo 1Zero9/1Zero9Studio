@@ -2,14 +2,29 @@ import { Resend } from 'resend'
 import { BuilderState } from '@/types/builder'
 import { generateUserConfirmationEmail, generateAdminNotificationEmail } from './email-templates'
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 const ADMIN_EMAIL = process.env.RESEND_ADMIN_EMAIL || 'your-email@example.com'
 
+// Lazy initialize Resend only when needed (allows build without API key)
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY
+
+  if (!apiKey) {
+    return null
+  }
+
+  return new Resend(apiKey)
+}
+
 export async function sendConfirmationEmail(state: BuilderState, designId: string) {
   try {
+    const resend = getResendClient()
+
+    if (!resend) {
+      console.log('⚠️  Resend not configured - skipping confirmation email')
+      return { success: false, error: 'Resend not configured' }
+    }
+
     const { subject, html, text } = generateUserConfirmationEmail(state, designId)
 
     const { data, error } = await resend.emails.send({
@@ -37,6 +52,13 @@ export async function sendConfirmationEmail(state: BuilderState, designId: strin
 
 export async function sendAdminNotification(state: BuilderState, designId: string) {
   try {
+    const resend = getResendClient()
+
+    if (!resend) {
+      console.log('⚠️  Resend not configured - skipping admin notification')
+      return { success: false, error: 'Resend not configured' }
+    }
+
     const { subject, html, text } = generateAdminNotificationEmail(state, designId)
 
     const { data, error } = await resend.emails.send({
