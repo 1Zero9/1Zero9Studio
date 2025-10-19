@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
       // Get server-side Supabase client
       const supabase = getServiceSupabase()
 
+      if (!supabase) {
+        return NextResponse.json(
+          { error: 'Supabase client not configured' },
+          { status: 500 }
+        )
+      }
+
       // Prepare data for insertion
       const designData = {
       // Contact information
@@ -152,6 +159,13 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getServiceSupabase()
+
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase not configured' },
+        { status: 503 }
+      )
+    }
 
     const { data, error } = await supabase
       .from('saved_designs')
