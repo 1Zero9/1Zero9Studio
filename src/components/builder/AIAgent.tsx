@@ -50,6 +50,36 @@ const AGENT_RESPONSES = {
       "Great! What's the main action you want visitors to take?",
       "Excellent! Is this for a product launch, event registration, or lead generation?",
     ],
+    restaurant: [
+      "A restaurant website - delicious! Will you need online ordering or just menu display?",
+      "Great! Do you want reservation booking integrated?",
+      "Perfect! Will you showcase your location, hours, and chef's specials?",
+    ],
+    nonprofit: [
+      "A nonprofit site - wonderful mission! What cause are you supporting?",
+      "Excellent! Will you need donation processing and volunteer signup?",
+      "Great! Do you want to highlight impact stories and upcoming events?",
+    ],
+    education: [
+      "An education site - fantastic! Are you offering courses, training, or tutorials?",
+      "Great! Will students need accounts to track their progress?",
+      "Perfect! Do you want video lessons, quizzes, or downloadable resources?",
+    ],
+    events: [
+      "An events site - exciting! Is this for conferences, concerts, or community gatherings?",
+      "Great! Will you need ticket sales and attendee registration?",
+      "Perfect! Do you want a schedule, speaker profiles, or venue information?",
+    ],
+    community: [
+      "A community site - amazing! What brings your members together?",
+      "Great! Will you need forums, member profiles, or private messaging?",
+      "Perfect! Do you want membership tiers or subscription options?",
+    ],
+    saas: [
+      "A SaaS product site - innovative! What problem does your software solve?",
+      "Great! Will you need pricing tiers and subscription management?",
+      "Perfect! Do you want feature demos, API docs, or a customer dashboard?",
+    ],
   },
   encouragement: [
     "That's really interesting! Tell me more...",
@@ -107,6 +137,36 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
   const detectSiteType = (text: string): SiteType | null => {
     const lowerText = text.toLowerCase()
 
+    // Restaurant keywords (check first to avoid conflicts with business)
+    if (/(restaurant|food|menu|dining|cafe|eatery|chef|cuisine|reserv)/i.test(lowerText)) {
+      return 'restaurant'
+    }
+
+    // Nonprofit keywords
+    if (/(nonprofit|non-profit|charity|donation|cause|volunteer|mission|foundation)/i.test(lowerText)) {
+      return 'nonprofit'
+    }
+
+    // Education keywords
+    if (/(education|course|training|learn|teach|school|tutorial|academy|student)/i.test(lowerText)) {
+      return 'education'
+    }
+
+    // Events keywords
+    if (/(event|conference|concert|ticket|gathering|festival|meetup|summit)/i.test(lowerText)) {
+      return 'events'
+    }
+
+    // Community keywords
+    if (/(community|forum|member|social|group|network|club)/i.test(lowerText)) {
+      return 'community'
+    }
+
+    // SaaS keywords
+    if (/(saas|software|app|platform|subscription|api|service|cloud)/i.test(lowerText)) {
+      return 'saas'
+    }
+
     // Portfolio keywords
     if (/(portfolio|showcase|work|design|photo|creative|artist|freelanc)/i.test(lowerText)) {
       return 'portfolio'
@@ -123,12 +183,12 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
     }
 
     // Business keywords
-    if (/(business|company|agency|service|professional|consult|corporate)/i.test(lowerText)) {
+    if (/(business|company|agency|professional|consult|corporate)/i.test(lowerText)) {
       return 'business'
     }
 
     // Landing keywords
-    if (/(landing|launch|campaign|event|convert|promote|single page)/i.test(lowerText)) {
+    if (/(landing|launch|campaign|convert|promote|single page)/i.test(lowerText)) {
       return 'landing'
     }
 

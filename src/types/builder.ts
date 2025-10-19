@@ -576,6 +576,12 @@ export const DEFAULT_SECTIONS: Record<SiteType, SectionType[]> = {
   blog: ['hero', 'blog', 'about', 'newsletter', 'contact'],
   business: ['hero', 'about', 'services', 'team', 'testimonials', 'contact'],
   landing: ['hero', 'services', 'testimonials', 'contact'],
+  restaurant: ['hero', 'about', 'gallery', 'testimonials', 'contact'],
+  nonprofit: ['hero', 'about', 'services', 'testimonials', 'newsletter', 'contact'],
+  education: ['hero', 'about', 'services', 'testimonials', 'contact'],
+  events: ['hero', 'about', 'gallery', 'contact'],
+  community: ['hero', 'about', 'testimonials', 'newsletter', 'contact'],
+  saas: ['hero', 'about', 'services', 'testimonials', 'contact'],
 }
 
 // Section metadata
