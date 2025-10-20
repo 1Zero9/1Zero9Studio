@@ -122,7 +122,11 @@ The project uses Next.js App Router with the following route structure:
 1. **BuilderHeader** (`src/components/builder/BuilderHeader.tsx`)
    - Fixed header for builder pages only
    - Logo with link back to home
-   - Auto-save indicator, help button, exit button
+   - Integrated horizontal step indicator (1-7) showing progress
+   - Color-coded steps: completed (accent), current (rocket-red with ring), upcoming (gray)
+   - Auto-save indicator, help button, reset button
+   - Reset button highlights when saved data exists
+   - Session restoration banner when returning to builder
    - Replaces main navigation when on `/builder` routes
 
 2. **BuilderContext** (`src/context/BuilderContext.tsx`)
@@ -141,12 +145,13 @@ The project uses Next.js App Router with the following route structure:
 
 4. **Wizard Step Components** (`src/components/builder/steps/`)
    - **WelcomeStep**: Landing page with feature highlights and "Start Building" button
-   - **PurposeStep**: Dual-interface for site type selection:
-     - Left: AI Agent chat interface with Nova
-     - Right: Traditional form with text input + category buttons
-     - Auto-suggests site type based on keywords in user input
-     - Quick suggestion buttons for common use cases
-     - Live character counter and AI hints
+   - **PurposeStep**: Centered AI-first interface for site type selection:
+     - ARIA chat interface centered (max-width 768px)
+     - Single-focus, distraction-free layout for data gathering
+     - Auto-suggests site type based on keywords in conversation
+     - Selection status appears at bottom when type detected
+     - "Browse all options" link for users who prefer traditional selection
+     - Vertical and horizontal centering for optimal focus
    - **StyleStep**: 3-tab progressive interface:
      - Tab 1: Design Style selection (Minimalist, Bold, Futuristic, Classic)
      - Tab 2: Color schemes (8 palettes per style with color swatches)
@@ -170,15 +175,19 @@ The project uses Next.js App Router with the following route structure:
      - Contact info: email, phone
      - Social media links: Facebook, Instagram, Twitter, LinkedIn
      - Real-time validation feedback with success/warning messages
-   - **PreviewStep**: Live website preview with dynamic rendering:
-     - Renders actual website sections based on user selections
-     - Applies user's color scheme, typography, and branding
-     - Responsive viewport toggles: desktop (full width), tablet (768px), mobile (375px)
-     - Smooth transitions between viewport sizes
-     - Quick edit panel (fixed bottom-right) to jump to any previous step
-     - Shows logo, business name, tagline, contact info, social links
-     - Conditionally renders sections based on enabled state
-     - Footer with business name and 1Zero9 Studio attribution
+   - **PreviewStep**: Project summary with tech stack showcase:
+     - "YOU'RE ALMOST DONE!" CTA at top
+     - **8-item Enterprise Tech Stack visualization**:
+       - Two-column layout (4 items per column)
+       - Stack: Next.js 15, React 19, Claude AI, Supabase, PostgreSQL, Vercel Edge, TypeScript, Tailwind CSS
+       - Animated downward arrows between boxes (2-3 bounce every 1.5s)
+       - Green terminal-style theme
+       - Boxes pulse when arrows are active
+       - Professional "wow factor" before submission
+     - Quick project summary (site type, design style, section count)
+     - "What Happens Next" roadmap (submit → 24hr response → 7-14 day build)
+     - Quick edit panel to jump back to any previous step
+     - Encourages final submission
    - **SubmitStep**: Final submission and confirmation:
      - Contact form: name (required), email (required), phone (optional)
      - Preferred contact method selector: Email, Phone, Either
@@ -342,6 +351,34 @@ When modifying or extending the website builder:
 
 ## Recent Updates (October 2025)
 
+**Vision Studio v2.1 - Customer-First UX Redesign (October 20, 2025):**
+- ✅ **Step Indicator in BuilderHeader**: Horizontal progress bar (1-7) integrated into header
+  - Shows current step in rocket-red with ring effect
+  - Completed steps in golden accent color
+  - Upcoming steps in gray
+  - Hidden on mobile for cleaner layout
+  - Removed separate StepIndicator component
+- ✅ **PurposeStep Centered Layout**: Complete redesign for focused data gathering
+  - Removed split-screen and browse grid
+  - Centered ARIA chat interface (max-width 768px)
+  - Single-purpose, distraction-free layout
+  - Vertical and horizontal centering
+  - "Browse all options" link at bottom for users who need it
+  - Selection status shows at bottom of chat when detected
+- ✅ **Tech Stack Visualization**: 8-item enterprise stack with animated arrows
+  - Moved from PurposeStep to PreviewStep (final wow factor)
+  - Two-column layout (4 items per column)
+  - Stack: Next.js 15, React 19, Claude AI, Supabase, PostgreSQL, Vercel Edge, TypeScript, Tailwind CSS
+  - Downward bouncing arrows between boxes
+  - 2-3 arrows randomly animate every 1.5 seconds
+  - Green terminal-style theme
+  - Boxes pulse when arrows are active
+- ✅ **MainApp Simplification**: Landing page disabled for development (faster iteration)
+- ✅ **Customer-First Philosophy**: Prioritizing lead generation and data gathering over technical showcasing
+- ✅ **Created Reusable Components**:
+  - `ArchitectureDiagram.tsx` - Full system architecture visualization (for future use)
+  - `TechStackVisualization.tsx` - Standalone tech stack component (for future use)
+
 **Vision Studio v2.0 - Latest Polish (October 19, 2025):**
 - ✅ **Replaced emoji icons with professional SVG icons** for all site types (briefcase, shopping bag, edit, building, lightning, etc.)
 - ✅ **Expanded site types from 5 to 11**: Added Restaurant, Nonprofit, Education, Events, Community, SaaS Product
@@ -355,7 +392,7 @@ When modifying or extending the website builder:
   - Professional SVG icons in rounded containers with color transitions
 - ✅ **Reduced orange intensity**: Switched to pure red (`rocket-red`) throughout, removed orange gradients
 - ✅ **Dark logo implementation**: Switched from white to dark logo version (109-logo-circle1.png) wrapped in white circle for visibility
-- ✅ **NOVA branding complete**: "Needs Oriented Vision Assistant" acronym displayed, fixed double greeting bug with useRef
+- ✅ **ARIA branding complete**: "Artificial Requirements & Intelligence Assistant" acronym
 - ✅ **Cleaner messaging**: Tool correctly branded as "visualization" not "building" - Vision Studio v2.0.0
 
 ## Recent Updates (Pre-Vision Studio Polish)
