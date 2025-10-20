@@ -131,22 +131,15 @@ function BuilderContent() {
 
   return (
     <div className="min-h-screen bg-dark-bg">
-      {/* Header */}
-      <BuilderHeader />
-
-      {/* Step Indicator (hide on welcome screen) */}
-      {currentStep > 0 && (
-        <div className="pt-20">
-          <StepIndicator
-            currentStep={currentStep - 1}
-            totalSteps={STEP_NAMES.length - 1}
-            stepNames={STEP_NAMES.slice(1)}
-          />
-        </div>
-      )}
+      {/* Header with Step Indicator */}
+      <BuilderHeader
+        currentStep={currentStep > 0 ? currentStep : undefined}
+        totalSteps={currentStep > 0 ? STEP_NAMES.length : undefined}
+        stepNames={currentStep > 0 ? STEP_NAMES : undefined}
+      />
 
       {/* Main Content */}
-      <div className={`pb-32 ${currentStep === 0 ? 'pt-20' : ''}`}>{renderStep()}</div>
+      <div className={`pb-32 pt-20`}>{renderStep()}</div>
 
       {/* Navigation Controls (hide on welcome screen) */}
       {currentStep > 0 && (

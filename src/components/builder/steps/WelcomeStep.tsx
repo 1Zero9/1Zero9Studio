@@ -28,16 +28,16 @@ export default function WelcomeStep({ onStart }: WelcomeStepProps) {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-black leading-tight">
-            <span className="text-text-light">VISUALIZE YOUR</span>
+            <span className="text-text-light">DESIGN YOUR</span>
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rocket-red to-rocket-red">
-              DREAM WEBSITE
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rocket-red to-accent">
+              DIGITAL FUTURE
             </span>
           </h1>
 
           <p className="text-base md:text-lg text-text-gray max-w-2xl mx-auto">
-            Plan and visualize your perfect website with our Vision Studio.
-            1Zero9's team will then build it for you using cutting-edge AI development.
+            Plan your professional website with our Vision Studio.
+            Our team builds enterprise-grade sites using AI-powered development.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-xs md:text-sm text-text-gray pt-2">
@@ -51,7 +51,7 @@ export default function WelcomeStep({ onStart }: WelcomeStepProps) {
               <svg className="w-4 h-4 md:w-5 md:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>NOVA AI Guidance</span>
+              <span>ARIA AI Guidance</span>
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 md:w-5 md:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
@@ -77,7 +77,7 @@ export default function WelcomeStep({ onStart }: WelcomeStepProps) {
               </div>
               <h3 className="text-base font-bold text-text-light mb-1">Share Your Vision</h3>
               <p className="text-xs text-text-gray">
-                Tell us what you need with NOVA AI
+                Tell us what you need with ARIA AI
               </p>
             </div>
 
@@ -132,7 +132,7 @@ export default function WelcomeStep({ onStart }: WelcomeStepProps) {
           </button>
 
           <p className="text-text-gray text-xs md:text-sm">
-            Join <span className="text-rocket-red font-semibold">300+</span> businesses who've trusted 1Zero9 Studio
+            Trusted by businesses worldwide for professional web development
           </p>
         </div>
 

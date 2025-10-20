@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BuilderState } from '@/types/builder'
 
 interface PreviewStepProps {
@@ -8,324 +8,188 @@ interface PreviewStepProps {
   onEditStep: (step: number) => void
 }
 
-type ViewportSize = 'desktop' | 'tablet' | 'mobile'
+const TECH_STACK = [
+  { name: 'Next.js 15', color: 'green' },
+  { name: 'React 19', color: 'blue' },
+  { name: 'Claude AI', color: 'purple' },
+  { name: 'Supabase', color: 'green' },
+  { name: 'PostgreSQL', color: 'blue' },
+  { name: 'Vercel Edge', color: 'purple' },
+  { name: 'TypeScript', color: 'blue' },
+  { name: 'Tailwind CSS', color: 'green' },
+]
 
 export default function PreviewStep({ state, onEditStep }: PreviewStepProps) {
-  const [viewport, setViewport] = useState<ViewportSize>('desktop')
+  const [activeArrows, setActiveArrows] = useState<Set<number>>(new Set())
 
-  const viewportStyles = {
-    desktop: 'w-full h-full',
-    tablet: 'w-[768px] h-[1024px] mx-auto',
-    mobile: 'w-[375px] h-[667px] mx-auto',
-  }
+  // Animate arrows
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveArrows(prev => {
+        const newSet = new Set<number>()
+        // Randomly activate 2-3 arrows
+        const numArrows = Math.floor(Math.random() * 2) + 2
+        for (let i = 0; i < numArrows; i++) {
+          const randomIndex = Math.floor(Math.random() * (TECH_STACK.length - 1))
+          newSet.add(randomIndex)
+        }
+        return newSet
+      })
+    }, 1500)
 
-  // Apply user's color scheme or use defaults
-  const colors = state.colorScheme || {
-    primary: '#dc2626',
-    secondary: '#0f172a',
-    accent: '#fbbf24',
-    background: '#ffffff',
-    text: '#1a1a1a',
-  }
-
-  // Override with brand color if provided
-  const primaryColor = state.userContent.primaryColor || colors.primary
-
-  const typography = state.typography || {
-    headingFont: 'Poppins',
-    bodyFont: 'Inter',
-    scale: 'medium' as const,
-  }
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="min-h-screen bg-dark-bg">
-      {/* Header Controls */}
-      <div className="sticky top-0 z-50 bg-dark-card border-b-2 border-dark-lighter">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-black text-text-light">
-                <span className="text-rocket-red">PREVIEW</span> YOUR SITE
-              </h2>
-              <p className="text-sm text-text-gray">See how your website will look</p>
-            </div>
+      <div className="max-w-6xl mx-auto px-4 py-8">
 
-            {/* Viewport Toggles */}
-            <div className="flex items-center gap-2 bg-dark-bg rounded-lg p-1">
-              <button
-                onClick={() => setViewport('desktop')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  viewport === 'desktop'
-                    ? 'bg-rocket-red text-white'
-                    : 'text-text-gray hover:text-text-light'
-                }`}
-                title="Desktop view"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewport('tablet')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  viewport === 'tablet'
-                    ? 'bg-rocket-red text-white'
-                    : 'text-text-gray hover:text-text-light'
-                }`}
-                title="Tablet view"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewport('mobile')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  viewport === 'mobile'
-                    ? 'bg-rocket-red text-white'
-                    : 'text-text-gray hover:text-text-light'
-                }`}
-                title="Mobile view"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              </button>
-            </div>
-          </div>
+        {/* Main CTA */}
+        <div className="text-center mb-8 animate-fadeIn">
+          <h2 className="text-3xl md:text-4xl font-black mb-4">
+            <span className="text-text-light">YOU'RE </span>
+            <span className="text-rocket-red">ALMOST DONE!</span>
+          </h2>
+          <p className="text-lg text-text-gray max-w-2xl mx-auto">
+            Click <strong className="text-accent">Next</strong> to submit your project details and we'll contact you within 24 hours
+          </p>
         </div>
-      </div>
 
-      {/* Preview Frame */}
-      <div className="py-8 px-4 overflow-auto">
-        <div
-          className={`${viewportStyles[viewport]} bg-white rounded-xl shadow-2xl overflow-auto border-4 border-dark-lighter transition-all duration-300`}
-          style={{
-            minHeight: viewport === 'desktop' ? '600px' : undefined,
-            maxHeight: viewport === 'desktop' ? 'none' : undefined,
-          }}
-        >
-          {/* Rendered Preview */}
-          <div style={{ fontFamily: typography.bodyFont }}>
-            {/* Hero Section */}
-            {state.selectedSections.some(s => s.type === 'hero' && s.enabled) && (
-              <section
-                className="relative py-20 px-6 text-center"
-                style={{
-                  backgroundColor: colors.background,
-                  color: colors.text,
-                  backgroundImage: `linear-gradient(135deg, ${colors.background} 0%, ${colors.secondary}20 100%)`,
-                }}
-              >
-                {state.userContent.logo && (
-                  <div className="mb-6 flex justify-center">
-                    <img
-                      src={state.userContent.logo}
-                      alt="Logo"
-                      className="h-16 object-contain"
-                    />
-                  </div>
-                )}
-                <h1
-                  className="text-5xl font-black mb-4"
-                  style={{
-                    fontFamily: typography.headingFont,
-                    color: primaryColor,
-                  }}
-                >
-                  {state.userContent.businessName || 'Your Business Name'}
-                </h1>
-                <p className="text-xl mb-8" style={{ color: colors.text }}>
-                  {state.userContent.tagline || 'Your amazing tagline goes here'}
-                </p>
-                <button
-                  className="px-8 py-4 rounded-lg font-bold text-white transition-transform hover:scale-105"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Get Started
-                </button>
-              </section>
-            )}
+        {/* Tech Stack Visualization */}
+        <div className="mb-8 bg-black/40 backdrop-blur-sm border-2 border-green-500/20 rounded-xl p-6">
+          <div className="text-center mb-4">
+            <p className="text-sm text-green-400 font-mono font-bold">ENTERPRISE TECHNOLOGY STACK</p>
+            <p className="text-xs text-text-gray mt-1">Your site will be built with professional-grade tools</p>
+          </div>
 
-            {/* About Section */}
-            {state.selectedSections.some(s => s.type === 'about' && s.enabled) && (
-              <section className="py-16 px-6" style={{ backgroundColor: colors.secondary }}>
-                <div className="max-w-4xl mx-auto text-center">
-                  <h2
-                    className="text-4xl font-black mb-6"
-                    style={{
-                      fontFamily: typography.headingFont,
-                      color: primaryColor,
-                    }}
-                  >
-                    About Us
-                  </h2>
-                  <p className="text-lg leading-relaxed" style={{ color: colors.text }}>
-                    We're dedicated to delivering exceptional {state.siteType || 'services'} that exceed expectations.
-                    Our team combines creativity with technical expertise to bring your vision to life.
-                  </p>
-                </div>
-              </section>
-            )}
-
-            {/* Services Section */}
-            {state.selectedSections.some(s => s.type === 'services' && s.enabled) && (
-              <section className="py-16 px-6" style={{ backgroundColor: colors.background }}>
-                <div className="max-w-6xl mx-auto">
-                  <h2
-                    className="text-4xl font-black mb-12 text-center"
-                    style={{
-                      fontFamily: typography.headingFont,
-                      color: primaryColor,
-                    }}
-                  >
-                    Our Services
-                  </h2>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="p-6 rounded-xl border-2 transition-transform hover:scale-105"
-                        style={{
-                          borderColor: colors.accent,
-                          backgroundColor: colors.secondary + '10',
-                        }}
-                      >
-                        <div className="text-4xl mb-4" style={{ color: primaryColor }}>
-                          ✨
-                        </div>
-                        <h3
-                          className="text-xl font-bold mb-2"
-                          style={{ fontFamily: typography.headingFont, color: colors.text }}
-                        >
-                          Service {i}
-                        </h3>
-                        <p style={{ color: colors.text + 'cc' }}>
-                          Professional {state.siteType || 'service'} solutions tailored to your needs.
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* Portfolio/Gallery Section */}
-            {state.selectedSections.some(s => (s.type === 'portfolio' || s.type === 'gallery') && s.enabled) && (
-              <section className="py-16 px-6" style={{ backgroundColor: colors.secondary }}>
-                <div className="max-w-6xl mx-auto">
-                  <h2
-                    className="text-4xl font-black mb-12 text-center"
-                    style={{
-                      fontFamily: typography.headingFont,
-                      color: primaryColor,
-                    }}
-                  >
-                    Our Work
-                  </h2>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div
-                        key={i}
-                        className="aspect-square rounded-xl"
-                        style={{ backgroundColor: colors.accent + '30' }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* Contact Section */}
-            {state.selectedSections.some(s => s.type === 'contact' && s.enabled) && (
-              <section className="py-16 px-6" style={{ backgroundColor: colors.background }}>
-                <div className="max-w-2xl mx-auto text-center">
-                  <h2
-                    className="text-4xl font-black mb-6"
-                    style={{
-                      fontFamily: typography.headingFont,
-                      color: primaryColor,
-                    }}
-                  >
-                    Get In Touch
-                  </h2>
-                  {state.userContent.email && (
-                    <p className="mb-2" style={{ color: colors.text }}>
-                      📧 {state.userContent.email}
+          {/* Tech Stack Flow - 2 Columns on larger screens */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="flex flex-col gap-2">
+              {TECH_STACK.slice(0, 4).map((tech, index) => (
+                <div key={index} className="flex flex-col">
+                  {/* Tech Box */}
+                  <div className={`px-4 py-2 bg-green-500/10 border-2 border-green-500/30 rounded-lg ${
+                    activeArrows.has(index) || activeArrows.has(index - 1) ? 'animate-pulse' : ''
+                  }`}>
+                    <p className="text-sm text-green-400 font-mono text-center font-semibold">
+                      {tech.name}
                     </p>
-                  )}
-                  {state.userContent.phone && (
-                    <p className="mb-6" style={{ color: colors.text }}>
-                      📞 {state.userContent.phone}
-                    </p>
-                  )}
+                  </div>
 
-                  {/* Social Links */}
-                  {state.userContent.socialLinks && (
-                    <div className="flex justify-center gap-4 mt-6">
-                      {state.userContent.socialLinks.facebook && (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
-                          <span className="text-white">f</span>
-                        </div>
-                      )}
-                      {state.userContent.socialLinks.instagram && (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
-                          <span className="text-white">📷</span>
-                        </div>
-                      )}
-                      {state.userContent.socialLinks.twitter && (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
-                          <span className="text-white">🐦</span>
-                        </div>
-                      )}
-                      {state.userContent.socialLinks.linkedin && (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
-                          <span className="text-white">in</span>
-                        </div>
-                      )}
+                  {/* Animated Arrow */}
+                  {index < 3 && (
+                    <div className="flex justify-center py-1">
+                      <svg className={`w-6 h-6 transition-all duration-300 ${
+                        activeArrows.has(index)
+                          ? 'text-green-400 animate-bounce'
+                          : 'text-green-500/30'
+                      }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
                     </div>
                   )}
                 </div>
-              </section>
-            )}
+              ))}
+            </div>
 
-            {/* Footer */}
-            <footer className="py-8 px-6 text-center text-sm" style={{ backgroundColor: colors.secondary, color: colors.text }}>
-              <p>© 2025 {state.userContent.businessName || 'Your Business'}. All rights reserved.</p>
-              <p className="mt-2 opacity-70">Built with 1Zero9 Studio</p>
-            </footer>
+            {/* Right Column */}
+            <div className="flex flex-col gap-2">
+              {TECH_STACK.slice(4, 8).map((tech, index) => (
+                <div key={index + 4} className="flex flex-col">
+                  {/* Tech Box */}
+                  <div className={`px-4 py-2 bg-green-500/10 border-2 border-green-500/30 rounded-lg ${
+                    activeArrows.has(index + 4) || activeArrows.has(index + 3) ? 'animate-pulse' : ''
+                  }`}>
+                    <p className="text-sm text-green-400 font-mono text-center font-semibold">
+                      {tech.name}
+                    </p>
+                  </div>
+
+                  {/* Animated Arrow */}
+                  {index < 3 && (
+                    <div className="flex justify-center py-1">
+                      <svg className={`w-6 h-6 transition-all duration-300 ${
+                        activeArrows.has(index + 4)
+                          ? 'text-green-400 animate-bounce'
+                          : 'text-green-500/30'
+                      }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-xs text-text-gray">Professional-grade • Scalable • Secure • Fast</p>
           </div>
         </div>
-      </div>
 
-      {/* Quick Edit Panel */}
-      <div className="fixed bottom-24 right-4 bg-dark-card border-2 border-dark-lighter rounded-xl p-4 shadow-2xl max-w-xs">
-        <h3 className="text-lg font-bold text-text-light mb-3">Quick Edit</h3>
-        <div className="space-y-2">
-          <button
-            onClick={() => onEditStep(1)}
-            className="w-full text-left px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
-          >
-            ✏️ Edit Purpose
-          </button>
-          <button
-            onClick={() => onEditStep(2)}
-            className="w-full text-left px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
-          >
-            🎨 Edit Style
-          </button>
-          <button
-            onClick={() => onEditStep(3)}
-            className="w-full text-left px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
-          >
-            📋 Edit Sections
-          </button>
-          <button
-            onClick={() => onEditStep(4)}
-            className="w-full text-left px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
-          >
-            📝 Edit Content
-          </button>
+        {/* Quick Summary */}
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          <div className="p-4 bg-dark-card border-2 border-dark-lighter rounded-xl">
+            <h4 className="text-sm font-bold text-text-light mb-2">Your Project</h4>
+            <ul className="text-xs text-text-gray space-y-1">
+              <li>• {state.siteType || 'Business'} website</li>
+              <li>• {state.designStyle || 'Modern'} design style</li>
+              <li>• {state.selectedSections.filter(s => s.enabled).length} sections</li>
+            </ul>
+          </div>
+
+          <div className="p-4 bg-gradient-to-br from-rocket-red/10 to-accent/10 border-2 border-rocket-red/30 rounded-xl">
+            <h4 className="text-sm font-bold text-text-light mb-2">What Happens Next?</h4>
+            <ul className="text-xs text-text-gray space-y-1">
+              <li>• Submit your contact info</li>
+              <li>• We'll reach out in 24hrs</li>
+              <li>• Your site built in 7-14 days</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Quick Edit Panel */}
+        <div className="bg-dark-card border-2 border-dark-lighter rounded-xl p-4">
+          <h3 className="text-base font-bold text-text-light mb-3">Need to Change Something?</h3>
+          <div className="space-y-2">
+            <button
+              onClick={() => onEditStep(1)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>Edit Purpose</span>
+            </button>
+            <button
+              onClick={() => onEditStep(2)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+              <span>Edit Style</span>
+            </button>
+            <button
+              onClick={() => onEditStep(3)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              <span>Edit Sections</span>
+            </button>
+            <button
+              onClick={() => onEditStep(4)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-bg hover:bg-dark-lighter text-text-gray hover:text-text-light transition-colors text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <span>Edit Content</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

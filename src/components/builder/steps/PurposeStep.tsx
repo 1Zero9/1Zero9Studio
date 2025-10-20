@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { SiteType } from '@/types/builder'
 import AIAgent from '@/components/builder/AIAgent'
@@ -78,68 +78,57 @@ const SITE_TYPES = [
   {
     type: 'portfolio' as SiteType,
     title: 'Portfolio',
-    description: 'Showcase creative work and achievements',
-    keywords: ['designer', 'photographer', 'artist'],
+    description: 'Showcase creative work',
   },
   {
     type: 'store' as SiteType,
-    title: 'Online Store',
-    description: 'Sell products with e-commerce',
-    keywords: ['shop', 'sell', 'products'],
+    title: 'Store',
+    description: 'Sell products online',
   },
   {
     type: 'blog' as SiteType,
     title: 'Blog',
-    description: 'Share stories and expertise',
-    keywords: ['write', 'articles', 'content'],
+    description: 'Share stories',
   },
   {
     type: 'business' as SiteType,
     title: 'Business',
-    description: 'Professional company presence',
-    keywords: ['company', 'services', 'consulting'],
+    description: 'Company presence',
   },
   {
     type: 'landing' as SiteType,
-    title: 'Landing Page',
-    description: 'Convert visitors to customers',
-    keywords: ['launch', 'campaign', 'convert'],
+    title: 'Landing',
+    description: 'Convert visitors',
   },
   {
     type: 'restaurant' as SiteType,
     title: 'Restaurant',
-    description: 'Menu, reservations & online ordering',
-    keywords: ['menu', 'food', 'dining'],
+    description: 'Menu & ordering',
   },
   {
     type: 'nonprofit' as SiteType,
     title: 'Nonprofit',
-    description: 'Mission-driven organization site',
-    keywords: ['charity', 'donate', 'cause'],
+    description: 'Mission-driven',
   },
   {
     type: 'education' as SiteType,
     title: 'Education',
-    description: 'Courses, training & learning platform',
-    keywords: ['courses', 'learning', 'teach'],
+    description: 'Courses & learning',
   },
   {
     type: 'events' as SiteType,
     title: 'Events',
-    description: 'Event promotion & ticket sales',
-    keywords: ['conference', 'tickets', 'schedule'],
+    description: 'Event promotion',
   },
   {
     type: 'community' as SiteType,
     title: 'Community',
-    description: 'Forum, membership & social hub',
-    keywords: ['forum', 'members', 'social'],
+    description: 'Forum & members',
   },
   {
     type: 'saas' as SiteType,
-    title: 'SaaS Product',
-    description: 'Software product & subscription site',
-    keywords: ['software', 'app', 'subscription'],
+    title: 'SaaS',
+    description: 'Software product',
   },
 ]
 
@@ -149,202 +138,85 @@ export default function PurposeStep({
   onSelect,
   onDescriptionChange
 }: PurposeStepProps) {
-  const [mode, setMode] = useState<'nova' | 'browse'>('nova')
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
-      {/* Header */}
-      <div className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4 animate-fadeIn">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black">
+    <div className="h-[calc(100vh-160px)] flex flex-col">
+      {/* Header - Compact */}
+      <div className="text-center py-4 px-4">
+        <h2 className="text-3xl md:text-4xl font-black">
           <span className="text-text-light">WHAT DO YOU </span>
           <span className="text-rocket-red">NEED?</span>
         </h2>
-        <p className="text-base md:text-lg text-text-gray max-w-2xl mx-auto">
-          Choose how you'd like to get started
+        <p className="text-sm text-text-gray mt-2">
+          Chat with ARIA or browse options below
         </p>
       </div>
 
-      {/* Mode Selector - Clean Toggle */}
-      <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 mb-8 md:mb-12">
-        <button
-          onClick={() => setMode('nova')}
-          className={`flex items-center justify-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 ${
-            mode === 'nova'
-              ? 'bg-rocket-red text-white shadow-xl shadow-rocket-red/30 scale-105'
-              : 'bg-dark-card text-text-gray border-2 border-dark-lighter hover:border-rocket-red/30'
-          }`}
-        >
-          <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full bg-white flex items-center justify-center ${mode === 'nova' ? '' : 'opacity-50'}`}>
-            <Image
-              src="/images/109-logo-circle1.png"
-              alt="NOVA"
-              width={20}
-              height={20}
-            />
-          </div>
-          <span>Get NOVA's Help</span>
-        </button>
-        <button
-          onClick={() => setMode('browse')}
-          className={`flex items-center justify-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 ${
-            mode === 'browse'
-              ? 'bg-rocket-red text-white shadow-xl shadow-rocket-red/30 scale-105'
-              : 'bg-dark-card text-text-gray border-2 border-dark-lighter hover:border-rocket-red/30'
-          }`}
-        >
-          <svg className={`w-5 h-5 md:w-6 md:h-6 ${mode === 'browse' ? '' : 'opacity-50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-          <span>Browse Options</span>
-        </button>
-      </div>
+      {/* Centered ARIA */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-4 overflow-hidden">
+        <div className="w-full max-w-3xl flex flex-col h-full">
 
-      {/* Mode: Nova AI */}
-      {mode === 'nova' && (
-        <div className="animate-fadeIn">
-          <div className="max-w-4xl mx-auto">
-            <AIAgent
-              currentSiteType={selectedType}
-              onSiteTypeDetected={(type) => {
-                onSelect(type)
-                onDescriptionChange(`I need a ${type} website`)
-              }}
-              onUserInput={(input) => {
-                if (input.length > 10) {
-                  onDescriptionChange(input)
-                }
-              }}
-            />
-          </div>
-
-          {/* Show selection below Nova when detected */}
-          {selectedType && (
-            <div className="mt-8 p-6 rounded-xl bg-rocket-red/10 border-2 border-rocket-red/30 animate-fadeIn max-w-4xl mx-auto shadow-lg shadow-rocket-red/20">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-rocket-red/20 flex items-center justify-center text-rocket-red">
-                  <SiteTypeIcon type={selectedType} className="w-10 h-10" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-black text-rocket-red mb-1">
-                    {SITE_TYPES.find(t => t.type === selectedType)?.title} Selected!
-                  </h3>
-                  <p className="text-text-light text-sm">
-                    {SITE_TYPES.find(t => t.type === selectedType)?.description}
-                  </p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-rocket-red flex items-center justify-center">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
+          {/* ARIA AI Chat - Centered */}
+          <div className="flex-1 flex flex-col bg-dark-card border-2 border-dark-lighter rounded-xl overflow-hidden">
+            {/* ARIA Header */}
+            <div className="bg-gradient-to-r from-rocket-red/20 to-accent/20 border-b-2 border-rocket-red/30 p-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                <Image
+                  src="/images/109-logo-circle1.png"
+                  alt="ARIA"
+                  width={32}
+                  height={32}
+                />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-text-light">Chat with ARIA</h3>
+                <p className="text-xs text-text-gray">Describe your business or project needs</p>
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* Mode: Browse */}
-      {mode === 'browse' && (
-        <div className="animate-fadeIn space-y-6 md:space-y-8">
-          {/* Browse Introduction */}
-          <div className="text-center space-y-2 md:space-y-3 mb-3 md:mb-4">
-            <p className="text-base md:text-lg text-text-light font-medium">
-              Select the type of website you need
-            </p>
-            <p className="text-sm text-text-gray max-w-2xl mx-auto px-2">
-              Choose the category that best matches your vision. You'll be able to customize every detail in the next steps.
-            </p>
-          </div>
-
-          {/* Site Type Grid - Compact 4-column */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {SITE_TYPES.map((siteType) => (
-              <button
-                key={siteType.type}
-                onClick={() => {
-                  onSelect(siteType.type)
-                  onDescriptionChange(`I need a ${siteType.type} website`)
+            {/* ARIA Chat Interface */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <AIAgent
+                currentSiteType={selectedType}
+                onSiteTypeDetected={(type) => {
+                  onSelect(type)
+                  onDescriptionChange(`I need a ${type} website`)
                 }}
-                className={`group relative text-center p-4 md:p-5 rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-                  selectedType === siteType.type
-                    ? 'border-rocket-red bg-rocket-red/10 shadow-xl shadow-rocket-red/30'
-                    : 'border-dark-lighter bg-dark-card hover:border-rocket-red/50 hover:bg-dark-card/70 hover:shadow-lg'
-                }`}
-              >
-                {/* Selection Indicator - Top Right Corner */}
-                {selectedType === siteType.type && (
-                  <div className="absolute top-2 right-2 md:top-3 md:right-3 w-6 h-6 md:w-7 md:h-7 rounded-full bg-rocket-red flex items-center justify-center shadow-lg animate-fadeIn">
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                onUserInput={(input) => {
+                  if (input.length > 10) {
+                    onDescriptionChange(input)
+                  }
+                }}
+              />
+            </div>
+
+            {/* Selection Status */}
+            {selectedType && (
+              <div className="border-t-2 border-rocket-red/30 bg-rocket-red/10 p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-rocket-red flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                )}
-
-                {/* Icon */}
-                <div className={`w-14 h-14 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
-                  selectedType === siteType.type
-                    ? 'bg-rocket-red/20 text-rocket-red'
-                    : 'bg-dark-lighter text-text-gray group-hover:bg-rocket-red/10 group-hover:text-rocket-red'
-                }`}>
-                  <SiteTypeIcon type={siteType.type} className="w-8 h-8 md:w-9 md:h-9" />
+                  <div>
+                    <p className="text-sm font-bold text-rocket-red">
+                      {SITE_TYPES.find(t => t.type === selectedType)?.title} Selected!
+                    </p>
+                    <p className="text-xs text-text-gray">Click Next when ready</p>
+                  </div>
                 </div>
-
-                {/* Title */}
-                <h4 className={`text-sm md:text-base font-black mb-1.5 md:mb-2 transition-colors ${
-                  selectedType === siteType.type
-                    ? 'text-rocket-red'
-                    : 'text-text-light group-hover:text-rocket-red'
-                }`}>
-                  {siteType.title}
-                </h4>
-
-                {/* Description */}
-                <p className="text-xs text-text-gray leading-snug mb-2 md:mb-3">
-                  {siteType.description}
-                </p>
-
-                {/* Keywords/Tags - Show what this type is good for */}
-                <div className="flex flex-wrap gap-1 justify-center">
-                  {siteType.keywords.map((keyword, idx) => (
-                    <span
-                      key={idx}
-                      className={`text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded-full transition-colors ${
-                        selectedType === siteType.type
-                          ? 'bg-rocket-red/20 text-rocket-red border border-rocket-red/30'
-                          : 'bg-dark-lighter text-text-gray border border-dark-lighter group-hover:border-rocket-red/20'
-                      }`}
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </button>
-            ))}
+              </div>
+            )}
           </div>
 
-          {/* Selection Confirmation */}
-          {selectedType && (
-            <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-dark-card to-dark-bg border-2 border-rocket-red/30 animate-fadeIn shadow-xl">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 mb-3 md:mb-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-rocket-red/20 flex items-center justify-center border-2 border-rocket-red">
-                  <svg className="w-6 h-6 md:w-7 md:h-7 text-rocket-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-xl md:text-2xl font-black text-text-light text-center sm:text-left">
-                  {SITE_TYPES.find(t => t.type === selectedType)?.title} <span className="text-rocket-red">Selected!</span>
-                </h3>
-              </div>
-              <p className="text-center text-sm md:text-base text-text-gray mb-2">
-                {SITE_TYPES.find(t => t.type === selectedType)?.description}
-              </p>
-              <p className="text-center text-xs md:text-sm text-text-light">
-                Click <span className="text-rocket-red font-bold">Next</span> to choose your design style and colors
-              </p>
-            </div>
-          )}
+          {/* Browse Options Link */}
+          <div className="mt-4 text-center">
+            <p className="text-sm text-text-gray">
+              Not sure? <button className="text-accent hover:text-accent/80 font-semibold underline">Browse all options</button> or let ARIA guide you
+            </p>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
