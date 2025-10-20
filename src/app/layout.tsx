@@ -27,6 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://js.puter.com/v2/" defer></script>
+      </head>
       <body className={inter.className}>
         <ConditionalNavigation />
         <MainApp>

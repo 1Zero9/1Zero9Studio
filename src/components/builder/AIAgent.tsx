@@ -3,7 +3,39 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { SiteType } from '@/types/builder'
-import { getNovaVersion } from '@/lib/versions'
+import { getAriaVersion } from '@/lib/versions'
+
+// Puter.js types (loaded via script tag in layout)
+declare global {
+  interface PuterAIMessage {
+    role: 'system' | 'user' | 'assistant'
+    content: string
+  }
+
+  interface PuterAIChatOptions {
+    model?: string
+    temperature?: number
+    max_tokens?: number
+  }
+
+  interface PuterAIChatResponse {
+    message: {
+      content: string | { text: string }[]
+    }
+  }
+
+  interface Window {
+    puter?: {
+      ai: {
+        chat(
+          messages: PuterAIMessage[] | string,
+          imageUrl?: string,
+          options?: PuterAIChatOptions
+        ): Promise<PuterAIChatResponse>
+      }
+    }
+  }
+}
 
 interface Message {
   id: string
@@ -20,9 +52,9 @@ interface AIAgentProps {
 
 const AGENT_RESPONSES = {
   greeting: [
-    "Hi! I'm Nova from 1Zero9 Studio. 🚀 Tell me about your business and vision - I'll recommend the perfect website solution tailored to your goals. We specialize in turning ideas into stunning digital experiences. What are you looking to build?",
-    "Welcome to 1Zero9 Studio! I'm Nova, your AI consultant. Whether you need to sell products, showcase creative work, or establish your brand - we'll design the perfect site for you. Our team combines cutting-edge tech with award-winning design. What's your vision?",
-    "Hey there! I'm Nova from 1Zero9 Studio. Not sure which website type fits your business? That's exactly what we're here for! Share your goals and I'll match you with the ideal solution from our proven templates. Let's build something amazing together!",
+    "Hi! I'm ARIA from 1Zero9 Studio. 🚀 Tell me about your business and vision - I'll recommend the perfect website solution tailored to your goals. We specialize in turning ideas into stunning digital experiences. What are you looking to build?",
+    "Welcome to 1Zero9 Studio! I'm ARIA, your AI consultant. Whether you need to sell products, showcase creative work, or establish your brand - we'll design the perfect site for you. Our team combines cutting-edge tech with award-winning design. What's your vision?",
+    "Hey there! I'm ARIA from 1Zero9 Studio. Not sure which website type fits your business? That's exactly what we're here for! Share your goals and I'll match you with the ideal solution from our proven templates. Let's build something amazing together!",
   ],
   followUp: {
     portfolio: [
@@ -101,7 +133,7 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
   const [userHasInteracted, setUserHasInteracted] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const greetingShownRef = useRef(false)
-  const novaVersion = getNovaVersion()
+  const ariaVersion = getAriaVersion()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -236,39 +268,93 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
     setIsTyping(true)
 
     try {
-      // Call Claude API
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map(msg => ({
-            role: msg.role,
-            content: msg.content,
+      // Check if Puter is available
+      if (typeof window !== 'undefined' && window.puter) {
+        // Build conversation history for Puter AI
+        const conversationHistory: PuterAIMessage[] = [
+          {
+            role: 'system',
+            content: `You are ARIA (AI Rapid Integration Assistant), an AI consultant for 1Zero9 Studio, a web design and development agency.
+
+Your role is to:
+1. Have natural, friendly conversations with potential clients
+2. Understand their business needs and goals through questions
+3. Recommend the perfect website type from these 11 options: portfolio, store, blog, business, landing, restaurant, nonprofit, education, events, community, or saas
+4. When you detect what type they need, mention it naturally in conversation
+
+Guidelines:
+- Be warm, professional, and enthusiastic about helping them succeed
+- Ask clarifying questions to truly understand their vision
+- Reference 1Zero9 Studio's expertise and track record
+- Keep responses concise (2-3 sentences max)
+- When you identify their needs, subtly mention the site type you'd recommend
+- Be encouraging and make them feel confident in their project
+
+Current detected site type: ${currentSiteType || 'none yet'}
+
+Available site types and when to recommend them:
+- portfolio: For showcasing creative work (designers, photographers, artists, freelancers)
+- store: For selling products online (e-commerce, retail, physical/digital goods)
+- blog: For content publishing (writers, journalists, thought leaders)
+- business: For professional services (agencies, consultants, corporate sites)
+- landing: For single-purpose campaigns (product launches, lead generation, events)
+- restaurant: For dining establishments (menus, reservations, online ordering)
+- nonprofit: For charitable organizations (donations, volunteer signup, impact stories)
+- education: For learning platforms (courses, training, tutorials)
+- events: For conferences/gatherings (tickets, schedules, speakers)
+- community: For member-based sites (forums, social groups, clubs)
+- saas: For software products (pricing tiers, feature demos, dashboards)`
+          },
+          // Add all previous messages
+          ...messages.map(msg => ({
+            role: msg.role === 'agent' ? 'assistant' as const : 'user' as const,
+            content: msg.content
           })),
-          siteType: currentSiteType,
-        }),
-      })
+          // Add the new user message
+          {
+            role: 'user' as const,
+            content: userInputCopy
+          }
+        ]
 
-      const data = await response.json()
+        // Call Puter AI with Claude Sonnet 4
+        const response = await window.puter.ai.chat(conversationHistory, undefined, {
+          model: 'claude-sonnet-4',
+          temperature: 0.7,
+          max_tokens: 300
+        })
 
-      // Handle site type detection
-      if (data.siteType && !currentSiteType && onSiteTypeDetected) {
-        onSiteTypeDetected(data.siteType as SiteType)
+        // Extract response content
+        let aiResponse = ''
+        if (typeof response.message.content === 'string') {
+          aiResponse = response.message.content
+        } else if (Array.isArray(response.message.content)) {
+          aiResponse = response.message.content[0]?.text || ''
+        }
+
+        // Detect site type from AI response or user input
+        const detectedType = detectSiteType(userInputCopy + ' ' + aiResponse)
+        if (detectedType && !currentSiteType && onSiteTypeDetected) {
+          onSiteTypeDetected(detectedType)
+        }
+
+        // Add AI response to messages
+        const agentMessage: Message = {
+          id: Date.now().toString(),
+          role: 'agent',
+          content: aiResponse || "I'm here to help! Tell me more about your project.",
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, agentMessage])
+        setIsTyping(false)
+      } else {
+        // Fallback if Puter not loaded yet
+        throw new Error('Puter not available')
       }
-
-      // Add Claude's response
-      const agentMessage: Message = {
-        id: Date.now().toString(),
-        role: 'agent',
-        content: data.response || "I'm here to help! Tell me more about your project.",
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, agentMessage])
-      setIsTyping(false)
     } catch (error) {
-      console.error('Error calling Claude API:', error)
+      console.error('Error calling Puter AI:', error)
 
-      // Fallback to pattern matching if API fails
+      // Fallback to pattern matching
       const detectedType = detectSiteType(userInputCopy)
       if (detectedType && onSiteTypeDetected) {
         onSiteTypeDetected(detectedType)
@@ -304,7 +390,7 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
         <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 p-1">
           <Image
             src="/images/109-logo-circle1.png"
-            alt="NOVA"
+            alt="ARIA"
             width={48}
             height={48}
             className="w-full h-full"
@@ -312,11 +398,11 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-white text-xl tracking-wide">NOVA</h3>
-            <span className="text-xs font-normal text-white/70">v{novaVersion}</span>
+            <h3 className="font-bold text-white text-xl tracking-wide">ARIA</h3>
+            <span className="text-xs font-normal text-white/70">v{ariaVersion}</span>
           </div>
           <p className="text-white/90 text-xs font-medium tracking-wide">
-            <span className="font-bold">N</span>eeds <span className="font-bold">O</span>riented <span className="font-bold">V</span>ision <span className="font-bold">A</span>ssistant
+            <span className="font-bold">A</span>I <span className="font-bold">R</span>apid <span className="font-bold">I</span>ntegration <span className="font-bold">A</span>ssistant
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
@@ -333,20 +419,20 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
           <div className="text-sm text-text-light space-y-3">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">💡</span>
-              <p className="font-bold text-accent text-base">How NOVA Helps:</p>
+              <p className="font-bold text-accent text-base">How ARIA Helps:</p>
             </div>
             <ul className="space-y-2.5 ml-2">
               <li className="flex items-start gap-3">
                 <span className="text-rocket-red text-lg mt-0.5">→</span>
-                <span>Understands your <span className="font-semibold text-rocket-red">Needs</span> through natural conversation</span>
+                <span>Powered by <span className="font-semibold text-rocket-red">AI</span> (Claude Sonnet 4) for intelligent conversations</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-rocket-red text-lg mt-0.5">→</span>
-                <span>Recommends the ideal solution <span className="font-semibold text-rocket-red">Oriented</span> to your goals</span>
+                <span>Provides <span className="font-semibold text-rocket-red">Rapid</span> site type recommendations based on your needs</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-rocket-red text-lg mt-0.5">→</span>
-                <span>Matches you with the perfect <span className="font-semibold text-rocket-red">Vision</span> for your site</span>
+                <span>Seamlessly <span className="font-semibold text-rocket-red">Integrates</span> with the Vision Studio wizard</span>
               </li>
             </ul>
             <div className="mt-4 p-3 bg-dark-bg/50 rounded-lg border border-rocket-red/30">
@@ -370,7 +456,7 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 p-0.5">
                 <Image
                   src="/images/109-logo-circle1.png"
-                  alt="NOVA"
+                  alt="ARIA"
                   width={32}
                   height={32}
                   className="w-full h-full"
@@ -407,7 +493,7 @@ export default function AIAgent({ onSiteTypeDetected, onUserInput, currentSiteTy
             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center p-0.5">
               <Image
                 src="/images/109-logo-circle1.png"
-                alt="NOVA"
+                alt="ARIA"
                 width={32}
                 height={32}
                 className="w-full h-full"

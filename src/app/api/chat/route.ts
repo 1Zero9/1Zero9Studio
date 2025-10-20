@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Smart responses based on detected keywords and context
+// Smart responses based on detected keywords and context (fallback for Puter AI)
 const RESPONSES = {
   greeting: [
-    "Hi! I'm Nova from 1Zero9 Studio. 🚀 Tell me about your business and vision - I'll recommend the perfect website solution tailored to your goals. We specialize in turning ideas into stunning digital experiences. What are you looking to build?",
-    "Welcome to 1Zero9 Studio! I'm Nova, your AI consultant. Whether you need to sell products, showcase creative work, or establish your brand - we'll design the perfect site for you. Our team combines cutting-edge tech with award-winning design. What's your vision?",
-    "Hey there! I'm Nova from 1Zero9 Studio. Not sure which website type fits your business? That's exactly what we're here for! Share your goals and I'll match you with the ideal solution from our proven templates. Let's build something amazing together!",
+    "Hi! I'm ARIA from 1Zero9 Studio. 🚀 Tell me about your business and vision - I'll recommend the perfect website solution tailored to your goals. We specialize in turning ideas into stunning digital experiences. What are you looking to build?",
+    "Welcome to 1Zero9 Studio! I'm ARIA, your AI consultant. Whether you need to sell products, showcase creative work, or establish your brand - we'll design the perfect site for you. Our team combines cutting-edge tech with award-winning design. What's your vision?",
+    "Hey there! I'm ARIA from 1Zero9 Studio. Not sure which website type fits your business? That's exactly what we're here for! Share your goals and I'll match you with the ideal solution from our proven templates. Let's build something amazing together!",
   ],
   portfolio: [
     "Brilliant! I've matched you with our **Premium Portfolio** package. ✨ **I've auto-selected it below.** At 1Zero9 Studio, we create portfolio sites that land clients - not just show work. You'll get: stunning galleries, animated case studies, client testimonials, and mobile-first responsive design. Our portfolios average 3x more client inquiries than standard sites. Ready to see what we can build?",
