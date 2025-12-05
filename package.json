@@ -11,7 +11,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.0",
     "@google/generative-ai": "^0.24.1",
-    "@supabase/supabase-js": "^2.75.1",
+    "@supabase/supabase-js": "^2.86.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
@@ -19,7 +19,7 @@
     "next": "15.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "resend": "^6.2.0",
+    "resend": "^6.5.2",
     "typescript": "^5.0.0"
   },
   "devDependencies": {

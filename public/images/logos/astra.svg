@@ -1,0 +1,12 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="astraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="32" fill="#050816"/>
+  <polygon points="120,40 165,180 75,180" fill="url(#astraGradient)" opacity="0.9"/>
+  <circle cx="120" cy="120" r="30" fill="#050816"/>
+  <text x="120" y="132" text-anchor="middle" font-family="Poppins, sans-serif" font-size="50" font-weight="700" fill="white">AI</text>
+</svg>

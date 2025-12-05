@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import MainApp from "../components/MainApp";
 import ConditionalNavigation from "../components/ConditionalNavigation";
-
-const inter = Inter({ subsets: ["latin"] });
-const poppins = Poppins({ 
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"]
-});
 
 export const metadata: Metadata = {
   title: "1Zero9 Studio - Design. Code. Launch.",
@@ -30,7 +23,7 @@ export default function RootLayout({
       <head>
         <script src="https://js.puter.com/v2/" defer></script>
       </head>
-      <body className={inter.className}>
+      <body className="bg-surface text-ink font-inter antialiased">
         <ConditionalNavigation />
         <MainApp>
           {children}

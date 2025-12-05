@@ -1,0 +1,11 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ltmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="32" fill="url(#ltmGradient)"/>
+  <circle cx="120" cy="120" r="70" fill="rgba(255,255,255,0.2)"/>
+  <text x="120" y="130" text-anchor="middle" font-family="Poppins, sans-serif" font-size="60" font-weight="700" fill="white">LTM</text>
+</svg>

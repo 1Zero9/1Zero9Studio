@@ -1,0 +1,12 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pbGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="32" fill="#1f2937"/>
+  <rect x="40" y="60" width="160" height="120" rx="16" fill="url(#pbGradient)" opacity="0.2"/>
+  <rect x="60" y="90" width="120" height="60" rx="12" fill="url(#pbGradient)" opacity="0.4"/>
+  <text x="120" y="135" text-anchor="middle" font-family="Poppins, sans-serif" font-size="46" font-weight="700" fill="white">PB</text>
+</svg>

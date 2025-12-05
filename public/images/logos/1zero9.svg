@@ -1,0 +1,12 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="studioGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="32" fill="#111827"/>
+  <rect x="28" y="28" width="184" height="184" rx="28" stroke="url(#studioGradient)" stroke-width="4" fill="none"/>
+  <text x="120" y="135" text-anchor="middle" font-family="Orbitron, sans-serif" font-size="64" font-weight="700" fill="white">1ZER</text>
+  <text x="120" y="175" text-anchor="middle" font-family="Orbitron, sans-serif" font-size="48" font-weight="700" fill="#f87171">O9</text>
+</svg>

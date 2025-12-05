@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getBuilderVersion } from '@/lib/versions'
 import { useBuilder } from '@/context/BuilderContext'
@@ -47,7 +48,7 @@ export default function BuilderHeader({ currentStep, totalSteps, stepNames }: Bu
     }
   }
 
-  const handleLogoClick = () => {
+  const handleHomeClick = () => {
     router.push('/')
   }
 
@@ -86,8 +87,8 @@ export default function BuilderHeader({ currentStep, totalSteps, stepNames }: Bu
       <header className={`fixed left-0 right-0 z-50 bg-dark-bg/95 backdrop-blur-md border-b border-dark-lighter transition-all duration-300 ${showSessionBanner ? 'top-[52px]' : 'top-0'}`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo and Brand */}
-          <button onClick={handleLogoClick} className="flex items-center space-x-3 group">
+          {/* Logo and Brand - Links to main site */}
+          <Link href="/" className="flex items-center space-x-3 group">
             <Image
               src="/images/109-logo-circle-white2.png"
               alt="1Zero9 Studio"
@@ -101,7 +102,7 @@ export default function BuilderHeader({ currentStep, totalSteps, stepNames }: Bu
               </h1>
               <p className="text-xs text-text-gray">Vision Studio <span className="text-rocket-red/70">v{version}</span></p>
             </div>
-          </button>
+          </Link>
 
           {/* Step Indicator */}
           {currentStep !== undefined && totalSteps && (
@@ -129,6 +130,18 @@ export default function BuilderHeader({ currentStep, totalSteps, stepNames }: Bu
 
           {/* Navigation */}
           <div className="flex items-center space-x-4">
+            {/* Home Button */}
+            <Link
+              href="/"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-dark-card hover:bg-dark-lighter border border-dark-lighter hover:border-[var(--nova-red)]/30 text-text-gray hover:text-white transition-all duration-300"
+              title="Return to home page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="hidden sm:inline text-sm font-semibold">Home</span>
+            </Link>
+
             {/* Save Progress (if user has started) */}
             <button className="hidden md:flex items-center space-x-2 px-4 py-2 text-text-gray hover:text-text-light transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

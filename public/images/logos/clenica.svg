@@ -1,0 +1,11 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="careGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="32" fill="white"/>
+  <path d="M120 65 L140 95 L180 95 L150 125 L160 165 L120 145 L80 165 L90 125 L60 95 L100 95 Z" fill="url(#careGradient)" opacity="0.9"/>
+  <text x="120" y="205" text-anchor="middle" font-family="Poppins, sans-serif" font-size="32" font-weight="600" fill="#db2777">CLENICA</text>
+</svg>

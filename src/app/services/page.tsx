@@ -1,92 +1,147 @@
 'use client'
 
+const serviceTiers = [
+  {
+    title: 'Launch Systems',
+    description:
+      'Fractional product and engineering team delivering a high-polish marketing site or conversion funnel in weeks, not months.',
+    deliverables: ['Brand system + design direction', 'Next.js build with analytics', 'Marketing automation', 'Optimization sprint'],
+    price: 'from $15k',
+  },
+  {
+    title: 'Studio Partnership',
+    description:
+      'Ongoing product design, content, and engineering support packaged like an internal studio—perfect for founders and lean teams.',
+    deliverables: ['Prioritized roadmap', 'Dedicated design/dev lead', 'Weekly releases', 'Performance + growth reporting'],
+    price: 'from $4k/mo',
+  },
+  {
+    title: 'Managed Platform',
+    description:
+      'We own your entire digital platform—including infrastructure, compliance, and lifecycle updates—so you can focus on the business.',
+    deliverables: ['Ops playbook', 'Security + accessibility', '24/7 monitoring', 'Support desk + success enablement'],
+    price: 'custom',
+  },
+]
+
+const capabilityStack = [
+  {
+    category: 'Strategy',
+    items: ['Digital positioning', 'Journey mapping', 'System architecture', 'Content playbooks'],
+  },
+  {
+    category: 'Design',
+    items: ['Brand + art direction', 'Design systems', 'Product UX', 'Motion + prototyping'],
+  },
+  {
+    category: 'Engineering',
+    items: ['Next.js + React', 'Headless CMS', 'Supabase / DB design', 'API + integration work'],
+  },
+]
+
 export default function Services() {
   return (
-    <div className="py-16 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Our Services
+    <div className="bg-surface text-ink">
+      <section className="hero-gradient rounded-b-[50px] px-6 pt-36 pb-24 text-center text-white lg:px-12 relative overflow-hidden">
+        <div className="container-custom relative z-10">
+          <p className="text-xs uppercase tracking-[0.5em] text-white/70 animate-fadeInUp">Service Models</p>
+          <h1 className="mt-5 text-4xl font-black leading-tight sm:text-5xl lg:text-6xl animate-fadeInUp" style={{ animationDelay: '100ms' }}>
+            Full-stack studio for ambitious launches.
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We provide comprehensive web solutions to help your business thrive online
+          <p className="mt-6 text-lg text-white/85 sm:text-xl max-w-3xl mx-auto leading-relaxed animate-fadeInUp" style={{ animationDelay: '200ms' }}>
+            Every engagement blends strategy, design, code, and growth. Pick the operating model that fits your rhythm and we plug in as your
+            product team.
           </p>
         </div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvZz48L3N2Zz4=')] opacity-30" />
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-              </svg>
+      <section className="bg-white py-20">
+        <div className="container-custom grid gap-8 lg:grid-cols-3">
+          {serviceTiers.map((tier, idx) => (
+            <article
+              key={tier.title}
+              className="group rounded-3xl border border-slate-200/80 bg-white p-9 shadow-lg transition-all duration-350 hover:shadow-2xl hover:border-[var(--nova-red)]/30 hover:-translate-y-2 relative overflow-hidden"
+              style={{
+                animationDelay: `${idx * 100}ms`,
+              }}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[var(--nova-red)]/5 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400 font-medium relative z-10">Model</p>
+              <h3 className="mt-3 text-2xl font-bold text-ink relative z-10">{tier.title}</h3>
+              <p className="mt-5 text-slate-600 leading-relaxed relative z-10">{tier.description}</p>
+              <ul className="mt-7 space-y-3.5 text-sm text-slate-700 relative z-10">
+                {tier.deliverables.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="h-2 w-2 rounded-full bg-[var(--nova-red)] mt-1.5 flex-shrink-0" />
+                    <span className="leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between text-slate-500 relative z-10">
+                <span className="text-xs uppercase tracking-[0.4em] font-medium">Investment</span>
+                <span className="text-2xl font-bold text-ink">{tier.price}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-20">
+        <div className="container-custom">
+          <div className="flex flex-col gap-10 rounded-3xl border border-slate-200/80 bg-white p-10 shadow-lg hover:shadow-xl transition-shadow duration-300 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl space-y-5">
+              <p className="text-xs uppercase tracking-[0.5em] text-[var(--nova-red)] font-semibold">Capabilities</p>
+              <h2 className="text-3xl font-bold text-ink">A modular stack to support the entire lifecycle.</h2>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                From positioning through to release engineering, we run fluid engagements that let us handle the messy middle—so you can make
+                sharper decisions, faster.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Development</h3>
-            <p className="text-gray-600 mb-6">
-              Custom website development using modern technologies like React, Next.js, and TypeScript. 
-              We build fast, responsive, and user-friendly websites.
-            </p>
-            <ul className="text-gray-600 space-y-2">
-              <li>• Custom web applications</li>
-              <li>• E-commerce solutions</li>
-              <li>• Mobile-responsive design</li>
-              <li>• SEO optimization</li>
-            </ul>
+            <div className="flex flex-wrap items-center gap-3">
+              {capabilityStack.flatMap(({ items }) => items).map((capability) => (
+                <span key={capability} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-600 font-medium hover:bg-slate-100 hover:border-slate-300 transition-colors">
+                  {capability}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Management</h3>
-            <p className="text-gray-600 mb-6">
-              Complete website management services to keep your online presence running smoothly. 
-              We handle the technical aspects so you can focus on your business.
-            </p>
-            <ul className="text-gray-600 space-y-2">
-              <li>• Content management</li>
-              <li>• Performance monitoring</li>
-              <li>• Security management</li>
-              <li>• Analytics reporting</li>
-            </ul>
-          </div>
-
-          <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Maintenance</h3>
-            <p className="text-gray-600 mb-6">
-              Regular maintenance and updates to keep your website secure, fast, and up-to-date. 
-              We provide ongoing support and improvements.
-            </p>
-            <ul className="text-gray-600 space-y-2">
-              <li>• Regular updates</li>
-              <li>• Security patches</li>
-              <li>• Backup management</li>
-              <li>• Technical support</li>
-            </ul>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {capabilityStack.map((stack) => (
+              <div key={stack.category} className="card">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400 font-medium">{stack.category}</p>
+                <ul className="mt-5 space-y-3 text-slate-700">
+                  {stack.items.map((item) => (
+                    <li key={item} className="text-sm flex items-start gap-2">
+                      <span className="h-1 w-1 rounded-full bg-[var(--nova-red)] mt-2 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        <div className="text-center mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to get started?
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Contact us today to discuss your project and see how we can help your business grow online.
-          </p>
-          <a
-            href="/contact"
-            className="inline-block bg-[#E72F2F] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#d02626] transition-colors"
-          >
-            Get In Touch
-          </a>
+      <section className="bg-white py-20">
+        <div className="container-custom">
+          <div className="rounded-3xl border border-slate-200/80 bg-white px-8 py-16 text-center shadow-lg hover:shadow-xl transition-shadow duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-gradient-to-br from-[var(--nova-red)]/5 to-transparent rounded-full blur-3xl" />
+            <div className="relative z-10">
+              <p className="text-xs uppercase tracking-[0.4em] text-[var(--nova-red)] font-semibold">Still evaluating?</p>
+              <h2 className="mt-5 text-3xl font-bold text-ink max-w-2xl mx-auto">Let's map your launch plan together.</h2>
+              <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600 leading-relaxed">
+                Book a 30-minute session and walk away with a recommended engagement model, draft budget envelope, and first sprint outline.
+              </p>
+              <a href="/contact" className="mt-8 inline-flex items-center justify-center btn-primary btn-large">
+                Plan My Launch
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

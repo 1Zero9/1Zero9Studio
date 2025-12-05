@@ -11,10 +11,7 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    company: '',
-    message: '',
-    projectType: 'website'
+    message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -50,10 +47,7 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
         setFormData({
           name: '',
           email: '',
-          phone: '',
-          company: '',
-          message: '',
-          projectType: 'website'
+          message: ''
         })
         setSubmitStatus('idle')
         if (onClose) onClose()
@@ -71,11 +65,11 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
   }
 
   return (
-    <div className="bg-dark-card/50 backdrop-blur-md border border-dark-lighter rounded-2xl p-6 md:p-8 shadow-2xl">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
       {showCloseButton && onClose && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-text-gray hover:text-text-light transition-colors"
+          className="absolute top-4 right-4 text-slate-400 hover:text-ink transition-colors"
           aria-label="Close form"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,8 +79,8 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
       )}
 
       <div className="mb-6">
-        <h3 className="text-2xl md:text-3xl font-bold text-text-light mb-2">Start Your Journey</h3>
-        <p className="text-text-gray">Fill out the form below and we'll get back to you within 24 hours.</p>
+        <h3 className="text-2xl md:text-3xl font-bold text-ink mb-2">Get in Touch</h3>
+        <p className="text-slate-600">We'll get back to you within 24 hours.</p>
       </div>
 
       {submitStatus === 'success' ? (
@@ -96,14 +90,14 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h4 className="text-xl font-bold text-text-light mb-2">Message Sent!</h4>
-          <p className="text-text-gray">We'll be in touch soon to discuss your project.</p>
+          <h4 className="text-xl font-bold text-ink mb-2">Message Sent!</h4>
+          <p className="text-slate-600">We'll be in touch soon to discuss your project.</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-5">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-text-light mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-ink mb-2">
                 Name *
               </label>
               <input
@@ -113,13 +107,13 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-dark-bg border border-dark-lighter rounded-lg text-text-light placeholder-text-gray focus:outline-none focus:border-rocket-red transition-colors"
+                className="w-full px-4 py-3 bg-cyan-50/30 border border-slate-200 rounded-lg text-ink placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-cyan-50 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 placeholder="John Doe"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-text-light mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-ink mb-2">
                 Email *
               </label>
               <input
@@ -129,79 +123,25 @@ export default function ContactForm({ onClose, showCloseButton = false }: Contac
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-dark-bg border border-dark-lighter rounded-lg text-text-light placeholder-text-gray focus:outline-none focus:border-rocket-red transition-colors"
+                className="w-full px-4 py-3 bg-cyan-50/30 border border-slate-200 rounded-lg text-ink placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-cyan-50 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                 placeholder="john@example.com"
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-text-light mb-2">
-                Phone
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-dark-bg border border-dark-lighter rounded-lg text-text-light placeholder-text-gray focus:outline-none focus:border-rocket-red transition-colors"
-                placeholder="+1 (234) 567-8900"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="company" className="block text-sm font-medium text-text-light mb-2">
-                Company
-              </label>
-              <input
-                type="text"
-                id="company"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-dark-bg border border-dark-lighter rounded-lg text-text-light placeholder-text-gray focus:outline-none focus:border-rocket-red transition-colors"
-                placeholder="Your Company"
-              />
-            </div>
-          </div>
-
           <div>
-            <label htmlFor="projectType" className="block text-sm font-medium text-text-light mb-2">
-              Project Type *
-            </label>
-            <select
-              id="projectType"
-              name="projectType"
-              required
-              value={formData.projectType}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-dark-bg border border-dark-lighter rounded-lg text-text-light focus:outline-none focus:border-rocket-red transition-colors"
-            >
-              <option value="website">Website Development</option>
-              <option value="app">Mobile App</option>
-              <option value="ecommerce">E-commerce</option>
-              <option value="redesign">Website Redesign</option>
-              <option value="maintenance">Maintenance & Support</option>
-              <option value="consulting">Consulting</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="message" className="block text-sm font-medium text-text-light mb-2">
-              Project Details *
+            <label htmlFor="message" className="block text-sm font-medium text-ink mb-2">
+              Message *
             </label>
             <textarea
               id="message"
               name="message"
               required
-              rows={5}
+              rows={6}
               value={formData.message}
               onChange={handleChange}
-              className="w-full px-4 py-3 bg-dark-bg border border-dark-lighter rounded-lg text-text-light placeholder-text-gray focus:outline-none focus:border-rocket-red transition-colors resize-none"
-              placeholder="Tell us about your project, timeline, and any specific requirements..."
+              className="w-full px-4 py-3 bg-cyan-50/30 border border-slate-200 rounded-lg text-ink placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:bg-cyan-50 focus:ring-2 focus:ring-cyan-400/20 transition-all resize-none"
+              placeholder="Tell us about your project..."
             />
           </div>
 
