@@ -6,8 +6,12 @@ import Navigation from './Navigation'
 export default function ConditionalNavigation() {
   const pathname = usePathname()
 
-  // Don't show navigation on builder or parkrun pages
-  if (pathname?.startsWith('/builder') || pathname?.startsWith('/parkrun')) {
+  // Don't show global navigation on full-app experiences
+  if (
+    pathname?.startsWith('/builder') ||
+    pathname?.startsWith('/parkrun') ||
+    pathname?.startsWith('/holiday-agent')
+  ) {
     return null
   }
 

@@ -2,8 +2,13 @@
   "name": "1zero9-studio",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20 <23"
+  },
   "scripts": {
-    "dev": "next dev",
+    "dev": "rm -rf .next && next dev",
+    "dev:fast": "next dev",
+    "clean:dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -16,16 +21,17 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "framer-motion": "^12.23.24",
-    "next": "15.0.7",
+    "next": "^15.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "resend": "^6.5.2",
     "typescript": "^5.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.0.0",
-    "eslint-config-next": "15.0.3",
+    "eslint-config-next": "^15.0.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18"
   }

@@ -258,6 +258,136 @@ video {
   color: var(--text-muted);
 }
 
+@layer components {
+  .ha-page {
+    @apply min-h-screen pt-8 pb-20 text-slate-900;
+    background:
+      radial-gradient(circle at 10% 8%, rgba(244, 114, 182, 0.18), transparent 30%),
+      radial-gradient(circle at 90% 0%, rgba(16, 185, 129, 0.16), transparent 34%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 34%, #f0fdf4 68%, #fff7ed 100%);
+  }
+
+  .ha-hero {
+    @apply relative overflow-hidden rounded-[2rem] border border-white/70 p-7 text-white shadow-[0_28px_90px_rgba(15,23,42,0.35)] md:p-10;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f172a 100%);
+  }
+
+  .ha-orb-1 {
+    @apply pointer-events-none absolute -left-14 -top-14 h-52 w-52 rounded-full blur-3xl;
+    background: rgba(16, 185, 129, 0.28);
+  }
+
+  .ha-orb-2 {
+    @apply pointer-events-none absolute -right-12 top-8 h-52 w-52 rounded-full blur-3xl;
+    background: rgba(244, 114, 182, 0.26);
+  }
+
+  .ha-orb-3 {
+    @apply pointer-events-none absolute -bottom-16 left-1/3 h-48 w-48 rounded-full blur-3xl;
+    background: rgba(56, 189, 248, 0.22);
+  }
+
+  .ha-panel {
+    @apply rounded-3xl border border-slate-200/80 bg-white/90 p-5 shadow-[0_14px_42px_rgba(15,23,42,0.08)];
+  }
+
+  .ha-panel-soft {
+    @apply rounded-2xl border border-slate-200/80 bg-white/85 p-4;
+  }
+
+  .ha-kpi {
+    @apply rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur;
+  }
+
+  .ha-chip {
+    @apply rounded-full border border-slate-300 bg-white/85 px-3 py-1 text-xs font-semibold text-slate-700;
+  }
+
+  .ha-btn-primary {
+    @apply rounded-xl bg-gradient-to-r from-emerald-300 to-teal-300 px-4 py-2.5 text-sm font-bold text-slate-900 transition hover:-translate-y-0.5 hover:from-emerald-200 hover:to-teal-200 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .ha-btn-secondary {
+    @apply rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:opacity-60;
+  }
+
+  .ha-field {
+    @apply text-sm;
+  }
+
+  .ha-label {
+    @apply mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600;
+  }
+
+  .ha-control {
+    @apply h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm transition;
+    @apply focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100;
+  }
+
+  .ha-input {
+    @apply ha-control;
+  }
+
+  .ha-select {
+    @apply ha-control pr-10;
+  }
+
+  .ha-number {
+    @apply ha-control;
+  }
+
+  .ha-checkbox {
+    @apply h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-200;
+  }
+
+  .ha-check-row {
+    @apply flex items-center gap-3 text-sm text-slate-700;
+  }
+
+  .holiday-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+  }
+
+  .holiday-kicker-soft {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+
+  .holiday-field-label {
+    margin-bottom: 0.25rem;
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #475569;
+  }
+
+  .holiday-field-label-strong {
+    margin-bottom: 0.25rem;
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: #475569;
+  }
+
+  .holiday-panel {
+    border-radius: 1.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.5rem;
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+    transition: box-shadow 300ms ease, transform 300ms ease;
+  }
+}
+
 ::selection {
   background: rgba(255, 41, 89, 0.25);
   color: var(--text-primary);
