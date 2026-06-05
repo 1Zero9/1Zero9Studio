@@ -674,21 +674,31 @@ function loop(now) {
   animationId = requestAnimationFrame(loop);
 }
 
-window.addEventListener("keydown", (event) => {
-  if (event.code === "Space" || event.code === "ArrowUp") {
-    event.preventDefault();
+function handleControl(code) {
+  if (code === "Space" || code === "ArrowUp") {
     if (state.mode === "ready" || state.mode === "ended") startGame();
     else jump();
-  } else if (event.code === "ArrowLeft") {
-    event.preventDefault();
+  } else if (code === "ArrowLeft") {
     changeSpeed(-1);
-  } else if (event.code === "ArrowRight") {
-    event.preventDefault();
+  } else if (code === "ArrowRight") {
     changeSpeed(1);
+  }
+}
+
+window.addEventListener("keydown", (event) => {
+  if (event.code === "Space" || event.code === "ArrowUp" || event.code === "ArrowLeft" || event.code === "ArrowRight") {
+    event.preventDefault();
+    handleControl(event.code);
   }
 });
 
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin || event.data?.type !== "parkrun-control") return;
+  handleControl(event.data.code);
+});
+
 canvas.addEventListener("pointerdown", () => {
+  canvas.focus();
   if (state.mode === "ready" || state.mode === "ended") startGame();
   else jump();
 });

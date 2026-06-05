@@ -1,3 +1,5 @@
+import ParkRunEmbed from './ParkRunEmbed'
+
 export const metadata = {
   title: "Park Run Dash | 1Zero9 Studio",
   description: "A playful Park Run 5km side-scrolling game built by 1Zero9 Studio.",
@@ -20,14 +22,7 @@ export default function ParkRunPage() {
           </a>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-hidden border-[4px] border-[#17324d] bg-[#73c5ef] shadow-[0_8px_0_#17324d]">
-          <iframe
-            src="/parkrun-dash/index.html"
-            title="Park Run Dash game"
-            className="block h-[78vh] min-h-[560px] w-full border-0"
-            allow="fullscreen"
-          />
-        </div>
+        <ParkRunEmbed />
       </section>
     </main>
   )
