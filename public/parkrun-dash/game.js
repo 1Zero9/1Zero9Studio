@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 const distanceEl = document.querySelector("#distance");
 const bestEl = document.querySelector("#best");
 const weatherEl = document.querySelector("#weather");
+const timerEl = document.querySelector("#timer");
 const speedEl = document.querySelector("#speed");
 const overlay = document.querySelector("#overlay");
 const startButton = document.querySelector("#start");
@@ -67,6 +68,7 @@ function resetGame(playing = false) {
     speedIndex: 1,
     weather,
     distanceKm: 0,
+    elapsedSeconds: 0,
     scroll: 0,
     finishX: W + 120,
     finishedAt: 0,
@@ -117,7 +119,15 @@ function updateHud() {
     ? `${state.weather.label} ${state.waterCount}x water`
     : state.weather.label;
   weatherEl.textContent = isHillActive() ? `${weatherText} + Hill` : weatherText;
+  timerEl.textContent = formatTime(state.elapsedSeconds);
   speedEl.textContent = `Pace x${speedSteps[state.speedIndex].toFixed(2)}`;
+}
+
+function formatTime(seconds) {
+  const wholeSeconds = Math.floor(seconds);
+  const minutes = Math.floor(wholeSeconds / 60).toString().padStart(2, "0");
+  const remainder = (wholeSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${remainder}`;
 }
 
 function currentRunSpeed() {
@@ -230,6 +240,7 @@ function update(dt) {
   updateWeather(dt, runSpeed);
 
   if (state.mode === "playing") {
+    state.elapsedSeconds += dt;
     state.distanceKm += runSpeed * distanceRate * dt;
     state.runner.stride += dt * (isHillActive() ? 7 : 13);
     state.jumpQueued = Math.max(0, state.jumpQueued - dt);
@@ -697,6 +708,13 @@ window.addEventListener("message", (event) => {
   handleControl(event.data.code);
 });
 
+function bindControlButton(button, code) {
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    handleControl(code);
+  });
+}
+
 canvas.addEventListener("pointerdown", () => {
   canvas.focus();
   if (state.mode === "ready" || state.mode === "ended") startGame();
@@ -705,8 +723,8 @@ canvas.addEventListener("pointerdown", () => {
 
 startButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", startGame);
-slowButton.addEventListener("click", () => changeSpeed(-1));
-fastButton.addEventListener("click", () => changeSpeed(1));
+bindControlButton(slowButton, "ArrowLeft");
+bindControlButton(fastButton, "ArrowRight");
 maleButton.addEventListener("click", () => chooseRunner("male"));
 femaleButton.addEventListener("click", () => chooseRunner("female"));
 
