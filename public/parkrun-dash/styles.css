@@ -259,7 +259,6 @@ canvas {
   body {
     display: block;
     min-height: 100svh;
-    overflow: hidden;
     padding: 2px 4px 74px;
   }
 

@@ -7,8 +7,8 @@ export const metadata = {
 
 export default function ParkRunPage() {
   return (
-    <main className="min-h-screen bg-[#86c7e8] px-3 py-3 text-[#17324d] max-lg:[@media_(orientation:landscape)]:p-0 sm:px-5 sm:py-6">
-      <section className="mx-auto flex min-h-[calc(100vh-1.5rem)] w-full max-w-7xl flex-col gap-3 max-lg:[@media_(orientation:landscape)]:min-h-[100svh] sm:gap-4">
+    <main className="min-h-screen bg-[#86c7e8] px-3 py-3 text-[#17324d] max-lg:[@media_(orientation:landscape)]:min-h-[calc(100dvh+128px)] max-lg:[@media_(orientation:landscape)]:p-0 sm:px-5 sm:py-6">
+      <section className="mx-auto flex min-h-[calc(100vh-1.5rem)] w-full max-w-7xl flex-col gap-3 max-lg:[@media_(orientation:landscape)]:min-h-[calc(100dvh+128px)] sm:gap-4">
         <header className="flex flex-col gap-3 max-lg:[@media_(orientation:landscape)]:hidden sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.22em]">1Zero9 Studio</p>

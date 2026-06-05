@@ -19,6 +19,21 @@ export default function ParkRunEmbed() {
     )
   }
 
+  const maximizeSafari = async () => {
+    iframeRef.current?.focus()
+
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen()
+      }
+    } catch {
+      // iOS Safari may reject Fullscreen API. The scroll nudge below is the fallback.
+    }
+
+    window.scrollTo({ top: 96, behavior: 'smooth' })
+    setTimeout(() => window.scrollTo({ top: 96 }), 250)
+  }
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!controlKeys.has(event.code)) return
@@ -53,6 +68,17 @@ export default function ParkRunEmbed() {
         />
       </div>
 
+      <button
+        type="button"
+        className="fixed right-[max(0.5rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-40 hidden min-h-10 border-[3px] border-[#17324d] bg-[#ffd85a] px-3 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-[#17324d] shadow-[0_4px_0_#17324d] active:translate-y-[3px] active:shadow-[0_1px_0_#17324d] max-lg:[@media_(orientation:landscape)]:block"
+        onPointerDown={(event) => {
+          event.preventDefault()
+          maximizeSafari()
+        }}
+      >
+        Max Screen
+      </button>
+
       <div className="fixed inset-x-0 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-40 mx-auto hidden w-[min(92vw,520px)] items-center justify-between gap-3 px-2 max-lg:[@media_(orientation:landscape)]:flex">
         {controlLabels.map((control) => (
           <button
@@ -70,6 +96,8 @@ export default function ParkRunEmbed() {
           </button>
         ))}
       </div>
+
+      <div className="hidden h-32 max-lg:[@media_(orientation:landscape)]:block" aria-hidden="true" />
     </>
   )
 }
