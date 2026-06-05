@@ -11,6 +11,7 @@ const controlLabels = [
 
 export default function ParkRunEmbed() {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const lastTapRef = useRef(0)
 
   const sendControl = (code: string) => {
     iframeRef.current?.contentWindow?.postMessage(
@@ -32,6 +33,13 @@ export default function ParkRunEmbed() {
 
     window.scrollTo({ top: 96, behavior: 'smooth' })
     setTimeout(() => window.scrollTo({ top: 96 }), 250)
+  }
+
+  const runTap = (action: () => void) => {
+    const now = Date.now()
+    if (now - lastTapRef.current < 140) return
+    lastTapRef.current = now
+    action()
   }
 
   useEffect(() => {
@@ -73,7 +81,14 @@ export default function ParkRunEmbed() {
         className="fixed right-[max(0.5rem,env(safe-area-inset-right))] top-[max(0.5rem,env(safe-area-inset-top))] z-40 hidden min-h-10 border-[3px] border-[#17324d] bg-[#ffd85a] px-3 font-mono text-[10px] font-black uppercase tracking-[0.12em] text-[#17324d] shadow-[0_4px_0_#17324d] active:translate-y-[3px] active:shadow-[0_1px_0_#17324d] max-lg:[@media_(orientation:landscape)]:block"
         onPointerDown={(event) => {
           event.preventDefault()
-          maximizeSafari()
+          runTap(maximizeSafari)
+        }}
+        onTouchStart={(event) => {
+          event.preventDefault()
+          runTap(maximizeSafari)
+        }}
+        onClick={() => {
+          runTap(maximizeSafari)
         }}
       >
         Max Screen
@@ -88,7 +103,14 @@ export default function ParkRunEmbed() {
             className="min-h-12 flex-1 border-[3px] border-[#17324d] bg-[#ffd85a] font-mono text-2xl font-black text-[#17324d] shadow-[0_4px_0_#17324d] active:translate-y-[3px] active:shadow-[0_1px_0_#17324d]"
             onPointerDown={(event) => {
               event.preventDefault()
-              sendControl(control.code)
+              runTap(() => sendControl(control.code))
+            }}
+            onTouchStart={(event) => {
+              event.preventDefault()
+              runTap(() => sendControl(control.code))
+            }}
+            onClick={() => {
+              runTap(() => sendControl(control.code))
             }}
           >
             <span aria-hidden="true">{control.label}</span>

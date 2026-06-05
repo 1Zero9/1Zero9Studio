@@ -708,25 +708,45 @@ window.addEventListener("message", (event) => {
   handleControl(event.data.code);
 });
 
-function bindControlButton(button, code) {
-  button.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    handleControl(code);
-  });
+let lastTapAt = 0;
+
+function runTap(action) {
+  const now = Date.now();
+  if (now - lastTapAt < 140) return;
+  lastTapAt = now;
+  action();
 }
 
-canvas.addEventListener("pointerdown", () => {
+function bindTap(target, action) {
+  target.addEventListener("touchstart", (event) => {
+    event.preventDefault();
+    runTap(action);
+  }, { passive: false });
+
+  target.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    runTap(action);
+  });
+
+  target.addEventListener("click", () => runTap(action));
+}
+
+function bindControlButton(button, code) {
+  bindTap(button, () => handleControl(code));
+}
+
+bindTap(canvas, () => {
   canvas.focus();
   if (state.mode === "ready" || state.mode === "ended") startGame();
   else jump();
 });
 
-startButton.addEventListener("click", startGame);
-restartButton.addEventListener("click", startGame);
+bindTap(startButton, startGame);
+bindTap(restartButton, startGame);
 bindControlButton(slowButton, "ArrowLeft");
 bindControlButton(fastButton, "ArrowRight");
-maleButton.addEventListener("click", () => chooseRunner("male"));
-femaleButton.addEventListener("click", () => chooseRunner("female"));
+bindTap(maleButton, () => chooseRunner("male"));
+bindTap(femaleButton, () => chooseRunner("female"));
 
 function chooseRunner(runner) {
   selectedRunner = runner;
