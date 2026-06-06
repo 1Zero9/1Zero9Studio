@@ -10,7 +10,8 @@ export default function ConditionalNavigation() {
   if (
     pathname?.startsWith('/builder') ||
     pathname?.startsWith('/parkrun') ||
-    pathname?.startsWith('/holiday-agent')
+    pathname?.startsWith('/holiday-agent') ||
+    pathname?.startsWith('/media-guide')
   ) {
     return null
   }

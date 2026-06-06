@@ -285,6 +285,11 @@ function App() {
     }
   }
 
+  async function logout() {
+    await fetch('/api/media-guide/logout', { method: 'POST' })
+    window.location.href = '/media-guide/login'
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -546,6 +551,9 @@ function App() {
               </div>
               <ChevronRight size={18} />
             </div>
+            <button className="primary-button secondary-action" type="button" onClick={logout}>
+              Sign Out
+            </button>
           </div>
         </section>
       )}
