@@ -5,23 +5,29 @@ import {
   Check,
   ChevronRight,
   Clapperboard,
+  Copy,
   Clock3,
+  Eye,
   Filter,
+  Heart,
+  ListPlus,
   MonitorPlay,
   Plus,
   RefreshCw,
   Search,
+  Send,
   Settings,
   Sparkles,
   Star,
   Trash2,
   Tv,
+  Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './media-guide.css'
 
-type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'settings'
+type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'lists' | 'settings'
 
 type TvMazeEpisode = {
   id: number
@@ -71,6 +77,25 @@ type WatchingItem = {
   done: boolean
 }
 
+type RecommendationList = {
+  id: string
+  name: string
+  shareSlug: string
+}
+
+type RecommendationItem = {
+  id: string
+  listId: string | null
+  tmdbId: number | null
+  mediaType: string
+  status: 'seen' | 'favorite' | 'recommend'
+  title: string
+  service: string
+  posterPath: string | null
+  overview: string
+  note: string
+}
+
 const defaultProviders: Provider[] = [
   { id: 0, label: 'Sky / NOW', match: ['Sky Go', 'NOW', 'Now TV'], enabled: true },
   { id: 0, label: 'Netflix', match: ['Netflix'], enabled: true },
@@ -115,6 +140,9 @@ function App() {
   const [cinema, setCinema] = useState<TmdbItem[]>([])
   const [tmdbLoading, setTmdbLoading] = useState(false)
   const [query, setQuery] = useState('')
+  const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
+  const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
+  const [selectedListId, setSelectedListId] = useState('')
 
   const enabledProviders = providers.filter((provider) => provider.enabled)
   const dueSoon = watching
@@ -209,6 +237,31 @@ function App() {
     }
   }, [setWatching])
 
+  useEffect(() => {
+    let ignore = false
+    async function loadRecommendations() {
+      try {
+        const response = await fetch('/api/media-guide/recommendations')
+        if (!response.ok) throw new Error('Recommendations API unavailable.')
+        const data = (await response.json()) as { lists: RecommendationList[]; items: RecommendationItem[] }
+        if (!ignore) {
+          setRecommendationLists(data.lists)
+          setRecommendationItems(data.items)
+          setSelectedListId((current) => current || data.lists[0]?.id || '')
+        }
+      } catch {
+        if (!ignore) {
+          setRecommendationLists([])
+          setRecommendationItems([])
+        }
+      }
+    }
+    loadRecommendations()
+    return () => {
+      ignore = true
+    }
+  }, [])
+
   function toggleProvider(label: string) {
     setProviders((current) =>
       current.map((provider) =>
@@ -279,6 +332,75 @@ function App() {
     }
   }
 
+  async function addRecommendation(item: TmdbItem, status: RecommendationItem['status']) {
+    const payload = {
+      action: 'add-item',
+      listId: status === 'recommend' ? selectedListId || null : null,
+      item: {
+        tmdbId: item.id,
+        mediaType: item.name ? 'tv' : 'movie',
+        status,
+        title: item.title ?? item.name ?? 'Untitled',
+        service: item.provider ?? 'Streaming',
+        posterPath: item.poster_path,
+        overview: item.overview,
+      },
+    }
+
+    const response = await fetch('/api/media-guide/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!response.ok) return
+    const saved = (await response.json()) as RecommendationItem
+    setRecommendationItems((current) => [saved, ...current])
+    if (status === 'recommend') setTab('lists')
+  }
+
+  async function createRecommendationList(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const name = String(data.get('name') ?? '').trim()
+    if (!name) return
+
+    const response = await fetch('/api/media-guide/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create-list', name }),
+    })
+    if (!response.ok) return
+    const list = (await response.json()) as RecommendationList
+    setRecommendationLists((current) => [list, ...current])
+    setSelectedListId(list.id)
+    event.currentTarget.reset()
+  }
+
+  async function removeRecommendationItem(id: string) {
+    setRecommendationItems((current) => current.filter((item) => item.id !== id))
+    await fetch('/api/media-guide/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete-item', itemId: id }),
+    })
+  }
+
+  async function removeRecommendationList(id: string) {
+    setRecommendationLists((current) => current.filter((list) => list.id !== id))
+    setRecommendationItems((current) => current.filter((item) => item.listId !== id))
+    if (selectedListId === id) setSelectedListId('')
+    await fetch('/api/media-guide/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete-list', listId: id }),
+    })
+  }
+
+  async function copyShareLink(slug: string) {
+    const url = `${window.location.origin}/media-guide/share/${slug}`
+    await navigator.clipboard.writeText(url)
+  }
+
   async function logout() {
     await fetch('/api/media-guide/logout', { method: 'POST' })
     window.location.href = '/media-guide/login'
@@ -318,6 +440,13 @@ function App() {
             <span>tracked</span>
           </div>
         </div>
+        <div className="signal">
+          <Users size={20} />
+          <div>
+            <strong>{recommendationLists.length}</strong>
+            <span>lists</span>
+          </div>
+        </div>
       </section>
 
       {dueSoon.length > 0 && (
@@ -351,6 +480,12 @@ function App() {
           icon={<Star size={18} />}
           label="My Shows"
           onClick={() => setTab('watching')}
+        />
+        <TabButton
+          active={tab === 'lists'}
+          icon={<ListPlus size={18} />}
+          label="Lists"
+          onClick={() => setTab('lists')}
         />
       </nav>
 
@@ -443,7 +578,16 @@ function App() {
               </button>
             ))}
           </div>
-          <MediaGrid items={streaming} onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))} />
+          <RecommendationTarget
+            lists={recommendationLists}
+            selectedListId={selectedListId}
+            onChange={setSelectedListId}
+          />
+          <MediaGrid
+            items={streaming}
+            onAction={addRecommendation}
+            onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
+          />
         </section>
       )}
 
@@ -457,7 +601,18 @@ function App() {
             <Clapperboard size={19} />
           </div>
           {cinema.length ? (
-            <MediaGrid items={cinema} onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))} />
+            <>
+              <RecommendationTarget
+                lists={recommendationLists}
+                selectedListId={selectedListId}
+                onChange={setSelectedListId}
+              />
+              <MediaGrid
+                items={cinema}
+                onAction={addRecommendation}
+                onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
+              />
+            </>
           ) : (
             <EmptyState title="TMDb releases will load once TMDB_API_KEY is available on the server" />
           )}
@@ -509,6 +664,73 @@ function App() {
                 </button>
               </article>
             ))}
+          </div>
+        </section>
+      )}
+
+      {tab === 'lists' && (
+        <section className="view">
+          <form className="add-form" onSubmit={createRecommendationList}>
+            <input name="name" placeholder="List name, e.g. Films for Dad" required />
+            <button className="primary-button" type="submit">
+              <ListPlus size={18} />
+              Create Share List
+            </button>
+          </form>
+
+          <div className="status-rail">
+            <StatusBucket
+              icon={<Eye size={17} />}
+              items={recommendationItems.filter((item) => item.status === 'seen')}
+              label="Seen"
+              onRemove={removeRecommendationItem}
+            />
+            <StatusBucket
+              icon={<Heart size={17} />}
+              items={recommendationItems.filter((item) => item.status === 'favorite')}
+              label="Favorites"
+              onRemove={removeRecommendationItem}
+            />
+          </div>
+
+          <div className="recommendation-lists">
+            {recommendationLists.map((list) => {
+              const listItems = recommendationItems.filter((item) => item.listId === list.id)
+              return (
+                <article className="recommendation-list" key={list.id}>
+                  <div className="list-heading">
+                    <div>
+                      <p className="eyebrow">Share list</p>
+                      <h2>{list.name}</h2>
+                      <span>{listItems.length} recommendations</span>
+                    </div>
+                    <div className="list-actions">
+                      <button type="button" onClick={() => copyShareLink(list.shareSlug)}>
+                        <Copy size={16} />
+                        Copy Link
+                      </button>
+                      <button type="button" onClick={() => removeRecommendationList(list.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mini-list">
+                    {listItems.map((item) => (
+                      <div className="mini-item" key={item.id}>
+                        <span>{item.title}</span>
+                        <button type="button" onClick={() => removeRecommendationItem(item.id)}>
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    ))}
+                    {listItems.length === 0 && <p className="muted-copy">Choose this list on Streaming or Cinema, then tap Recommend.</p>}
+                  </div>
+                </article>
+              )
+            })}
+            {recommendationLists.length === 0 && (
+              <EmptyState title="Create a list for someone" detail="Then add titles from Streaming or Cinema and share the link." />
+            )}
           </div>
         </section>
       )}
@@ -566,7 +788,15 @@ function TabButton({
   )
 }
 
-function MediaGrid({ items, onTrack }: { items: TmdbItem[]; onTrack: (item: TmdbItem) => void }) {
+function MediaGrid({
+  items,
+  onAction,
+  onTrack,
+}: {
+  items: TmdbItem[]
+  onAction: (item: TmdbItem, status: RecommendationItem['status']) => void
+  onTrack: (item: TmdbItem) => void
+}) {
   return (
     <div className="media-grid">
       {items.map((item) => (
@@ -583,13 +813,91 @@ function MediaGrid({ items, onTrack }: { items: TmdbItem[]; onTrack: (item: Tmdb
             <h2>{item.title ?? item.name}</h2>
             <p>{item.overview || 'No summary available.'}</p>
           </div>
-          <button type="button" onClick={() => onTrack(item)}>
-            <Plus size={16} />
-            Track
-          </button>
+          <div className="media-actions">
+            <button type="button" onClick={() => onTrack(item)}>
+              <Plus size={16} />
+              Track
+            </button>
+            <button type="button" onClick={() => onAction(item, 'seen')}>
+              <Eye size={16} />
+              Seen
+            </button>
+            <button type="button" onClick={() => onAction(item, 'favorite')}>
+              <Heart size={16} />
+              Fav
+            </button>
+            <button type="button" onClick={() => onAction(item, 'recommend')}>
+              <Send size={16} />
+              Recommend
+            </button>
+          </div>
         </article>
       ))}
     </div>
+  )
+}
+
+function RecommendationTarget({
+  lists,
+  onChange,
+  selectedListId,
+}: {
+  lists: RecommendationList[]
+  onChange: (id: string) => void
+  selectedListId: string
+}) {
+  if (!lists.length) {
+    return <p className="notice">Create a share list in Lists to send recommendations to someone.</p>
+  }
+
+  return (
+    <label className="field list-target">
+      <Send size={17} />
+      <select value={selectedListId} onChange={(event) => onChange(event.target.value)}>
+        {lists.map((list) => (
+          <option key={list.id} value={list.id}>
+            Recommend to {list.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function StatusBucket({
+  icon,
+  items,
+  label,
+  onRemove,
+}: {
+  icon: ReactNode
+  items: RecommendationItem[]
+  label: string
+  onRemove: (id: string) => void
+}) {
+  return (
+    <article className="status-bucket">
+      <div className="list-heading">
+        <div>
+          <p className="eyebrow">{label}</p>
+          <h2>
+            {icon}
+            {items.length}
+          </h2>
+        </div>
+      </div>
+      <div className="mini-list">
+        {items.slice(0, 6).map((item) => (
+          <div className="mini-item" key={item.id}>
+            <span>{item.title}</span>
+            <button type="button" onClick={() => onRemove(item.id)}>
+              <Trash2 size={15} />
+            </button>
+          </div>
+        ))}
+        {!items.length && <p className="muted-copy">Nothing here yet.</p>}
+      </div>
+    </article>
   )
 }
 

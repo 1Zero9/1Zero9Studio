@@ -12,7 +12,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  if (pathname === '/media-guide/login' || pathname === '/api/media-guide/login') {
+  if (
+    pathname === '/media-guide/login' ||
+    pathname === '/api/media-guide/login' ||
+    pathname.startsWith('/media-guide/share/')
+  ) {
     return NextResponse.next()
   }
 
