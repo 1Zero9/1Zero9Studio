@@ -19,6 +19,7 @@ import {
   Settings,
   Sparkles,
   Star,
+  Sun,
   Trash2,
   Tv,
   ThumbsDown,
@@ -29,6 +30,8 @@ import type { FormEvent, ReactNode } from 'react'
 import './media-guide.css'
 
 type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'lists' | 'settings'
+type ThemeMode = 'dark' | 'light'
+type ListingTimeMode = 'from_now' | 'full_day'
 
 type TvMazeEpisode = {
   id: number | string
@@ -163,11 +166,17 @@ const starterSkyChannelMatches = [
 
 function App() {
   const [tab, setTab] = useState<Tab>('today')
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10))
+  const [selectedDate, setSelectedDate] = useState(() => formatIrelandDate(new Date()))
   const [tvItems, setTvItems] = useState<TvMazeEpisode[]>([])
   const [tvChannels, setTvChannels] = useState<EpgChannel[]>([])
   const [tvLoading, setTvLoading] = useState(false)
   const [tvError, setTvError] = useState('')
+  const [themeMode, setThemeMode] = useStoredState<ThemeMode>('mediaguide.themeMode', 'dark')
+  const [listingTimeMode, setListingTimeMode] = useStoredState<ListingTimeMode>(
+    'mediaguide.listingTimeMode',
+    'from_now',
+  )
+  const [now, setNow] = useState(() => new Date())
   const [channelMode, setChannelMode] = useStoredState<'favorites' | 'all'>('mediaguide.channelMode', 'favorites')
   const [favoriteChannelIds, setFavoriteChannelIds] = useStoredState<string[] | null>(
     'mediaguide.favoriteChannelIds',
@@ -265,15 +274,21 @@ function App() {
 
   const filteredTvItems = useMemo(() => {
     const term = query.trim().toLowerCase()
+    const isToday = selectedDate === formatIrelandDate(new Date())
+    const currentTime = now.getTime()
     return tvItems.filter((item) => {
       const channelId = getProgrammeChannelId(item)
       const channel = item.show.network?.name ?? item.show.webChannel?.name ?? ''
       const matchesChannel = channelFilter === 'all' || channelId === channelFilter
       const matchesMode = channelFilter !== 'all' || channelMode === 'all' || favoriteChannelSet.has(channelId)
       const matchesTerm = !term || `${item.show.name} ${item.name} ${channel}`.toLowerCase().includes(term)
-      return matchesChannel && matchesMode && matchesTerm
+      const startTime = Date.parse(item.airstamp)
+      const endTime = startTime + (item.runtime ?? 180) * 60 * 1000
+      const matchesTime =
+        listingTimeMode === 'full_day' || !isToday || endTime >= currentTime - 1000 * 60 * 5
+      return matchesChannel && matchesMode && matchesTerm && matchesTime
     })
-  }, [channelFilter, channelMode, favoriteChannelSet, query, tvItems])
+  }, [channelFilter, channelMode, favoriteChannelSet, listingTimeMode, now, query, selectedDate, tvItems])
 
   const visibleStreamingItems = useMemo(
     () => filterDiscoveryItems(filteredStreamingItems, discoveryQuery, discoveryGenreId),
@@ -310,6 +325,11 @@ function App() {
       ignore = true
     }
   }, [selectedDate, selectedChannelKey])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000 * 60)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let ignore = false
@@ -591,7 +611,7 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={themeMode === 'light' ? 'app-shell light-mode' : 'app-shell'}>
       {toast && <div className="toast">{toast}</div>}
       <header className="topbar">
         <div>
@@ -699,6 +719,22 @@ function App() {
                 ))}
               </select>
             </label>
+            <div className="segmented-actions time-scope" aria-label="Listing time range">
+              <button
+                className={listingTimeMode === 'from_now' ? 'active' : ''}
+                type="button"
+                onClick={() => setListingTimeMode('from_now')}
+              >
+                From now
+              </button>
+              <button
+                className={listingTimeMode === 'full_day' ? 'active' : ''}
+                type="button"
+                onClick={() => setListingTimeMode('full_day')}
+              >
+                Full day
+              </button>
+            </div>
           </div>
           <section className="channel-panel" aria-label="Sky channel favourites">
             <div className="channel-panel-heading">
@@ -712,7 +748,9 @@ function App() {
                 <span>
                   {channelFilter === 'all'
                     ? `${favoriteChannels.length || effectiveFavoriteChannelIds.length} favourites from ${channelOptions.length || 'the'} channel roster`
-                    : 'Showing the full day for this channel'}
+                    : selectedDate === formatIrelandDate(new Date()) && listingTimeMode === 'from_now'
+                      ? 'Showing from now for this channel'
+                      : 'Showing the full day for this channel'}
                 </span>
               </div>
               <div className="segmented-actions">
@@ -820,8 +858,12 @@ function App() {
               ))}
             {!tvLoading && filteredTvItems.length === 0 && (
               <EmptyState
-                title="No Irish EPG listings found today"
-                detail="The Sky Ireland XMLTV feed may not have programmes for this date yet."
+                title={listingTimeMode === 'from_now' ? 'No more listings in this view' : 'No Irish EPG listings found today'}
+                detail={
+                  listingTimeMode === 'from_now'
+                    ? 'Switch to Full day to see earlier programmes for the selected date.'
+                    : 'The Sky Ireland XMLTV feed may not have programmes for this date yet.'
+                }
               />
             )}
           </div>
@@ -1051,6 +1093,56 @@ function App() {
       {tab === 'settings' && (
         <section className="view">
           <div className="settings-panel">
+            <div className="settings-roadmap">
+              <p className="eyebrow">Display</p>
+              <h2>Theme and listings</h2>
+              <div className="settings-controls">
+                <div>
+                  <strong>Theme</strong>
+                  <span>Use the dark performance look or a lighter daylight version.</span>
+                </div>
+                <div className="segmented-actions">
+                  <button
+                    className={themeMode === 'dark' ? 'active' : ''}
+                    type="button"
+                    onClick={() => setThemeMode('dark')}
+                  >
+                    <Settings size={14} />
+                    Dark
+                  </button>
+                  <button
+                    className={themeMode === 'light' ? 'active' : ''}
+                    type="button"
+                    onClick={() => setThemeMode('light')}
+                  >
+                    <Sun size={14} />
+                    Light
+                  </button>
+                </div>
+              </div>
+              <div className="settings-controls">
+                <div>
+                  <strong>Today listings</strong>
+                  <span>Keep Today focused on what is still to come, or show the whole day.</span>
+                </div>
+                <div className="segmented-actions">
+                  <button
+                    className={listingTimeMode === 'from_now' ? 'active' : ''}
+                    type="button"
+                    onClick={() => setListingTimeMode('from_now')}
+                  >
+                    From now
+                  </button>
+                  <button
+                    className={listingTimeMode === 'full_day' ? 'active' : ''}
+                    type="button"
+                    onClick={() => setListingTimeMode('full_day')}
+                  >
+                    Full day
+                  </button>
+                </div>
+              </div>
+            </div>
             <h2>Data Sources</h2>
             <p>
               TV uses the Ireland XMLTV EPG feed. Streaming and cinema use TMDb with watch region IE through the protected server
@@ -1378,6 +1470,17 @@ function statusLabel(status: RecommendationItem['status'], title: string) {
 function formatTime(value: string) {
   if (!value) return 'TBC'
   return new Intl.DateTimeFormat('en-IE', { hour: '2-digit', minute: '2-digit' }).format(new Date(value))
+}
+
+function formatIrelandDate(date: Date) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: 'Europe/Dublin',
+    year: 'numeric',
+  }).formatToParts(date)
+  const map = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+  return `${map.year}-${map.month}-${map.day}`
 }
 
 function formatShortDate(value: string) {

@@ -32,6 +32,22 @@
   padding: 18px 16px 104px;
 }
 
+.app-shell.light-mode {
+  --mg-ink: #14211f;
+  --mg-muted: #526963;
+  --mg-dim: #7a918b;
+  --mg-bg: #f3f7f3;
+  --mg-panel: rgba(255, 255, 255, 0.78);
+  --mg-panel-strong: rgba(255, 255, 255, 0.95);
+  --mg-border: rgba(0, 94, 88, 0.16);
+  --mg-shadow: 0 18px 44px rgba(17, 46, 41, 0.14);
+  background:
+    linear-gradient(172deg, rgba(0, 118, 111, 0.08) 0 1px, transparent 1px 100%),
+    radial-gradient(circle at 18% -5%, rgba(0, 208, 195, 0.24), transparent 23rem),
+    radial-gradient(circle at 90% 8%, rgba(215, 255, 50, 0.26), transparent 18rem),
+    linear-gradient(180deg, #fbfff8 0%, var(--mg-bg) 52%, #eaf2ed 100%);
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -133,6 +149,12 @@
     linear-gradient(110deg, rgba(255, 255, 255, 0.2), transparent 24%),
     linear-gradient(145deg, rgba(0, 208, 195, 0.82), rgba(0, 81, 80, 0.9) 48%, rgba(4, 15, 14, 0.96));
   box-shadow: var(--mg-shadow);
+}
+
+.light-mode .topbar {
+  background:
+    linear-gradient(110deg, rgba(255, 255, 255, 0.62), transparent 28%),
+    linear-gradient(145deg, rgba(0, 208, 195, 0.58), rgba(235, 255, 249, 0.92) 54%, rgba(255, 255, 255, 0.96));
 }
 
 .topbar::after {
@@ -500,6 +522,13 @@ button:disabled {
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
 }
 
+.light-mode .channel-panel {
+  background:
+    linear-gradient(135deg, rgba(0, 208, 195, 0.14), transparent 38%),
+    rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 28px rgba(17, 46, 41, 0.1);
+}
+
 .channel-panel-heading {
   display: flex;
   justify-content: space-between;
@@ -542,7 +571,16 @@ button:disabled {
 }
 
 .segmented-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 8px 10px;
+}
+
+.time-scope {
+  flex: 0 0 auto;
+  min-height: 48px;
 }
 
 .segmented-actions button.active {
@@ -948,6 +986,31 @@ button:disabled {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.settings-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--mg-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-controls > div:first-child {
+  min-width: 0;
+}
+
+.settings-controls strong,
+.settings-controls span {
+  display: block;
+}
+
+.settings-controls span {
+  color: var(--mg-muted);
+  font-size: 13px;
+}
+
 .genre-preferences {
   display: flex;
   gap: 8px;
@@ -1118,6 +1181,11 @@ button:disabled {
     box-shadow: 0 18px 54px rgba(0, 0, 0, 0.36), 0 0 0 1px rgba(215, 255, 50, 0.08);
   }
 
+  .light-mode .tabs {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 18px 54px rgba(17, 46, 41, 0.16), 0 0 0 1px rgba(0, 118, 111, 0.06);
+  }
+
   .tab {
     min-width: 0;
     height: 52px;
@@ -1136,6 +1204,17 @@ button:disabled {
   .tool-row,
   .form-grid,
   .discovery-filters {
+    flex-direction: column;
+  }
+
+  .time-scope,
+  .settings-controls,
+  .settings-controls .segmented-actions {
+    width: 100%;
+  }
+
+  .settings-controls {
+    align-items: stretch;
     flex-direction: column;
   }
 
