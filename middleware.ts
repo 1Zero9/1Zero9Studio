@@ -21,17 +21,24 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(sessionCookie)?.value
 
   if (password && secret && token && (await isValidToken(token, password, secret))) {
-    return NextResponse.next()
+    const response = NextResponse.next()
+    response.headers.set('Cache-Control', 'no-store')
+    return response
   }
 
   if (isMediaGuideApi) {
-    return NextResponse.json({ error: 'Media Guide login required.' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Media Guide login required.' },
+      { status: 401, headers: { 'Cache-Control': 'no-store' } },
+    )
   }
 
   const loginUrl = request.nextUrl.clone()
   loginUrl.pathname = '/media-guide/login'
   loginUrl.searchParams.set('next', pathname)
-  return NextResponse.redirect(loginUrl)
+  const response = NextResponse.redirect(loginUrl)
+  response.headers.set('Cache-Control', 'no-store')
+  return response
 }
 
 export const config = {
