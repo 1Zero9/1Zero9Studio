@@ -484,6 +484,125 @@ button:disabled {
   margin-bottom: 12px;
 }
 
+.channel-panel {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--mg-border);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 12px 28px rgba(28, 43, 38, 0.08);
+}
+
+.channel-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.channel-panel-heading h2 {
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.channel-panel-heading span {
+  display: block;
+  margin-top: 3px;
+  color: var(--mg-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.segmented-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 4px;
+  border: 1px solid var(--mg-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.segmented-actions button,
+.channel-actions button,
+.chip-star {
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--mg-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.segmented-actions button {
+  padding: 8px 10px;
+}
+
+.segmented-actions button.active {
+  background: linear-gradient(135deg, var(--mg-teal), #23a6ff);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0, 169, 130, 0.2);
+}
+
+.channel-chip-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 10px;
+}
+
+.channel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  max-width: 260px;
+  padding: 5px;
+  border: 1px solid var(--mg-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.channel-chip.favorite {
+  border-color: rgba(0, 169, 130, 0.32);
+  background: rgba(0, 169, 130, 0.08);
+}
+
+.channel-open {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--mg-ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.channel-open span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-star {
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.channel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.channel-actions button {
+  padding: 8px 10px;
+  border: 1px solid var(--mg-border);
+  background: rgba(255, 255, 255, 0.55);
+}
+
 .refresh-note {
   display: block;
   margin-top: 3px;
@@ -1011,6 +1130,18 @@ button:disabled {
   .form-grid,
   .discovery-filters {
     flex-direction: column;
+  }
+
+  .channel-panel-heading {
+    flex-direction: column;
+  }
+
+  .segmented-actions {
+    width: 100%;
+  }
+
+  .segmented-actions button {
+    flex: 1;
   }
 
   .compact {

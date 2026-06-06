@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { hasMediaGuideSession } from '@/lib/media-guide-auth'
 
 type EpgChannel = {
+  id: string
   icon?: string
   name: string
 }
@@ -21,12 +22,18 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date') || new Date().toISOString().slice(0, 10)
+  const channelIds = searchParams
+    .get('channels')
+    ?.split(',')
+    .map((channel) => channel.trim())
+    .filter(Boolean)
   const xml = await getXml()
   const channels = parseChannels(xml)
-  const schedule = parseProgrammes(xml, channels, date)
+  const schedule = parseProgrammes(xml, channels, date, channelIds)
 
   return NextResponse.json(
     {
+      channels: Array.from(channels.values()).sort((a, b) => a.name.localeCompare(b.name)),
       source: 'epgshare01 IE1 XMLTV',
       schedule,
     },
@@ -38,8 +45,8 @@ async function getXml() {
   if (cachedXml && Date.now() < cacheExpires) return cachedXml
 
   const response = await fetch(epgUrl, {
+    cache: 'no-store',
     headers: { 'User-Agent': 'MediaGuide/1.0' },
-    next: { revalidate: 60 * 60 * 4 },
   })
   if (!response.ok) throw new Error('Could not load EPG feed.')
 
@@ -58,7 +65,9 @@ function parseChannels(xml: string) {
     const [, id, body] = match
     const name = body.match(/<display-name[^>]*>([\s\S]*?)<\/display-name>/)?.[1]
     const icon = body.match(/<icon[^>]*src="([^"]+)"/)?.[1]
-    channels.set(decodeXml(id), {
+    const channelId = decodeXml(id)
+    channels.set(channelId, {
+      id: channelId,
       icon: icon ? decodeXml(icon) : undefined,
       name: decodeXml(stripTags(name || id)),
     })
@@ -67,8 +76,9 @@ function parseChannels(xml: string) {
   return channels
 }
 
-function parseProgrammes(xml: string, channels: Map<string, EpgChannel>, date: string) {
+function parseProgrammes(xml: string, channels: Map<string, EpgChannel>, date: string, channelIds?: string[]) {
   const rows = []
+  const requestedChannels = channelIds?.length ? new Set(channelIds) : null
   const programmeRegex = /<programme\s+([^>]+)>([\s\S]*?)<\/programme>/g
   let match: RegExpExecArray | null
   let index = 0
@@ -79,6 +89,7 @@ function parseProgrammes(xml: string, channels: Map<string, EpgChannel>, date: s
     const stopRaw = attrs.match(/stop="([^"]+)"/)?.[1]
     const channelId = decodeXml(attrs.match(/channel="([^"]+)"/)?.[1] || '')
     if (!startRaw || !channelId) continue
+    if (requestedChannels && !requestedChannels.has(channelId)) continue
 
     const start = parseXmltvDate(startRaw)
     if (formatIrelandDate(start) !== date) continue
@@ -114,7 +125,7 @@ function parseProgrammes(xml: string, channels: Map<string, EpgChannel>, date: s
     })
   }
 
-  return rows.sort((a, b) => a.airstamp.localeCompare(b.airstamp)).slice(0, 900)
+  return rows.sort((a, b) => a.airstamp.localeCompare(b.airstamp)).slice(0, requestedChannels ? 1800 : 900)
 }
 
 function parseXmltvDate(value: string) {

@@ -39,7 +39,7 @@ type TvMazeEpisode = {
   airstamp: string
   runtime: number | null
   show: {
-    id: number
+    id: number | string
     name: string
     type: string
     language: string
@@ -47,6 +47,12 @@ type TvMazeEpisode = {
     network?: { name: string }
     webChannel?: { name: string }
   }
+}
+
+type EpgChannel = {
+  id: string
+  icon?: string
+  name: string
 }
 
 type TmdbItem = {
@@ -129,12 +135,44 @@ const starterWatching: WatchingItem[] = [
   },
 ]
 
+const starterSkyChannelMatches = [
+  'RTÉ One',
+  'RTE One',
+  'RTÉ2',
+  'RTE2',
+  'Virgin Media One',
+  'Virgin Media Two',
+  'Virgin Media Three',
+  'TG4',
+  'BBC One',
+  'BBC Two',
+  'UTV',
+  'Channel 4',
+  'Sky Showcase',
+  'Sky Atlantic',
+  'Sky Max',
+  'Sky Cinema Premiere',
+  'Sky Sports Main Event',
+  'Sky Sports Premier League',
+  'Sky Sports F1',
+  'Sky News',
+  'Comedy Central',
+  'Discovery',
+  'National Geographic',
+]
+
 function App() {
   const [tab, setTab] = useState<Tab>('today')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10))
   const [tvItems, setTvItems] = useState<TvMazeEpisode[]>([])
+  const [tvChannels, setTvChannels] = useState<EpgChannel[]>([])
   const [tvLoading, setTvLoading] = useState(false)
   const [tvError, setTvError] = useState('')
+  const [channelMode, setChannelMode] = useStoredState<'favorites' | 'all'>('mediaguide.channelMode', 'favorites')
+  const [favoriteChannelIds, setFavoriteChannelIds] = useStoredState<string[] | null>(
+    'mediaguide.favoriteChannelIds',
+    null,
+  )
   const [providers, setProviders] = useStoredState<Provider[]>('mediaguide.providers', defaultProviders)
   const [hiddenGenreIds, setHiddenGenreIds] = useStoredState<number[]>('mediaguide.hiddenGenres', [])
   const [watching, setWatching] = useStoredState<WatchingItem[]>('mediaguide.watching', starterWatching)
@@ -187,21 +225,55 @@ function App() {
       .filter((genre): genre is { id: number; name: string } => Boolean(genre.name))
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [cinema, genreMap, streaming])
+  const suggestedFavoriteChannelIds = useMemo(() => {
+    if (!tvChannels.length) return []
+    return tvChannels
+      .filter((channel) => {
+        const normalizedName = channel.name.toLowerCase()
+        return starterSkyChannelMatches.some((candidate) => normalizedName.includes(candidate.toLowerCase()))
+      })
+      .map((channel) => channel.id)
+      .slice(0, 28)
+  }, [tvChannels])
+  const effectiveFavoriteChannelIds = favoriteChannelIds ?? suggestedFavoriteChannelIds
+  const favoriteChannelSet = useMemo(() => new Set(effectiveFavoriteChannelIds), [effectiveFavoriteChannelIds])
+  const selectedChannelIds = useMemo(() => {
+    if (channelFilter !== 'all') return [channelFilter]
+    if (channelMode === 'favorites') return effectiveFavoriteChannelIds
+    return []
+  }, [channelFilter, channelMode, effectiveFavoriteChannelIds])
+  const selectedChannelKey = selectedChannelIds.join(',')
+  const favoriteChannels = useMemo(
+    () => tvChannels.filter((channel) => favoriteChannelSet.has(channel.id)),
+    [favoriteChannelSet, tvChannels],
+  )
   const channelOptions = useMemo(() => {
-    const channels = new Set<string>()
-    tvItems.forEach((item) => channels.add(item.show.network?.name ?? item.show.webChannel?.name ?? 'Ireland TV'))
-    return Array.from(channels).sort((a, b) => a.localeCompare(b))
-  }, [tvItems])
+    return tvChannels.length
+      ? tvChannels
+      : Array.from(
+          new Map(
+            tvItems.map((item) => [
+              getProgrammeChannelId(item),
+              {
+                id: getProgrammeChannelId(item),
+                name: item.show.network?.name ?? item.show.webChannel?.name ?? 'Ireland TV',
+              },
+            ]),
+          ).values(),
+        ).sort((a, b) => a.name.localeCompare(b.name))
+  }, [tvChannels, tvItems])
 
   const filteredTvItems = useMemo(() => {
     const term = query.trim().toLowerCase()
     return tvItems.filter((item) => {
+      const channelId = getProgrammeChannelId(item)
       const channel = item.show.network?.name ?? item.show.webChannel?.name ?? ''
-      const matchesChannel = channelFilter === 'all' || channel === channelFilter
+      const matchesChannel = channelFilter === 'all' || channelId === channelFilter
+      const matchesMode = channelFilter !== 'all' || channelMode === 'all' || favoriteChannelSet.has(channelId)
       const matchesTerm = !term || `${item.show.name} ${item.name} ${channel}`.toLowerCase().includes(term)
-      return matchesChannel && matchesTerm
+      return matchesChannel && matchesMode && matchesTerm
     })
-  }, [channelFilter, query, tvItems])
+  }, [channelFilter, channelMode, favoriteChannelSet, query, tvItems])
 
   const visibleStreamingItems = useMemo(
     () => filterDiscoveryItems(filteredStreamingItems, discoveryQuery, discoveryGenreId),
@@ -218,10 +290,15 @@ function App() {
       setTvLoading(true)
       setTvError('')
       try {
-        const response = await fetch(`/api/media-guide/epg?date=${encodeURIComponent(selectedDate)}`)
+        const params = new URLSearchParams({ date: selectedDate })
+        if (selectedChannelKey) params.set('channels', selectedChannelKey)
+        const response = await fetch(`/api/media-guide/epg?${params.toString()}`)
         if (!response.ok) throw new Error('Could not load Irish TV schedule.')
-        const data = (await response.json()) as { schedule: TvMazeEpisode[] }
-        if (!ignore) setTvItems(data.schedule)
+        const data = (await response.json()) as { channels?: EpgChannel[]; schedule: TvMazeEpisode[] }
+        if (!ignore) {
+          setTvChannels(data.channels ?? [])
+          setTvItems(data.schedule)
+        }
       } catch (error) {
         if (!ignore) setTvError(error instanceof Error ? error.message : 'Could not load TV schedule.')
       } finally {
@@ -232,7 +309,7 @@ function App() {
     return () => {
       ignore = true
     }
-  }, [selectedDate])
+  }, [selectedDate, selectedChannelKey])
 
   useEffect(() => {
     let ignore = false
@@ -343,6 +420,24 @@ function App() {
         provider.label === label ? { ...provider, enabled: !provider.enabled } : provider,
       ),
     )
+  }
+
+  function toggleFavoriteChannel(channelId: string) {
+    setFavoriteChannelIds((current) => {
+      const next = new Set(current ?? effectiveFavoriteChannelIds)
+      if (next.has(channelId)) {
+        next.delete(channelId)
+      } else {
+        next.add(channelId)
+      }
+      return Array.from(next)
+    })
+  }
+
+  function resetFavoriteChannels() {
+    setFavoriteChannelIds(null)
+    setChannelMode('favorites')
+    setChannelFilter('all')
   }
 
   function refreshSources() {
@@ -594,15 +689,90 @@ function App() {
             <label className="field compact">
               <Filter size={17} />
               <select value={channelFilter} onChange={(event) => setChannelFilter(event.target.value)}>
-                <option value="all">All channels</option>
+                <option value="all">
+                  {channelMode === 'favorites' ? 'Favourite channels' : 'All channels'}
+                </option>
                 {channelOptions.map((channel) => (
-                  <option key={channel} value={channel}>
-                    {channel}
+                  <option key={channel.id} value={channel.id}>
+                    {channel.name}
                   </option>
                 ))}
               </select>
             </label>
           </div>
+          <section className="channel-panel" aria-label="Sky channel favourites">
+            <div className="channel-panel-heading">
+              <div>
+                <p className="eyebrow">Sky channels</p>
+                <h2>
+                  {channelFilter === 'all'
+                    ? 'Your channel list'
+                    : channelOptions.find((channel) => channel.id === channelFilter)?.name ?? 'Selected channel'}
+                </h2>
+                <span>
+                  {channelFilter === 'all'
+                    ? `${favoriteChannels.length || effectiveFavoriteChannelIds.length} favourites from ${channelOptions.length || 'the'} channel roster`
+                    : 'Showing the full day for this channel'}
+                </span>
+              </div>
+              <div className="segmented-actions">
+                <button
+                  className={channelMode === 'favorites' && channelFilter === 'all' ? 'active' : ''}
+                  type="button"
+                  onClick={() => {
+                    setChannelMode('favorites')
+                    setChannelFilter('all')
+                  }}
+                >
+                  Favourites
+                </button>
+                <button
+                  className={channelMode === 'all' && channelFilter === 'all' ? 'active' : ''}
+                  type="button"
+                  onClick={() => {
+                    setChannelMode('all')
+                    setChannelFilter('all')
+                  }}
+                >
+                  All
+                </button>
+              </div>
+            </div>
+            <div className="channel-chip-row">
+              {(channelMode === 'favorites' ? favoriteChannels : channelOptions).slice(0, channelMode === 'favorites' ? 36 : 64).map((channel) => (
+                <div className={favoriteChannelSet.has(channel.id) ? 'channel-chip favorite' : 'channel-chip'} key={channel.id}>
+                  <button className="channel-open" type="button" onClick={() => setChannelFilter(channel.id)}>
+                    <Star size={14} fill={favoriteChannelSet.has(channel.id) ? 'currentColor' : 'none'} />
+                    <span>{channel.name}</span>
+                  </button>
+                  <button
+                    aria-label={`${favoriteChannelSet.has(channel.id) ? 'Remove' : 'Add'} ${channel.name} ${favoriteChannelSet.has(channel.id) ? 'from' : 'to'} favourites`}
+                    className="chip-star"
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      toggleFavoriteChannel(channel.id)
+                    }}
+                  >
+                    {favoriteChannelSet.has(channel.id) ? 'On' : 'Add'}
+                  </button>
+                </div>
+              ))}
+              {channelMode === 'favorites' && favoriteChannels.length === 0 && (
+                <p className="muted-copy">No favourite channels yet. Switch to All and star the channels you actually watch.</p>
+              )}
+            </div>
+            <div className="channel-actions">
+              {channelFilter !== 'all' && (
+                <button type="button" onClick={() => setChannelFilter('all')}>
+                  Back to {channelMode === 'favorites' ? 'favourites' : 'all channels'}
+                </button>
+              )}
+              <button type="button" onClick={resetFavoriteChannels}>
+                Reset starter Sky list
+              </button>
+            </div>
+          </section>
           {tvError && <p className="notice error">{tvError}</p>}
           <div className="list">
             {tvLoading && <SkeletonRows />}
@@ -1192,6 +1362,10 @@ function filterDiscoveryItems(items: TmdbItem[], query: string, genreId: number)
     const matchesGenre = !genreId || item.genre_ids?.includes(genreId)
     return matchesTerm && matchesGenre
   })
+}
+
+function getProgrammeChannelId(item: TvMazeEpisode) {
+  return String(item.show.id)
 }
 
 function statusLabel(status: RecommendationItem['status'], title: string) {
