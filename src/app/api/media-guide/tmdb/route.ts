@@ -43,10 +43,10 @@ export async function POST(request: Request) {
 
   const { providers } = (await request.json()) as { providers?: Provider[] }
   const providerMap = await fetchTmdbProviders(process.env.TMDB_API_KEY, providers?.length ? providers : defaultProviders)
-  const enabledIds = providerMap.filter((item) => item.enabled && item.id).map((item) => item.id)
+  const enabledProviders = providerMap.filter((item) => item.enabled && item.id)
   const [movieRows, tvRows, cinemaRows, movieGenres, tvGenres] = await Promise.all([
-    enabledIds.length ? fetchTmdbDiscover(process.env.TMDB_API_KEY, 'movie', enabledIds, providerMap) : Promise.resolve([]),
-    enabledIds.length ? fetchTmdbDiscover(process.env.TMDB_API_KEY, 'tv', enabledIds, providerMap) : Promise.resolve([]),
+    enabledProviders.length ? fetchTmdbDiscover(process.env.TMDB_API_KEY, 'movie', enabledProviders) : Promise.resolve([]),
+    enabledProviders.length ? fetchTmdbDiscover(process.env.TMDB_API_KEY, 'tv', enabledProviders) : Promise.resolve([]),
     fetchTmdbCinema(process.env.TMDB_API_KEY),
     fetchTmdbGenres(process.env.TMDB_API_KEY, 'movie'),
     fetchTmdbGenres(process.env.TMDB_API_KEY, 'tv'),
@@ -54,6 +54,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json(
     {
+      refreshedAt: new Date().toISOString(),
       genreMap: { ...movieGenres, ...tvGenres },
       providers: providerMap,
       streaming: [...movieRows, ...tvRows].slice(0, 18),
@@ -79,20 +80,23 @@ async function fetchTmdbProviders(apiKey: string, currentProviders: Provider[]) 
 async function fetchTmdbDiscover(
   apiKey: string,
   type: 'movie' | 'tv',
-  providerIds: number[],
   providers: Provider[],
 ): Promise<TmdbItem[]> {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/discover/${type}?api_key=${apiKey}&watch_region=IE&with_watch_providers=${providerIds.join(
-      '|',
-    )}&sort_by=popularity.desc`,
+  const rows = await Promise.all(
+    providers.map(async (provider) => {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/discover/${type}?api_key=${apiKey}&watch_region=IE&with_watch_providers=${provider.id}&sort_by=popularity.desc`,
+      )
+      if (!response.ok) throw new Error('Could not load TMDb titles.')
+      const data = (await response.json()) as { results: TmdbItem[] }
+      return data.results.slice(0, 8).map((item) => ({
+        ...item,
+        provider: provider.label,
+      }))
+    }),
   )
-  if (!response.ok) throw new Error('Could not load TMDb titles.')
-  const data = (await response.json()) as { results: TmdbItem[] }
-  return data.results.slice(0, 12).map((item, index) => ({
-    ...item,
-    provider: providers[index % providers.length]?.label ?? 'Streaming',
-  }))
+
+  return dedupeByProvider(rows.flat())
 }
 
 async function fetchTmdbCinema(apiKey: string): Promise<TmdbItem[]> {
@@ -114,4 +118,20 @@ async function fetchTmdbGenres(apiKey: string, type: 'movie' | 'tv') {
   if (!response.ok) return {}
   const data = (await response.json()) as { genres: { id: number; name: string }[] }
   return Object.fromEntries(data.genres.map((genre) => [genre.id, genre.name]))
+}
+
+function dedupeByProvider(items: TmdbItem[]) {
+  const seen = new Map<number, TmdbItem>()
+  items.forEach((item) => {
+    const existing = seen.get(item.id)
+    if (!existing) {
+      seen.set(item.id, item)
+      return
+    }
+
+    const providers = new Set([...(existing.provider?.split(' + ') ?? []), item.provider].filter(Boolean))
+    seen.set(item.id, { ...existing, provider: Array.from(providers).join(' + ') })
+  })
+
+  return Array.from(seen.values()).sort((a, b) => b.vote_average - a.vote_average)
 }

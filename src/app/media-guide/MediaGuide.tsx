@@ -142,6 +142,8 @@ function App() {
   const [streaming, setStreaming] = useState<TmdbItem[]>(fallbackStreaming)
   const [cinema, setCinema] = useState<TmdbItem[]>([])
   const [tmdbLoading, setTmdbLoading] = useState(false)
+  const [tmdbRefreshedAt, setTmdbRefreshedAt] = useState('')
+  const [tmdbRefreshNonce, setTmdbRefreshNonce] = useState(0)
   const [query, setQuery] = useState('')
   const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
@@ -226,11 +228,13 @@ function App() {
         const data = (await response.json()) as {
           genreMap: Record<number, string>
           providers: Provider[]
+          refreshedAt: string
           streaming: TmdbItem[]
           cinema: TmdbItem[]
         }
 
         if (!ignore) {
+          setTmdbRefreshedAt(data.refreshedAt)
           setGenreMap(data.genreMap)
           if (providersChanged(providers, data.providers)) {
             setProviders(data.providers)
@@ -251,7 +255,7 @@ function App() {
     return () => {
       ignore = true
     }
-  }, [providers, setProviders])
+  }, [providers, setProviders, tmdbRefreshNonce])
 
   useEffect(() => {
     if (!toast) return
@@ -613,8 +617,16 @@ function App() {
             <div>
               <p className="eyebrow">Netflix, Prime, Apple TV+, Paramount+, Sky / NOW</p>
               <h2>Streaming in Ireland</h2>
+              {tmdbRefreshedAt && <span className="refresh-note">Updated {formatTime(tmdbRefreshedAt)}</span>}
             </div>
-            <RefreshCw className={tmdbLoading ? 'spin' : ''} size={18} />
+            <button
+              className="icon-button quiet"
+              type="button"
+              aria-label="Refresh streaming sources"
+              onClick={() => setTmdbRefreshNonce((current) => current + 1)}
+            >
+              <RefreshCw className={tmdbLoading ? 'spin' : ''} size={18} />
+            </button>
           </div>
           <div className="provider-row">
             {providers.map((provider) => (
@@ -640,6 +652,12 @@ function App() {
             onAction={addRecommendation}
             onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
           />
+          {!tmdbLoading && filteredStreamingItems.length === 0 && (
+            <EmptyState
+              title="No titles for the selected services"
+              detail="Turn a provider back on, restore hidden categories, or tap refresh."
+            />
+          )}
         </section>
       )}
 

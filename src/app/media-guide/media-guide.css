@@ -458,6 +458,14 @@ button {
   margin-bottom: 12px;
 }
 
+.refresh-note {
+  display: block;
+  margin-top: 3px;
+  color: var(--mg-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .provider-row {
   gap: 8px;
   overflow-x: auto;
