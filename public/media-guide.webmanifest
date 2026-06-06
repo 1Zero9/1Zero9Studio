@@ -1,0 +1,24 @@
+{
+  "name": "Media Guide",
+  "short_name": "Media",
+  "description": "Private Ireland media guide for TV, streaming, cinema, and recommendations.",
+  "start_url": "/media-guide",
+  "scope": "/media-guide",
+  "display": "standalone",
+  "background_color": "#07110f",
+  "theme_color": "#31e6b7",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/109-logo-circle-white2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

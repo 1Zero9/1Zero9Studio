@@ -410,8 +410,9 @@ function App() {
     <main className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Ireland only</p>
+          <p className="eyebrow">Ireland only - {new Intl.DateTimeFormat('en-IE', { weekday: 'long' }).format(new Date())}</p>
           <h1>Media Guide</h1>
+          <p className="hero-copy">Tonight's TV, streaming picks, cinema releases, and lists for people you recommend to.</p>
         </div>
         <button className="icon-button" type="button" aria-label="Settings" onClick={() => setTab('settings')}>
           <Settings size={20} />
@@ -758,6 +759,18 @@ function App() {
                 </span>
               </div>
               <ChevronRight size={18} />
+            </div>
+            <div className="settings-roadmap">
+              <p className="eyebrow">What is still missing</p>
+              <h2>Best next upgrades</h2>
+              <div className="roadmap-grid">
+                <span>Real Sky Ireland EPG feed</span>
+                <span>Push reminders for next episodes</span>
+                <span>Calendar view for releases</span>
+                <span>Better taste profile from seen/favorites</span>
+                <span>Per-person list notes and ratings</span>
+                <span>Home screen install prompt</span>
+              </div>
             </div>
             <button className="primary-button secondary-action" type="button" onClick={logout}>
               Sign Out
