@@ -24,7 +24,7 @@ import {
   ThumbsDown,
   Users,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './media-guide.css'
 
@@ -144,12 +144,17 @@ function App() {
   const [tmdbLoading, setTmdbLoading] = useState(false)
   const [tmdbRefreshedAt, setTmdbRefreshedAt] = useState('')
   const [tmdbRefreshNonce, setTmdbRefreshNonce] = useState(0)
+  const [refreshPulse, setRefreshPulse] = useState(false)
   const [query, setQuery] = useState('')
+  const [channelFilter, setChannelFilter] = useState('all')
+  const [discoveryQuery, setDiscoveryQuery] = useState('')
+  const [discoveryGenreId, setDiscoveryGenreId] = useState(0)
   const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
   const [selectedListId, setSelectedListId] = useState('')
   const [genreMap, setGenreMap] = useState<Record<number, string>>({})
   const [toast, setToast] = useState('')
+  const refreshPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const enabledProviders = providers.filter((provider) => provider.enabled)
   const dueSoon = watching
@@ -182,15 +187,30 @@ function App() {
       .filter((genre): genre is { id: number; name: string } => Boolean(genre.name))
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [cinema, genreMap, streaming])
+  const channelOptions = useMemo(() => {
+    const channels = new Set<string>()
+    tvItems.forEach((item) => channels.add(item.show.network?.name ?? item.show.webChannel?.name ?? 'Ireland TV'))
+    return Array.from(channels).sort((a, b) => a.localeCompare(b))
+  }, [tvItems])
 
   const filteredTvItems = useMemo(() => {
     const term = query.trim().toLowerCase()
-    if (!term) return tvItems
     return tvItems.filter((item) => {
       const channel = item.show.network?.name ?? item.show.webChannel?.name ?? ''
-      return `${item.show.name} ${item.name} ${channel}`.toLowerCase().includes(term)
+      const matchesChannel = channelFilter === 'all' || channel === channelFilter
+      const matchesTerm = !term || `${item.show.name} ${item.name} ${channel}`.toLowerCase().includes(term)
+      return matchesChannel && matchesTerm
     })
-  }, [query, tvItems])
+  }, [channelFilter, query, tvItems])
+
+  const visibleStreamingItems = useMemo(
+    () => filterDiscoveryItems(filteredStreamingItems, discoveryQuery, discoveryGenreId),
+    [discoveryGenreId, discoveryQuery, filteredStreamingItems],
+  )
+  const visibleCinemaItems = useMemo(
+    () => filterDiscoveryItems(filteredCinemaItems, discoveryQuery, discoveryGenreId),
+    [discoveryGenreId, discoveryQuery, filteredCinemaItems],
+  )
 
   useEffect(() => {
     let ignore = false
@@ -220,6 +240,7 @@ function App() {
       setTmdbLoading(true)
       try {
         const response = await fetch('/api/media-guide/tmdb', {
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ providers }),
@@ -241,6 +262,7 @@ function App() {
           }
           setStreaming(data.streaming.length ? data.streaming : fallbackStreaming)
           setCinema(data.cinema)
+          if (tmdbRefreshNonce > 0) setToast('Sources refreshed')
         }
       } catch {
         if (!ignore) {
@@ -262,6 +284,12 @@ function App() {
     const timer = window.setTimeout(() => setToast(''), 2200)
     return () => window.clearTimeout(timer)
   }, [toast])
+
+  useEffect(() => {
+    return () => {
+      if (refreshPulseTimer.current) clearTimeout(refreshPulseTimer.current)
+    }
+  }, [])
 
   useEffect(() => {
     let ignore = false
@@ -315,6 +343,14 @@ function App() {
         provider.label === label ? { ...provider, enabled: !provider.enabled } : provider,
       ),
     )
+  }
+
+  function refreshSources() {
+    setToast('Refreshing sources...')
+    setRefreshPulse(true)
+    if (refreshPulseTimer.current) clearTimeout(refreshPulseTimer.current)
+    refreshPulseTimer.current = setTimeout(() => setRefreshPulse(false), 900)
+    setTmdbRefreshNonce((current) => current + 1)
   }
 
   async function persistWatchingItem(item: WatchingItem) {
@@ -555,6 +591,17 @@ function App() {
               <Search size={17} />
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search TV" />
             </label>
+            <label className="field compact">
+              <Filter size={17} />
+              <select value={channelFilter} onChange={(event) => setChannelFilter(event.target.value)}>
+                <option value="all">All channels</option>
+                {channelOptions.map((channel) => (
+                  <option key={channel} value={channel}>
+                    {channel}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           {tvError && <p className="notice error">{tvError}</p>}
           <div className="list">
@@ -620,14 +667,26 @@ function App() {
               {tmdbRefreshedAt && <span className="refresh-note">Updated {formatTime(tmdbRefreshedAt)}</span>}
             </div>
             <button
-              className="icon-button quiet"
+              className={
+                tmdbLoading || refreshPulse
+                  ? 'icon-button quiet refresh-button refreshing'
+                  : 'icon-button quiet refresh-button'
+              }
               type="button"
+              disabled={tmdbLoading}
               aria-label="Refresh streaming sources"
-              onClick={() => setTmdbRefreshNonce((current) => current + 1)}
+              onClick={refreshSources}
             >
-              <RefreshCw className={tmdbLoading ? 'spin' : ''} size={18} />
+              <RefreshCw className={tmdbLoading || refreshPulse ? 'spin' : ''} size={18} />
             </button>
           </div>
+          <DiscoveryFilters
+            discoveryGenreId={discoveryGenreId}
+            discoveryQuery={discoveryQuery}
+            genreOptions={genreOptions}
+            onGenreChange={setDiscoveryGenreId}
+            onQueryChange={setDiscoveryQuery}
+          />
           <div className="provider-row">
             {providers.map((provider) => (
               <button
@@ -648,11 +707,11 @@ function App() {
           />
           <MediaGrid
             genreMap={genreMap}
-            items={filteredStreamingItems}
+            items={visibleStreamingItems}
             onAction={addRecommendation}
             onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
           />
-          {!tmdbLoading && filteredStreamingItems.length === 0 && (
+          {!tmdbLoading && visibleStreamingItems.length === 0 && (
             <EmptyState
               title="No titles for the selected services"
               detail="Turn a provider back on, restore hidden categories, or tap refresh."
@@ -670,6 +729,13 @@ function App() {
             </div>
             <Clapperboard size={19} />
           </div>
+          <DiscoveryFilters
+            discoveryGenreId={discoveryGenreId}
+            discoveryQuery={discoveryQuery}
+            genreOptions={genreOptions}
+            onGenreChange={setDiscoveryGenreId}
+            onQueryChange={setDiscoveryQuery}
+          />
           {cinema.length ? (
             <>
               <RecommendationTarget
@@ -679,7 +745,7 @@ function App() {
               />
               <MediaGrid
                 genreMap={genreMap}
-                items={filteredCinemaItems}
+                items={visibleCinemaItems}
                 onAction={addRecommendation}
                 onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
               />
@@ -960,6 +1026,40 @@ function MediaGrid({
   )
 }
 
+function DiscoveryFilters({
+  discoveryGenreId,
+  discoveryQuery,
+  genreOptions,
+  onGenreChange,
+  onQueryChange,
+}: {
+  discoveryGenreId: number
+  discoveryQuery: string
+  genreOptions: { id: number; name: string }[]
+  onGenreChange: (id: number) => void
+  onQueryChange: (query: string) => void
+}) {
+  return (
+    <div className="discovery-filters">
+      <label className="field search">
+        <Search size={17} />
+        <input value={discoveryQuery} onChange={(event) => onQueryChange(event.target.value)} placeholder="Search titles" />
+      </label>
+      <label className="field compact">
+        <Filter size={17} />
+        <select value={discoveryGenreId} onChange={(event) => onGenreChange(Number(event.target.value))}>
+          <option value={0}>All categories</option>
+          {genreOptions.map((genre) => (
+            <option key={genre.id} value={genre.id}>
+              {genre.name}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  )
+}
+
 function RecommendationTarget({
   lists,
   onChange,
@@ -1081,6 +1181,17 @@ function isVisibleDiscoveryItem(item: TmdbItem, hiddenTmdbIds: Set<number>, hidd
   if (hiddenTmdbIds.has(item.id)) return false
   if (item.genre_ids?.some((id) => hiddenGenres.has(id))) return false
   return true
+}
+
+function filterDiscoveryItems(items: TmdbItem[], query: string, genreId: number) {
+  const term = query.trim().toLowerCase()
+  return items.filter((item) => {
+    const title = item.title ?? item.name ?? ''
+    const provider = item.provider ?? ''
+    const matchesTerm = !term || `${title} ${provider} ${item.overview}`.toLowerCase().includes(term)
+    const matchesGenre = !genreId || item.genre_ids?.includes(genreId)
+    return matchesTerm && matchesGenre
+  })
 }
 
 function statusLabel(status: RecommendationItem['status'], title: string) {
