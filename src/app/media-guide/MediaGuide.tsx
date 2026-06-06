@@ -31,7 +31,7 @@ import './media-guide.css'
 type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'lists' | 'settings'
 
 type TvMazeEpisode = {
-  id: number
+  id: number | string
   name: string
   season: number
   number: number | null
@@ -196,10 +196,10 @@ function App() {
       setTvLoading(true)
       setTvError('')
       try {
-        const response = await fetch(`https://api.tvmaze.com/schedule?country=IE&date=${selectedDate}`)
+        const response = await fetch(`/api/media-guide/epg?date=${encodeURIComponent(selectedDate)}`)
         if (!response.ok) throw new Error('Could not load Irish TV schedule.')
-        const data = (await response.json()) as TvMazeEpisode[]
-        if (!ignore) setTvItems(data)
+        const data = (await response.json()) as { schedule: TvMazeEpisode[] }
+        if (!ignore) setTvItems(data.schedule)
       } catch (error) {
         if (!ignore) setTvError(error instanceof Error ? error.message : 'Could not load TV schedule.')
       } finally {
@@ -474,7 +474,7 @@ function App() {
           <Tv size={20} />
           <div>
             <strong>{tvLoading ? 'Loading' : tvItems.length}</strong>
-            <span>TV listings</span>
+            <span>EPG listings</span>
           </div>
         </div>
         <div className="signal">
@@ -599,8 +599,8 @@ function App() {
               ))}
             {!tvLoading && filteredTvItems.length === 0 && (
               <EmptyState
-                title="No Irish TV listings from TVMaze today"
-                detail="The app is ready for a Sky Ireland EPG table or another licensed listings feed."
+                title="No Irish EPG listings found today"
+                detail="The Sky Ireland XMLTV feed may not have programmes for this date yet."
               />
             )}
           </div>
@@ -799,7 +799,7 @@ function App() {
           <div className="settings-panel">
             <h2>Data Sources</h2>
             <p>
-              TV uses TVMaze country IE. Streaming and cinema use TMDb with watch region IE through the protected server
+              TV uses the Ireland XMLTV EPG feed. Streaming and cinema use TMDb with watch region IE through the protected server
               API.
             </p>
             <div className="source-list">
