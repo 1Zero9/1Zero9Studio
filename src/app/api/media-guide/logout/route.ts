@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
+import { mediaGuideSessionCookie } from '@/lib/media-guide-auth'
 
 export async function POST() {
   const response = NextResponse.json({ ok: true })
-  response.cookies.set('media_guide_session', '', {
+  response.cookies.set(mediaGuideSessionCookie, '', {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',

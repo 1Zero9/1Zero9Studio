@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
+import { createMediaGuideSessionToken, mediaGuideSessionCookie } from '@/lib/media-guide-auth'
 
-const sessionCookie = 'media_guide_session'
 const maxSessionAgeSeconds = 60 * 60 * 24 * 30
 
 type LoginPayload = {
@@ -20,11 +20,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 })
   }
 
-  const issuedAt = String(Date.now())
-  const signature = await signToken(issuedAt, password, secret)
+  const token = await createMediaGuideSessionToken(password, secret)
   const response = NextResponse.json({ ok: true })
 
-  response.cookies.set(sessionCookie, `${issuedAt}.${signature}`, {
+  response.cookies.set(mediaGuideSessionCookie, token, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
@@ -33,21 +32,4 @@ export async function POST(request: Request) {
   })
 
   return response
-}
-
-async function signToken(issuedAt: string, password: string, secret: string) {
-  const encoder = new TextEncoder()
-  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [
-    'sign',
-  ])
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(`media-guide:${issuedAt}:${password}`))
-  return bytesToBase64Url(new Uint8Array(signature))
-}
-
-function bytesToBase64Url(bytes: Uint8Array) {
-  let binary = ''
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte)
-  })
-  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
 }

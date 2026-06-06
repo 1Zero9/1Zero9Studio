@@ -1,6 +1,7 @@
 import { neon } from '@neondatabase/serverless'
 import type { NeonQueryFunction } from '@neondatabase/serverless'
 import { NextResponse } from 'next/server'
+import { hasMediaGuideSession } from '@/lib/media-guide-auth'
 
 type WatchlistRow = {
   id: string
@@ -23,6 +24,9 @@ type WatchlistPayload = {
 }
 
 export async function GET() {
+  const unauthorized = await requireMediaGuideSession()
+  if (unauthorized) return unauthorized
+
   const sql = await getSql()
   const rows = await sql`
     select id, title, service, next_episode, cadence, notes, done
@@ -34,6 +38,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const unauthorized = await requireMediaGuideSession()
+  if (unauthorized) return unauthorized
+
   const payload = (await request.json()) as WatchlistPayload
   if (!payload.title?.trim()) {
     return NextResponse.json({ error: 'title is required.' }, { status: 400 })
@@ -58,6 +65,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const unauthorized = await requireMediaGuideSession()
+  if (unauthorized) return unauthorized
+
   const payload = (await request.json()) as WatchlistPayload
   if (!payload.id) {
     return NextResponse.json({ error: 'id is required.' }, { status: 400 })
@@ -79,6 +89,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const unauthorized = await requireMediaGuideSession()
+  if (unauthorized) return unauthorized
+
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
   if (!id) {
@@ -126,4 +139,15 @@ function mapRow(row: WatchlistRow) {
     notes: row.notes ?? '',
     done: row.done,
   }
+}
+
+async function requireMediaGuideSession() {
+  if (await hasMediaGuideSession()) {
+    return null
+  }
+
+  return NextResponse.json(
+    { error: 'Media Guide login required.' },
+    { status: 401, headers: { 'Cache-Control': 'no-store' } },
+  )
 }
