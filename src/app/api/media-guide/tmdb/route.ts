@@ -15,6 +15,7 @@ type TmdbItem = {
   overview: string
   poster_path: string | null
   vote_average: number
+  genre_ids?: number[]
   release_date?: string
   first_air_date?: string
   provider?: string
@@ -43,14 +44,17 @@ export async function POST(request: Request) {
   const { providers } = (await request.json()) as { providers?: Provider[] }
   const providerMap = await fetchTmdbProviders(process.env.TMDB_API_KEY, providers?.length ? providers : defaultProviders)
   const enabledIds = providerMap.filter((item) => item.enabled && item.id).map((item) => item.id)
-  const [movieRows, tvRows, cinemaRows] = await Promise.all([
+  const [movieRows, tvRows, cinemaRows, movieGenres, tvGenres] = await Promise.all([
     enabledIds.length ? fetchTmdbDiscover(process.env.TMDB_API_KEY, 'movie', enabledIds, providerMap) : Promise.resolve([]),
     enabledIds.length ? fetchTmdbDiscover(process.env.TMDB_API_KEY, 'tv', enabledIds, providerMap) : Promise.resolve([]),
     fetchTmdbCinema(process.env.TMDB_API_KEY),
+    fetchTmdbGenres(process.env.TMDB_API_KEY, 'movie'),
+    fetchTmdbGenres(process.env.TMDB_API_KEY, 'tv'),
   ])
 
   return NextResponse.json(
     {
+      genreMap: { ...movieGenres, ...tvGenres },
       providers: providerMap,
       streaming: [...movieRows, ...tvRows].slice(0, 18),
       cinema: cinemaRows,
@@ -103,4 +107,11 @@ async function fetchTmdbCinema(apiKey: string): Promise<TmdbItem[]> {
   if (!response.ok) throw new Error('Could not load cinema releases.')
   const data = (await response.json()) as { results: TmdbItem[] }
   return data.results.slice(0, 18).map((item) => ({ ...item, provider: item.release_date }))
+}
+
+async function fetchTmdbGenres(apiKey: string, type: 'movie' | 'tv') {
+  const response = await fetch(`https://api.themoviedb.org/3/genre/${type}/list?api_key=${apiKey}&language=en`)
+  if (!response.ok) return {}
+  const data = (await response.json()) as { genres: { id: number; name: string }[] }
+  return Object.fromEntries(data.genres.map((genre) => [genre.id, genre.name]))
 }

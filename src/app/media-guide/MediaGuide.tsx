@@ -21,6 +21,7 @@ import {
   Star,
   Trash2,
   Tv,
+  ThumbsDown,
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -55,6 +56,7 @@ type TmdbItem = {
   overview: string
   poster_path: string | null
   vote_average: number
+  genre_ids?: number[]
   release_date?: string
   first_air_date?: string
   provider?: string
@@ -88,7 +90,7 @@ type RecommendationItem = {
   listId: string | null
   tmdbId: number | null
   mediaType: string
-  status: 'seen' | 'favorite' | 'recommend'
+  status: 'seen' | 'favorite' | 'recommend' | 'not_interested'
   title: string
   service: string
   posterPath: string | null
@@ -134,6 +136,7 @@ function App() {
   const [tvLoading, setTvLoading] = useState(false)
   const [tvError, setTvError] = useState('')
   const [providers, setProviders] = useStoredState<Provider[]>('mediaguide.providers', defaultProviders)
+  const [hiddenGenreIds, setHiddenGenreIds] = useStoredState<number[]>('mediaguide.hiddenGenres', [])
   const [watching, setWatching] = useStoredState<WatchingItem[]>('mediaguide.watching', starterWatching)
   const [watchlistSource, setWatchlistSource] = useState<'syncing' | 'neon' | 'local'>('syncing')
   const [streaming, setStreaming] = useState<TmdbItem[]>(fallbackStreaming)
@@ -143,12 +146,40 @@ function App() {
   const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
   const [selectedListId, setSelectedListId] = useState('')
+  const [genreMap, setGenreMap] = useState<Record<number, string>>({})
+  const [toast, setToast] = useState('')
 
   const enabledProviders = providers.filter((provider) => provider.enabled)
   const dueSoon = watching
     .filter((item) => !item.done)
     .sort((a, b) => a.nextEpisode.localeCompare(b.nextEpisode))
     .slice(0, 3)
+  const hiddenTmdbIds = useMemo(
+    () =>
+      new Set(
+        recommendationItems
+          .filter((item) => item.tmdbId && (item.status === 'seen' || item.status === 'not_interested'))
+          .map((item) => item.tmdbId as number),
+      ),
+    [recommendationItems],
+  )
+  const hiddenGenres = useMemo(() => new Set(hiddenGenreIds), [hiddenGenreIds])
+  const filteredStreamingItems = useMemo(
+    () => streaming.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbIds, hiddenGenres)),
+    [hiddenGenres, hiddenTmdbIds, streaming],
+  )
+  const filteredCinemaItems = useMemo(
+    () => cinema.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbIds, hiddenGenres)),
+    [cinema, hiddenGenres, hiddenTmdbIds],
+  )
+  const genreOptions = useMemo(() => {
+    const ids = new Set<number>()
+    ;[...streaming, ...cinema].forEach((item) => item.genre_ids?.forEach((id) => ids.add(id)))
+    return Array.from(ids)
+      .map((id) => ({ id, name: genreMap[id] }))
+      .filter((genre): genre is { id: number; name: string } => Boolean(genre.name))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [cinema, genreMap, streaming])
 
   const filteredTvItems = useMemo(() => {
     const term = query.trim().toLowerCase()
@@ -192,9 +223,15 @@ function App() {
           body: JSON.stringify({ providers }),
         })
         if (!response.ok) throw new Error('Could not load TMDb data.')
-        const data = (await response.json()) as { providers: Provider[]; streaming: TmdbItem[]; cinema: TmdbItem[] }
+        const data = (await response.json()) as {
+          genreMap: Record<number, string>
+          providers: Provider[]
+          streaming: TmdbItem[]
+          cinema: TmdbItem[]
+        }
 
         if (!ignore) {
+          setGenreMap(data.genreMap)
           if (providersChanged(providers, data.providers)) {
             setProviders(data.providers)
           }
@@ -215,6 +252,12 @@ function App() {
       ignore = true
     }
   }, [providers, setProviders])
+
+  useEffect(() => {
+    if (!toast) return
+    const timer = window.setTimeout(() => setToast(''), 2200)
+    return () => window.clearTimeout(timer)
+  }, [toast])
 
   useEffect(() => {
     let ignore = false
@@ -347,6 +390,7 @@ function App() {
       },
     }
 
+    setToast(statusLabel(status, item.title ?? item.name ?? 'Title'))
     const response = await fetch('/api/media-guide/recommendations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -356,6 +400,11 @@ function App() {
     const saved = (await response.json()) as RecommendationItem
     setRecommendationItems((current) => [saved, ...current])
     if (status === 'recommend') setTab('lists')
+  }
+
+  function toggleHiddenGenre(id: number) {
+    setHiddenGenreIds((current) => (current.includes(id) ? current.filter((row) => row !== id) : [...current, id]))
+    setToast(hiddenGenreIds.includes(id) ? 'Category restored' : 'Category hidden')
   }
 
   async function createRecommendationList(event: FormEvent<HTMLFormElement>) {
@@ -408,6 +457,7 @@ function App() {
 
   return (
     <main className="app-shell">
+      {toast && <div className="toast">{toast}</div>}
       <header className="topbar">
         <div>
           <p className="eyebrow">Ireland only - {new Intl.DateTimeFormat('en-IE', { weekday: 'long' }).format(new Date())}</p>
@@ -585,7 +635,8 @@ function App() {
             onChange={setSelectedListId}
           />
           <MediaGrid
-            items={streaming}
+            genreMap={genreMap}
+            items={filteredStreamingItems}
             onAction={addRecommendation}
             onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
           />
@@ -609,7 +660,8 @@ function App() {
                 onChange={setSelectedListId}
               />
               <MediaGrid
-                items={cinema}
+                genreMap={genreMap}
+                items={filteredCinemaItems}
                 onAction={addRecommendation}
                 onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
               />
@@ -692,6 +744,12 @@ function App() {
               label="Favorites"
               onRemove={removeRecommendationItem}
             />
+            <StatusBucket
+              icon={<ThumbsDown size={17} />}
+              items={recommendationItems.filter((item) => item.status === 'not_interested')}
+              label="Not for me"
+              onRemove={removeRecommendationItem}
+            />
           </div>
 
           <div className="recommendation-lists">
@@ -761,6 +819,23 @@ function App() {
               <ChevronRight size={18} />
             </div>
             <div className="settings-roadmap">
+              <p className="eyebrow">Taste profile</p>
+              <h2>Hide categories</h2>
+              <div className="genre-preferences">
+                {genreOptions.map((genre) => (
+                  <button
+                    className={hiddenGenreIds.includes(genre.id) ? 'genre-chip hidden' : 'genre-chip'}
+                    key={genre.id}
+                    type="button"
+                    onClick={() => toggleHiddenGenre(genre.id)}
+                  >
+                    {genre.name}
+                  </button>
+                ))}
+                {!genreOptions.length && <span>Categories appear after TMDb loads.</span>}
+              </div>
+            </div>
+            <div className="settings-roadmap">
               <p className="eyebrow">What is still missing</p>
               <h2>Best next upgrades</h2>
               <div className="roadmap-grid">
@@ -802,10 +877,12 @@ function TabButton({
 }
 
 function MediaGrid({
+  genreMap,
   items,
   onAction,
   onTrack,
 }: {
+  genreMap: Record<number, string>
   items: TmdbItem[]
   onAction: (item: TmdbItem, status: RecommendationItem['status']) => void
   onTrack: (item: TmdbItem) => void
@@ -824,6 +901,17 @@ function MediaGrid({
           <div>
             <span>{item.provider ?? item.release_date ?? item.first_air_date ?? 'Ireland'}</span>
             <h2>{item.title ?? item.name}</h2>
+            {item.genre_ids && (
+              <div className="media-genres">
+                {item.genre_ids
+                  .map((id) => genreMap[id])
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((genre) => (
+                    <small key={genre}>{genre}</small>
+                  ))}
+              </div>
+            )}
             <p>{item.overview || 'No summary available.'}</p>
           </div>
           <div className="media-actions">
@@ -842,6 +930,10 @@ function MediaGrid({
             <button type="button" onClick={() => onAction(item, 'recommend')}>
               <Send size={16} />
               Recommend
+            </button>
+            <button type="button" onClick={() => onAction(item, 'not_interested')}>
+              <ThumbsDown size={16} />
+              Not for me
             </button>
           </div>
         </article>
@@ -965,6 +1057,19 @@ function providersChanged(left: Provider[], right: Provider[]) {
     const next = right[index]
     return !next || provider.id !== next.id || provider.enabled !== next.enabled
   })
+}
+
+function isVisibleDiscoveryItem(item: TmdbItem, hiddenTmdbIds: Set<number>, hiddenGenres: Set<number>) {
+  if (hiddenTmdbIds.has(item.id)) return false
+  if (item.genre_ids?.some((id) => hiddenGenres.has(id))) return false
+  return true
+}
+
+function statusLabel(status: RecommendationItem['status'], title: string) {
+  if (status === 'seen') return `${title} marked seen`
+  if (status === 'favorite') return `${title} added to favorites`
+  if (status === 'recommend') return `${title} added to recommendations`
+  return `${title} hidden from discovery`
 }
 
 function formatTime(value: string) {
