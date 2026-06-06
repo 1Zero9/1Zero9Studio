@@ -82,8 +82,8 @@ const defaultProviders: Provider[] = [
 const fallbackStreaming: TmdbItem[] = [
   {
     id: 9001,
-    title: 'Add your TMDb key',
-    overview: 'Streaming rows become live once a TMDb API key is saved in Settings.',
+    title: 'TMDb server key required',
+    overview: 'Streaming rows load from the protected server API once TMDB_API_KEY is configured.',
     poster_path: null,
     vote_average: 0,
     provider: 'Ireland streaming',
@@ -108,7 +108,6 @@ function App() {
   const [tvItems, setTvItems] = useState<TvMazeEpisode[]>([])
   const [tvLoading, setTvLoading] = useState(false)
   const [tvError, setTvError] = useState('')
-  const [tmdbKey, setTmdbKey] = useStoredState('mediaguide.tmdbKey', '')
   const [providers, setProviders] = useStoredState<Provider[]>('mediaguide.providers', defaultProviders)
   const [watching, setWatching] = useStoredState<WatchingItem[]>('mediaguide.watching', starterWatching)
   const [watchlistSource, setWatchlistSource] = useState<'syncing' | 'neon' | 'local'>('syncing')
@@ -157,27 +156,22 @@ function App() {
   useEffect(() => {
     let ignore = false
     async function loadTmdb() {
-      if (!tmdbKey.trim()) {
-        setStreaming(fallbackStreaming)
-        setCinema([])
-        return
-      }
       setTmdbLoading(true)
       try {
-        const providerMap = await fetchTmdbProviders(tmdbKey, providers)
-        const enabledIds = providerMap.filter((item) => item.enabled && item.id).map((item) => item.id)
-        const [movieRows, tvRows, cinemaRows] = await Promise.all([
-          enabledIds.length ? fetchTmdbDiscover(tmdbKey, 'movie', enabledIds, providerMap) : Promise.resolve([]),
-          enabledIds.length ? fetchTmdbDiscover(tmdbKey, 'tv', enabledIds, providerMap) : Promise.resolve([]),
-          fetchTmdbCinema(tmdbKey),
-        ])
+        const response = await fetch('/api/media-guide/tmdb', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ providers }),
+        })
+        if (!response.ok) throw new Error('Could not load TMDb data.')
+        const data = (await response.json()) as { providers: Provider[]; streaming: TmdbItem[]; cinema: TmdbItem[] }
 
         if (!ignore) {
-          if (providersChanged(providers, providerMap)) {
-            setProviders(providerMap)
+          if (providersChanged(providers, data.providers)) {
+            setProviders(data.providers)
           }
-          setStreaming([...movieRows, ...tvRows].slice(0, 18))
-          setCinema(cinemaRows)
+          setStreaming(data.streaming.length ? data.streaming : fallbackStreaming)
+          setCinema(data.cinema)
         }
       } catch {
         if (!ignore) {
@@ -192,7 +186,7 @@ function App() {
     return () => {
       ignore = true
     }
-  }, [providers, setProviders, tmdbKey])
+  }, [providers, setProviders])
 
   useEffect(() => {
     let ignore = false
@@ -465,7 +459,7 @@ function App() {
           {cinema.length ? (
             <MediaGrid items={cinema} onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))} />
           ) : (
-            <EmptyState title="Add a TMDb key to load Irish cinema releases" />
+            <EmptyState title="TMDb releases will load once TMDB_API_KEY is available on the server" />
           )}
         </section>
       )}
@@ -524,17 +518,9 @@ function App() {
           <div className="settings-panel">
             <h2>Data Sources</h2>
             <p>
-              TV uses TVMaze country IE. Streaming and cinema use TMDb with watch region IE. Your key is stored only in
-              this browser.
+              TV uses TVMaze country IE. Streaming and cinema use TMDb with watch region IE through the protected server
+              API.
             </p>
-            <label className="settings-field">
-              TMDb API key
-              <input
-                value={tmdbKey}
-                onChange={(event) => setTmdbKey(event.target.value)}
-                placeholder="Paste TMDb v3 API key"
-              />
-            </label>
             <div className="source-list">
               <div>
                 <strong>Sky TV</strong>
@@ -639,52 +625,6 @@ function useStoredState<T>(key: string, initialValue: T) {
   }, [key, value])
 
   return [value, setValue] as const
-}
-
-async function fetchTmdbProviders(apiKey: string, currentProviders: Provider[]) {
-  const response = await fetch(`https://api.themoviedb.org/3/watch/providers/movie?api_key=${apiKey}&watch_region=IE`)
-  if (!response.ok) throw new Error('Could not load TMDb providers.')
-  const data = (await response.json()) as { results: { provider_id: number; provider_name: string }[] }
-
-  return currentProviders.map((provider) => {
-    const match = data.results.find((row) =>
-      provider.match.some((candidate) => row.provider_name.toLowerCase().includes(candidate.toLowerCase())),
-    )
-    return { ...provider, id: match?.provider_id ?? provider.id }
-  })
-}
-
-async function fetchTmdbDiscover(
-  apiKey: string,
-  type: 'movie' | 'tv',
-  providerIds: number[],
-  providers: Provider[],
-): Promise<TmdbItem[]> {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/discover/${type}?api_key=${apiKey}&watch_region=IE&with_watch_providers=${providerIds.join(
-      '|',
-    )}&sort_by=popularity.desc`,
-  )
-  if (!response.ok) throw new Error('Could not load TMDb titles.')
-  const data = (await response.json()) as { results: TmdbItem[] }
-  return data.results.slice(0, 12).map((item, index) => ({
-    ...item,
-    provider: providers[index % providers.length]?.label ?? 'Streaming',
-  }))
-}
-
-async function fetchTmdbCinema(apiKey: string): Promise<TmdbItem[]> {
-  const today = new Date()
-  const future = new Date()
-  future.setDate(today.getDate() + 60)
-  const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&region=IE&primary_release_date.gte=${today
-      .toISOString()
-      .slice(0, 10)}&primary_release_date.lte=${future.toISOString().slice(0, 10)}&sort_by=primary_release_date.asc`,
-  )
-  if (!response.ok) throw new Error('Could not load cinema releases.')
-  const data = (await response.json()) as { results: TmdbItem[] }
-  return data.results.slice(0, 18).map((item) => ({ ...item, provider: item.release_date }))
 }
 
 function mediaToWatchingItem(item: TmdbItem): WatchingItem {
