@@ -18,6 +18,10 @@
 .shared-list-page {
   min-height: 100svh;
   color: var(--mg-ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
   background:
     linear-gradient(172deg, rgba(215, 255, 50, 0.09) 0 1px, transparent 1px 100%),
     radial-gradient(circle at 20% -5%, rgba(0, 208, 195, 0.38), transparent 24rem),
@@ -62,7 +66,7 @@
   color: var(--mg-ink);
   box-shadow: var(--mg-shadow);
   text-align: center;
-  font-weight: 900;
+  font-weight: 650;
   backdrop-filter: blur(18px);
 }
 
@@ -179,8 +183,8 @@
 .eyebrow {
   margin: 0 0 5px;
   color: var(--mg-teal);
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -192,13 +196,15 @@ p {
 }
 
 h1 {
-  font-size: clamp(36px, 9vw, 64px);
-  line-height: 0.95;
+  font-size: clamp(34px, 6vw, 56px);
+  font-weight: 700;
+  line-height: 1;
   letter-spacing: 0;
 }
 
 h2 {
   color: var(--mg-ink);
+  font-weight: 650;
 }
 
 button,
@@ -288,6 +294,7 @@ button:disabled {
 
 .signal strong {
   font-size: 18px;
+  font-weight: 700;
 }
 
 .signal span {
@@ -305,7 +312,7 @@ button:disabled {
   color: var(--mg-muted);
   flex: 0 0 auto;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .next-strip button {
@@ -319,7 +326,7 @@ button:disabled {
 
 .next-strip small {
   color: var(--mg-sun);
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .tabs {
@@ -330,14 +337,15 @@ button:disabled {
 }
 
 .tab {
-  min-width: 94px;
+  min-width: 88px;
   height: 44px;
   justify-content: center;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   border-radius: 999px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 650;
   white-space: nowrap;
 }
 
@@ -491,7 +499,8 @@ button:disabled {
 .empty h2,
 .section-heading h2 {
   color: var(--mg-ink);
-  font-size: 19px;
+  font-size: 18px;
+  font-weight: 650;
   line-height: 1.16;
   letter-spacing: 0;
 }
@@ -539,6 +548,7 @@ button:disabled {
 
 .channel-panel-heading h2 {
   font-size: 18px;
+  font-weight: 650;
   line-height: 1.15;
 }
 
@@ -547,7 +557,7 @@ button:disabled {
   margin-top: 3px;
   color: var(--mg-muted);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .segmented-actions {
@@ -567,7 +577,7 @@ button:disabled {
   background: transparent;
   color: var(--mg-muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .segmented-actions button {
@@ -622,7 +632,7 @@ button:disabled {
   background: transparent;
   color: var(--mg-ink);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .channel-open span {
@@ -653,7 +663,7 @@ button:disabled {
   margin-top: 3px;
   color: var(--mg-muted);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .provider-row {
@@ -669,7 +679,8 @@ button:disabled {
   flex: 0 0 auto;
   padding: 9px 12px;
   border-radius: 999px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 650;
 }
 
 .provider:not(.active) {
@@ -723,7 +734,7 @@ button:disabled {
   background: rgba(255, 255, 255, 0.06);
   color: var(--mg-muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .media-genres small {
@@ -738,7 +749,7 @@ button:disabled {
   gap: 8px;
   min-height: 42px;
   border-radius: 14px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .media-actions {
@@ -793,7 +804,7 @@ button:disabled {
   outline: 0;
   background: transparent;
   color: var(--mg-ink);
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .add-form,
@@ -867,14 +878,14 @@ button:disabled {
   background: rgba(215, 255, 50, 0.14);
   color: var(--mg-sun);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .settings-field {
   display: grid;
   gap: 6px;
   color: var(--mg-ink);
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .source-list {
@@ -941,7 +952,7 @@ button:disabled {
   align-items: center;
   gap: 6px;
   border-radius: 12px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .list-actions button {
@@ -969,7 +980,7 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .mini-item button {
@@ -1045,7 +1056,7 @@ button:disabled {
   background: rgba(0, 208, 195, 0.08);
   color: var(--mg-muted);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .empty {
