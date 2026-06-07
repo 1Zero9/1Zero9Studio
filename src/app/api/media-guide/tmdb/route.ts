@@ -30,6 +30,9 @@ const defaultProviders: Provider[] = [
   { id: 0, label: 'Paramount+', match: ['Paramount Plus', 'Paramount+'], enabled: true },
 ]
 
+const discoverPagesPerProvider = 3
+const streamingResultLimit = 240
+
 export async function POST(request: Request) {
   if (!(await hasMediaGuideSession())) {
     return NextResponse.json(
@@ -58,7 +61,7 @@ export async function POST(request: Request) {
       refreshedAt: new Date().toISOString(),
       genreMap: { ...movieGenres, ...tvGenres },
       providers: providerMap,
-      streaming: [...movieRows, ...tvRows].sort((a, b) => b.vote_average - a.vote_average).slice(0, 60),
+      streaming: [...movieRows, ...tvRows].sort((a, b) => b.vote_average - a.vote_average).slice(0, streamingResultLimit),
       cinema: cinemaRows,
     },
     { headers: { 'Cache-Control': 'private, max-age=900' } },
@@ -85,12 +88,19 @@ async function fetchTmdbDiscover(
 ): Promise<TmdbItem[]> {
   const rows = await Promise.all(
     providers.map(async (provider) => {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/discover/${type}?api_key=${apiKey}&watch_region=IE&with_watch_providers=${provider.id}&sort_by=popularity.desc`,
+      const pages = await Promise.all(
+        Array.from({ length: discoverPagesPerProvider }, async (_, index) => {
+          const page = index + 1
+          const response = await fetch(
+            `https://api.themoviedb.org/3/discover/${type}?api_key=${apiKey}&watch_region=IE&with_watch_providers=${provider.id}&sort_by=popularity.desc&page=${page}`,
+          )
+          if (!response.ok) throw new Error('Could not load TMDb titles.')
+          const data = (await response.json()) as { results: TmdbItem[] }
+          return data.results
+        }),
       )
-      if (!response.ok) throw new Error('Could not load TMDb titles.')
-      const data = (await response.json()) as { results: TmdbItem[] }
-      return data.results.slice(0, 8).map((item) => ({
+
+      return pages.flat().map((item) => ({
         ...item,
         media_type: type,
         provider: provider.label,
