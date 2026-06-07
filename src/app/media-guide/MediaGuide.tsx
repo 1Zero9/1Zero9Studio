@@ -33,6 +33,7 @@ type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'lists' | 'settings'
 type ThemeMode = 'dark' | 'light'
 type ListingTimeMode = 'from_now' | 'full_day'
 type DiscoveryMediaType = 'all' | 'movie' | 'tv'
+type DiscoveryStatusFilter = 'all' | 'unselected' | RecommendationItem['status']
 
 type TvMazeEpisode = {
   id: number | string
@@ -203,6 +204,10 @@ function App() {
     'mediaguide.discoveryMediaType',
     'all',
   )
+  const [discoveryStatusFilter, setDiscoveryStatusFilter] = useStoredState<DiscoveryStatusFilter>(
+    'mediaguide.discoveryStatusFilter',
+    'all',
+  )
   const [posterScale, setPosterScale] = useStoredState('mediaguide.posterScale', 100)
   const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
@@ -216,23 +221,26 @@ function App() {
     .filter((item) => !item.done)
     .sort((a, b) => a.nextEpisode.localeCompare(b.nextEpisode))
     .slice(0, 3)
-  const hiddenTmdbKeys = useMemo(
+  const discoveryStatusByKey = useMemo(
     () =>
-      new Set(
-        recommendationItems
-          .filter((item) => item.tmdbId && (item.status === 'seen' || item.status === 'not_interested'))
-          .map((item) => `${item.mediaType || 'movie'}-${item.tmdbId}`),
-      ),
+      recommendationItems.reduce((map, item) => {
+        const key = getRecommendationItemKey(item)
+        if (!key) return map
+        const statuses = map.get(key) ?? new Set<RecommendationItem['status']>()
+        statuses.add(item.status)
+        map.set(key, statuses)
+        return map
+      }, new Map<string, Set<RecommendationItem['status']>>()),
     [recommendationItems],
   )
   const hiddenGenres = useMemo(() => new Set(hiddenGenreIds), [hiddenGenreIds])
   const filteredStreamingItems = useMemo(
-    () => streaming.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbKeys, hiddenGenres)),
-    [hiddenGenres, hiddenTmdbKeys, streaming],
+    () => streaming.filter((item) => isVisibleDiscoveryItem(item, hiddenGenres)),
+    [hiddenGenres, streaming],
   )
   const filteredCinemaItems = useMemo(
-    () => cinema.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbKeys, hiddenGenres)),
-    [cinema, hiddenGenres, hiddenTmdbKeys],
+    () => cinema.filter((item) => isVisibleDiscoveryItem(item, hiddenGenres)),
+    [cinema, hiddenGenres],
   )
   const genreOptions = useMemo(() => {
     const ids = new Set<number>()
@@ -299,12 +307,35 @@ function App() {
   }, [channelFilter, channelMode, favoriteChannelSet, listingTimeMode, now, query, selectedDate, tvItems])
 
   const visibleStreamingItems = useMemo(
-    () => filterDiscoveryItems(filteredStreamingItems, discoveryQuery, discoveryGenreId, discoveryMediaType),
-    [discoveryGenreId, discoveryMediaType, discoveryQuery, filteredStreamingItems],
+    () =>
+      filterDiscoveryItems(
+        filteredStreamingItems,
+        discoveryQuery,
+        discoveryGenreId,
+        discoveryMediaType,
+        discoveryStatusFilter,
+        discoveryStatusByKey,
+      ),
+    [
+      discoveryGenreId,
+      discoveryMediaType,
+      discoveryQuery,
+      discoveryStatusByKey,
+      discoveryStatusFilter,
+      filteredStreamingItems,
+    ],
   )
   const visibleCinemaItems = useMemo(
-    () => filterDiscoveryItems(filteredCinemaItems, discoveryQuery, discoveryGenreId, 'movie'),
-    [discoveryGenreId, discoveryQuery, filteredCinemaItems],
+    () =>
+      filterDiscoveryItems(
+        filteredCinemaItems,
+        discoveryQuery,
+        discoveryGenreId,
+        'movie',
+        discoveryStatusFilter,
+        discoveryStatusByKey,
+      ),
+    [discoveryGenreId, discoveryQuery, discoveryStatusByKey, discoveryStatusFilter, filteredCinemaItems],
   )
 
   useEffect(() => {
@@ -904,11 +935,13 @@ function App() {
             discoveryGenreId={discoveryGenreId}
             discoveryMediaType={discoveryMediaType}
             discoveryQuery={discoveryQuery}
+            discoveryStatusFilter={discoveryStatusFilter}
             genreOptions={genreOptions}
             onGenreChange={setDiscoveryGenreId}
             onMediaTypeChange={setDiscoveryMediaType}
             onPosterScaleChange={setPosterScale}
             onQueryChange={setDiscoveryQuery}
+            onStatusFilterChange={setDiscoveryStatusFilter}
             posterScale={posterScale}
             showMediaType
           />
@@ -936,6 +969,7 @@ function App() {
             onAction={addRecommendation}
             onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
             posterScale={posterScale}
+            statusByKey={discoveryStatusByKey}
           />
           {!tmdbLoading && visibleStreamingItems.length === 0 && (
             <EmptyState
@@ -958,10 +992,12 @@ function App() {
           <DiscoveryFilters
             discoveryGenreId={discoveryGenreId}
             discoveryQuery={discoveryQuery}
+            discoveryStatusFilter={discoveryStatusFilter}
             genreOptions={genreOptions}
             onGenreChange={setDiscoveryGenreId}
             onPosterScaleChange={setPosterScale}
             onQueryChange={setDiscoveryQuery}
+            onStatusFilterChange={setDiscoveryStatusFilter}
             posterScale={posterScale}
           />
           {cinema.length ? (
@@ -977,6 +1013,7 @@ function App() {
                 onAction={addRecommendation}
                 onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
                 posterScale={posterScale}
+                statusByKey={discoveryStatusByKey}
               />
             </>
           ) : (
@@ -1245,70 +1282,99 @@ function MediaGrid({
   onAction,
   onTrack,
   posterScale,
+  statusByKey,
 }: {
   genreMap: Record<number, string>
   items: TmdbItem[]
   onAction: (item: TmdbItem, status: RecommendationItem['status']) => void
   onTrack: (item: TmdbItem) => void
   posterScale: number
+  statusByKey: Map<string, Set<RecommendationItem['status']>>
 }) {
   const gridStyle = { '--poster-scale': posterScale / 100 } as CSSProperties
 
   return (
     <div className="media-grid" style={gridStyle}>
-      {items.map((item) => (
-        <article className="media-card" key={`${item.media_type ?? 'movie'}-${item.provider}-${item.id}`}>
-          {item.poster_path ? (
-            <img src={`https://image.tmdb.org/t/p/w342${item.poster_path}`} alt="" />
-          ) : (
-            <div className="poster-fallback large">
-              <MonitorPlay size={28} />
-            </div>
-          )}
-          <div>
-            <span>
-              {[item.media_type === 'tv' ? 'TV show' : 'Movie', item.provider ?? item.release_date ?? item.first_air_date ?? 'Ireland']
-                .filter(Boolean)
-                .join(' - ')}
-            </span>
-            <h2>{item.title ?? item.name}</h2>
-            {item.genre_ids && (
-              <div className="media-genres">
-                {item.genre_ids
-                  .map((id) => genreMap[id])
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((genre) => (
-                    <small key={genre}>{genre}</small>
-                  ))}
+      {items.map((item) => {
+        const itemStatuses = statusByKey.get(getTmdbItemKey(item)) ?? new Set<RecommendationItem['status']>()
+        const hasStatus = itemStatuses.size > 0
+
+        return (
+          <article
+            className={hasStatus ? 'media-card selected' : 'media-card'}
+            key={`${item.media_type ?? 'movie'}-${item.provider}-${item.id}`}
+          >
+            {item.poster_path ? (
+              <img src={`https://image.tmdb.org/t/p/w342${item.poster_path}`} alt="" />
+            ) : (
+              <div className="poster-fallback large">
+                <MonitorPlay size={28} />
               </div>
             )}
-            <p>{item.overview || 'No summary available.'}</p>
-          </div>
-          <div className="media-actions">
-            <button type="button" onClick={() => onTrack(item)}>
-              <Plus size={16} />
-              Track
-            </button>
-            <button type="button" onClick={() => onAction(item, 'seen')}>
-              <Eye size={16} />
-              Seen
-            </button>
-            <button type="button" onClick={() => onAction(item, 'favorite')}>
-              <Heart size={16} />
-              Fav
-            </button>
-            <button type="button" onClick={() => onAction(item, 'recommend')}>
-              <Send size={16} />
-              Recommend
-            </button>
-            <button type="button" onClick={() => onAction(item, 'not_interested')}>
-              <ThumbsDown size={16} />
-              Not for me
-            </button>
-          </div>
-        </article>
-      ))}
+            <div>
+              <span>
+                {[
+                  item.media_type === 'tv' ? 'TV show' : 'Movie',
+                  item.provider ?? item.release_date ?? item.first_air_date ?? 'Ireland',
+                ]
+                  .filter(Boolean)
+                  .join(' - ')}
+              </span>
+              <h2>{item.title ?? item.name}</h2>
+              {item.genre_ids && (
+                <div className="media-genres">
+                  {item.genre_ids
+                    .map((id) => genreMap[id])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((genre) => (
+                      <small key={genre}>{genre}</small>
+                    ))}
+                </div>
+              )}
+              <p>{item.overview || 'No summary available.'}</p>
+            </div>
+            <div className="media-actions">
+              <button type="button" onClick={() => onTrack(item)}>
+                <Plus size={16} />
+                Track
+              </button>
+              <button
+                className={itemStatuses.has('seen') ? 'selected-action' : ''}
+                type="button"
+                onClick={() => onAction(item, 'seen')}
+              >
+                <Eye size={16} />
+                Seen
+              </button>
+              <button
+                className={itemStatuses.has('favorite') ? 'selected-action' : ''}
+                type="button"
+                onClick={() => onAction(item, 'favorite')}
+              >
+                <Heart size={16} />
+                Fav
+              </button>
+              <button
+                className={itemStatuses.has('recommend') ? 'selected-action' : ''}
+                type="button"
+                onClick={() => onAction(item, 'recommend')}
+              >
+                <Send size={16} />
+                Recommend
+              </button>
+              <button
+                className={itemStatuses.has('not_interested') ? 'selected-action' : ''}
+                type="button"
+                onClick={() => onAction(item, 'not_interested')}
+              >
+                <ThumbsDown size={16} />
+                Not for me
+              </button>
+            </div>
+          </article>
+        )
+      })}
     </div>
   )
 }
@@ -1317,22 +1383,26 @@ function DiscoveryFilters({
   discoveryGenreId,
   discoveryMediaType = 'all',
   discoveryQuery,
+  discoveryStatusFilter,
   genreOptions,
   onGenreChange,
   onMediaTypeChange,
   onPosterScaleChange,
   onQueryChange,
+  onStatusFilterChange,
   posterScale,
   showMediaType = false,
 }: {
   discoveryGenreId: number
   discoveryMediaType?: DiscoveryMediaType
   discoveryQuery: string
+  discoveryStatusFilter: DiscoveryStatusFilter
   genreOptions: { id: number; name: string }[]
   onGenreChange: (id: number) => void
   onMediaTypeChange?: (type: DiscoveryMediaType) => void
   onPosterScaleChange: (scale: number) => void
   onQueryChange: (query: string) => void
+  onStatusFilterChange: (status: DiscoveryStatusFilter) => void
   posterScale: number
   showMediaType?: boolean
 }) {
@@ -1384,6 +1454,25 @@ function DiscoveryFilters({
         />
         <strong>{posterScale}%</strong>
       </label>
+      <div className="segmented-actions status-filter-toggle" aria-label="Recommendation status">
+        {[
+          ['all', 'All'],
+          ['unselected', 'New'],
+          ['seen', 'Seen'],
+          ['favorite', 'Fav'],
+          ['recommend', 'Recommend'],
+          ['not_interested', 'Not for me'],
+        ].map(([value, label]) => (
+          <button
+            className={discoveryStatusFilter === value ? 'active' : ''}
+            key={value}
+            type="button"
+            onClick={() => onStatusFilterChange(value as DiscoveryStatusFilter)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -1505,8 +1594,16 @@ function providersChanged(left: Provider[], right: Provider[]) {
   })
 }
 
-function isVisibleDiscoveryItem(item: TmdbItem, hiddenTmdbKeys: Set<string>, hiddenGenres: Set<number>) {
-  if (hiddenTmdbKeys.has(`${item.media_type ?? (item.name ? 'tv' : 'movie')}-${item.id}`)) return false
+function getTmdbItemKey(item: TmdbItem) {
+  return `${item.media_type ?? (item.name ? 'tv' : 'movie')}-${item.id}`
+}
+
+function getRecommendationItemKey(item: RecommendationItem) {
+  if (!item.tmdbId) return ''
+  return `${item.mediaType || 'movie'}-${item.tmdbId}`
+}
+
+function isVisibleDiscoveryItem(item: TmdbItem, hiddenGenres: Set<number>) {
   if (item.genre_ids?.some((id) => hiddenGenres.has(id))) return false
   return true
 }
@@ -1516,15 +1613,25 @@ function filterDiscoveryItems(
   query: string,
   genreId: number,
   mediaType: DiscoveryMediaType,
+  statusFilter: DiscoveryStatusFilter,
+  statusByKey: Map<string, Set<RecommendationItem['status']>>,
 ) {
   const term = query.trim().toLowerCase()
   return items.filter((item) => {
     const title = item.title ?? item.name ?? ''
     const provider = item.provider ?? ''
+    const statuses = statusByKey.get(getTmdbItemKey(item)) ?? new Set<RecommendationItem['status']>()
     const matchesTerm = !term || `${title} ${provider} ${item.overview}`.toLowerCase().includes(term)
     const matchesGenre = !genreId || item.genre_ids?.includes(genreId)
     const matchesMediaType = mediaType === 'all' || (item.media_type ?? (item.name ? 'tv' : 'movie')) === mediaType
-    return matchesTerm && matchesGenre && matchesMediaType
+    const matchesStatus =
+      statusFilter === 'all'
+        ? !statuses.has('seen') && !statuses.has('not_interested')
+        : statusFilter === 'unselected'
+          ? statuses.size === 0
+          : statuses.has(statusFilter)
+
+    return matchesTerm && matchesGenre && matchesMediaType && matchesStatus
   })
 }
 

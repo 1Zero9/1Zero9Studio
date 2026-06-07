@@ -717,6 +717,12 @@ button:disabled {
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.26);
 }
 
+.media-card.selected {
+  border-color: rgba(215, 255, 50, 0.72);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 208, 195, 0.22),
+    0 0 28px rgba(215, 255, 50, 0.12);
+}
+
 .media-card img {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -781,6 +787,13 @@ button:disabled {
   font-size: 12px;
 }
 
+.media-actions button.selected-action {
+  border-color: rgba(215, 255, 50, 0.76);
+  background: linear-gradient(135deg, rgba(0, 208, 195, 0.95), rgba(215, 255, 50, 0.9));
+  color: #06100f;
+  box-shadow: 0 0 0 1px rgba(215, 255, 50, 0.25), 0 8px 18px rgba(0, 208, 195, 0.2);
+}
+
 .media-actions button:last-child {
   grid-column: span 3;
 }
@@ -818,6 +831,16 @@ button:disabled {
 
 .media-type-toggle button {
   white-space: nowrap;
+}
+
+.status-filter-toggle {
+  grid-column: 1 / -1;
+  width: fit-content;
+  flex-wrap: wrap;
+}
+
+.status-filter-toggle button {
+  min-width: 72px;
 }
 
 .range-field {
