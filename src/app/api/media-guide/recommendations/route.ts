@@ -3,7 +3,7 @@ import { hasMediaGuideSession } from '@/lib/media-guide-auth'
 import { ensureRecommendationTables, getMediaGuideSql } from '@/lib/media-guide-db'
 
 type RecommendationPayload = {
-  action?: 'create-list' | 'add-item' | 'delete-list' | 'delete-item'
+  action?: 'create-list' | 'rename-list' | 'add-item' | 'move-item' | 'delete-list' | 'delete-item'
   listId?: string
   itemId?: string
   name?: string
@@ -69,10 +69,36 @@ export async function POST(request: Request) {
     return new NextResponse(null, { status: 204 })
   }
 
+  if (payload.action === 'rename-list') {
+    if (!payload.listId) return NextResponse.json({ error: 'listId is required.' }, { status: 400 })
+    const name = payload.name?.trim()
+    if (!name) return NextResponse.json({ error: 'name is required.' }, { status: 400 })
+    const rows = await sql`
+      update media_recommendation_lists
+      set name = ${name}
+      where id = ${payload.listId}
+      returning id, name, share_slug
+    `
+    if (!rows.length) return NextResponse.json({ error: 'list not found.' }, { status: 404 })
+    return NextResponse.json(mapList(rows[0]))
+  }
+
   if (payload.action === 'delete-item') {
     if (!payload.itemId) return NextResponse.json({ error: 'itemId is required.' }, { status: 400 })
     await sql`delete from media_recommendation_items where id = ${payload.itemId}`
     return new NextResponse(null, { status: 204 })
+  }
+
+  if (payload.action === 'move-item') {
+    if (!payload.itemId) return NextResponse.json({ error: 'itemId is required.' }, { status: 400 })
+    const rows = await sql`
+      update media_recommendation_items
+      set list_id = ${payload.listId || null}
+      where id = ${payload.itemId}
+      returning id, list_id, tmdb_id, media_type, status, title, service, poster_path, overview, note
+    `
+    if (!rows.length) return NextResponse.json({ error: 'item not found.' }, { status: 404 })
+    return NextResponse.json(mapItem(rows[0]))
   }
 
   if (payload.action === 'add-item') {

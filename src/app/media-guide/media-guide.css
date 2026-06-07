@@ -1220,6 +1220,40 @@ button:disabled {
   font-weight: 650;
 }
 
+.list-name-input {
+  width: min(100%, 320px);
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  outline: 0;
+  background: transparent;
+  color: var(--mg-ink);
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.list-name-input:focus {
+  border-bottom-color: var(--mg-teal);
+}
+
+.recommendation-move-item {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 180px) 34px;
+  display: grid;
+}
+
+.recommendation-move-item select {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--mg-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--mg-ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
 .mini-item button {
   width: 34px;
   justify-content: center;
@@ -1545,6 +1579,14 @@ button:disabled {
 
   .compact-action {
     width: 100%;
+  }
+
+  .recommendation-move-item {
+    grid-template-columns: minmax(0, 1fr) 34px;
+  }
+
+  .recommendation-move-item select {
+    grid-column: 1 / -1;
   }
 
   .media-card {

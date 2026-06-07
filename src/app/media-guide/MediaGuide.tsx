@@ -222,7 +222,6 @@ function App() {
   const [posterScale, setPosterScale] = useStoredState('mediaguide.posterScale', 100)
   const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
-  const [selectedListId, setSelectedListId] = useState('')
   const [genreMap, setGenreMap] = useState<Record<number, string>>({})
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [installState, setInstallState] = useState<'available' | 'installed' | 'manual'>('manual')
@@ -528,7 +527,6 @@ function App() {
         if (!ignore) {
           setRecommendationLists(data.lists)
           setRecommendationItems(data.items)
-          setSelectedListId((current) => current || data.lists[0]?.id || '')
         }
       } catch {
         if (!ignore) {
@@ -655,12 +653,9 @@ function App() {
   }
 
   async function addRecommendation(item: TmdbItem, status: RecommendationItem['status']) {
-    const targetListId =
-      status === 'recommend' ? selectedListId || recommendationLists[0]?.id || null : null
-    const targetListName = recommendationLists.find((list) => list.id === targetListId)?.name
     const payload = {
       action: 'add-item',
-      listId: targetListId,
+      listId: null,
       item: {
         tmdbId: item.id,
         mediaType: item.media_type ?? (item.name ? 'tv' : 'movie'),
@@ -675,7 +670,7 @@ function App() {
     if ((status === 'favorite' || status === 'recommend') && discoveryStatusFilter === 'unselected') {
       setDiscoveryStatusFilter('all')
     }
-    setToast(statusLabel(status, item.title ?? item.name ?? 'Title', targetListName))
+    setToast(statusLabel(status, item.title ?? item.name ?? 'Title'))
     const response = await fetch('/api/media-guide/recommendations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -705,8 +700,38 @@ function App() {
     if (!response.ok) return
     const list = (await response.json()) as RecommendationList
     setRecommendationLists((current) => [list, ...current])
-    setSelectedListId(list.id)
     event.currentTarget.reset()
+  }
+
+  async function renameRecommendationList(list: RecommendationList, name: string) {
+    const nextName = name.trim()
+    if (!nextName || nextName === list.name) return
+    setRecommendationLists((current) =>
+      current.map((item) => (item.id === list.id ? { ...item, name: nextName } : item)),
+    )
+    const response = await fetch('/api/media-guide/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'rename-list', listId: list.id, name: nextName }),
+    })
+    if (!response.ok) return
+    const saved = (await response.json()) as RecommendationList
+    setRecommendationLists((current) => current.map((item) => (item.id === saved.id ? saved : item)))
+  }
+
+  async function moveRecommendationItem(itemId: string, listId: string) {
+    const nextListId = listId || null
+    setRecommendationItems((current) =>
+      current.map((item) => (item.id === itemId ? { ...item, listId: nextListId } : item)),
+    )
+    const response = await fetch('/api/media-guide/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'move-item', itemId, listId: nextListId }),
+    })
+    if (!response.ok) return
+    const saved = (await response.json()) as RecommendationItem
+    setRecommendationItems((current) => current.map((item) => (item.id === saved.id ? saved : item)))
   }
 
   async function removeRecommendationItem(id: string) {
@@ -721,7 +746,6 @@ function App() {
   async function removeRecommendationList(id: string) {
     setRecommendationLists((current) => current.filter((list) => list.id !== id))
     setRecommendationItems((current) => current.filter((item) => item.listId !== id))
-    if (selectedListId === id) setSelectedListId('')
     await fetch('/api/media-guide/recommendations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1061,11 +1085,6 @@ function App() {
               </button>
             ))}
           </div>
-          <RecommendationTarget
-            lists={recommendationLists}
-            selectedListId={selectedListId}
-            onChange={setSelectedListId}
-          />
           <MediaGrid
             genreMap={genreMap}
             items={visibleStreamingItems}
@@ -1106,11 +1125,6 @@ function App() {
           />
           {cinema.length ? (
             <>
-              <RecommendationTarget
-                lists={recommendationLists}
-                selectedListId={selectedListId}
-                onChange={setSelectedListId}
-              />
               <MediaGrid
                 genreMap={genreMap}
                 items={visibleCinemaItems}
@@ -1264,6 +1278,31 @@ function App() {
           </div>
 
           <div className="recommendation-lists">
+            <article className="recommendation-list">
+              <div className="list-heading">
+                <div>
+                  <p className="eyebrow">Main recommendations</p>
+                  <h2>Inbox</h2>
+                  <span>{recommendationItems.filter((item) => item.status === 'recommend' && !item.listId).length} unfiled recommendations</span>
+                </div>
+              </div>
+              <div className="mini-list">
+                {recommendationItems
+                  .filter((item) => item.status === 'recommend' && !item.listId)
+                  .map((item) => (
+                    <RecommendationListItem
+                      item={item}
+                      key={item.id}
+                      lists={recommendationLists}
+                      onMove={moveRecommendationItem}
+                      onRemove={removeRecommendationItem}
+                    />
+                  ))}
+                {!recommendationItems.some((item) => item.status === 'recommend' && !item.listId) && (
+                  <p className="muted-copy">Tap Recommend on Streaming or Cinema to add titles here first.</p>
+                )}
+              </div>
+            </article>
             {recommendationLists.map((list) => {
               const listItems = recommendationItems.filter((item) => item.listId === list.id)
               return (
@@ -1271,7 +1310,15 @@ function App() {
                   <div className="list-heading">
                     <div>
                       <p className="eyebrow">Share list</p>
-                      <h2>{list.name}</h2>
+                      <input
+                        aria-label={`Rename ${list.name}`}
+                        className="list-name-input"
+                        defaultValue={list.name}
+                        onBlur={(event) => renameRecommendationList(list, event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') event.currentTarget.blur()
+                        }}
+                      />
                       <span>{listItems.length} recommendations</span>
                     </div>
                     <div className="list-actions">
@@ -1286,14 +1333,15 @@ function App() {
                   </div>
                   <div className="mini-list">
                     {listItems.map((item) => (
-                      <div className="mini-item" key={item.id}>
-                        <span>{item.title}</span>
-                        <button type="button" onClick={() => removeRecommendationItem(item.id)}>
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+                      <RecommendationListItem
+                        item={item}
+                        key={item.id}
+                        lists={recommendationLists}
+                        onMove={moveRecommendationItem}
+                        onRemove={removeRecommendationItem}
+                      />
                     ))}
-                    {listItems.length === 0 && <p className="muted-copy">Choose this list on Streaming or Cinema, then tap Recommend.</p>}
+                    {listItems.length === 0 && <p className="muted-copy">Move recommendations from the Inbox into this list.</p>}
                   </div>
                 </article>
               )
@@ -1689,33 +1737,6 @@ function DiscoveryFilters({
   )
 }
 
-function RecommendationTarget({
-  lists,
-  onChange,
-  selectedListId,
-}: {
-  lists: RecommendationList[]
-  onChange: (id: string) => void
-  selectedListId: string
-}) {
-  if (!lists.length) {
-    return <p className="notice">Recommend saves to your Recommended bucket. Create a share list in Lists to send picks to someone.</p>
-  }
-
-  return (
-    <label className="field list-target">
-      <Send size={17} />
-      <select value={selectedListId} onChange={(event) => onChange(event.target.value)}>
-        {lists.map((list) => (
-          <option key={list.id} value={list.id}>
-            Recommend to {list.name}
-          </option>
-        ))}
-      </select>
-    </label>
-  )
-}
-
 function StatusBucket({
   icon,
   items,
@@ -1750,6 +1771,39 @@ function StatusBucket({
         {!items.length && <p className="muted-copy">Nothing here yet.</p>}
       </div>
     </article>
+  )
+}
+
+function RecommendationListItem({
+  item,
+  lists,
+  onMove,
+  onRemove,
+}: {
+  item: RecommendationItem
+  lists: RecommendationList[]
+  onMove: (itemId: string, listId: string) => void
+  onRemove: (id: string) => void
+}) {
+  return (
+    <div className="mini-item recommendation-move-item">
+      <span>{item.title}</span>
+      <select
+        aria-label={`Move ${item.title}`}
+        value={item.listId ?? ''}
+        onChange={(event) => onMove(item.id, event.target.value)}
+      >
+        <option value="">Inbox</option>
+        {lists.map((list) => (
+          <option key={list.id} value={list.id}>
+            {list.name}
+          </option>
+        ))}
+      </select>
+      <button type="button" onClick={() => onRemove(item.id)}>
+        <Trash2 size={15} />
+      </button>
+    </div>
   )
 }
 
@@ -1874,12 +1928,10 @@ function getProgrammeChannelId(item: TvMazeEpisode) {
   return String(item.show.id)
 }
 
-function statusLabel(status: RecommendationItem['status'], title: string, listName?: string) {
+function statusLabel(status: RecommendationItem['status'], title: string) {
   if (status === 'seen') return `${title} marked seen`
   if (status === 'favorite') return `${title} added to favorites`
-  if (status === 'recommend') {
-    return listName ? `${title} added to ${listName}` : `${title} added to recommendations`
-  }
+  if (status === 'recommend') return `${title} added to recommendation inbox`
   return `${title} hidden from discovery`
 }
 
