@@ -9,6 +9,13 @@ export const metadata: Metadata = {
   title: 'Media Guide | 1Zero9 Studio',
   description: 'Personal Ireland media guide for TV, streaming, cinema releases, and tracked shows.',
   manifest: '/media-guide.webmanifest',
+  icons: {
+    icon: [
+      { url: '/media-guide-icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/media-guide-icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/media-guide-icon-180.png', sizes: '180x180', type: 'image/png' }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
