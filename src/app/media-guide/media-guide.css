@@ -1014,6 +1014,49 @@ button:disabled {
   margin-top: 12px;
 }
 
+.watch-list {
+  display: grid;
+  gap: 12px;
+}
+
+.watch-group {
+  display: grid;
+  gap: 8px;
+}
+
+.watch-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.watch-group-heading h2 {
+  margin: 0;
+  color: var(--mg-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.watch-group-heading span,
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid var(--mg-border);
+  border-radius: 999px;
+  background: rgba(0, 208, 195, 0.09);
+  color: var(--mg-teal);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.type-badge {
+  margin-left: 8px;
+}
+
 .calendar-panel {
   display: grid;
   gap: 10px;
