@@ -7,6 +7,7 @@ import {
   Clapperboard,
   Copy,
   Clock3,
+  Download,
   Eye,
   Filter,
   Heart,
@@ -34,6 +35,11 @@ type ThemeMode = 'dark' | 'light'
 type ListingTimeMode = 'from_now' | 'full_day'
 type DiscoveryMediaType = 'all' | 'movie' | 'tv'
 type DiscoveryStatusFilter = 'all' | 'unselected' | RecommendationItem['status']
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+}
 
 type TvMazeEpisode = {
   id: number | string
@@ -213,6 +219,8 @@ function App() {
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
   const [selectedListId, setSelectedListId] = useState('')
   const [genreMap, setGenreMap] = useState<Record<number, string>>({})
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [installState, setInstallState] = useState<'available' | 'installed' | 'manual'>('manual')
   const [toast, setToast] = useState('')
   const refreshPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -453,6 +461,35 @@ function App() {
   }, [setWatching])
 
   useEffect(() => {
+    const nav = window.navigator as Navigator & { standalone?: boolean }
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || Boolean(nav.standalone)
+    setInstallState(isInstalled ? 'installed' : 'manual')
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/media-guide-sw.js', { scope: '/media-guide' }).catch(() => undefined)
+    }
+
+    function onBeforeInstallPrompt(event: Event) {
+      event.preventDefault()
+      setInstallPrompt(event as BeforeInstallPromptEvent)
+      setInstallState('available')
+    }
+
+    function onAppInstalled() {
+      setInstallPrompt(null)
+      setInstallState('installed')
+      setToast('Media Guide installed')
+    }
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+    window.addEventListener('appinstalled', onAppInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', onAppInstalled)
+    }
+  }, [])
+
+  useEffect(() => {
     let ignore = false
     async function loadRecommendations() {
       try {
@@ -656,6 +693,18 @@ function App() {
   async function copyShareLink(slug: string) {
     const url = `${window.location.origin}/media-guide/share/${slug}`
     await navigator.clipboard.writeText(url)
+  }
+
+  async function installApp() {
+    if (!installPrompt) {
+      setToast('Use your browser menu to add Media Guide to your home screen')
+      return
+    }
+
+    await installPrompt.prompt()
+    const choice = await installPrompt.userChoice
+    setInstallPrompt(null)
+    setInstallState(choice.outcome === 'accepted' ? 'installed' : 'manual')
   }
 
   async function logout() {
@@ -1218,6 +1267,27 @@ function App() {
                   </button>
                 </div>
               </div>
+              <div className="settings-controls">
+                <div>
+                  <strong>Home screen app</strong>
+                  <span>
+                    {installState === 'installed'
+                      ? 'Installed as a standalone app.'
+                      : installState === 'available'
+                        ? 'Ready to install on this device.'
+                        : 'Use your browser menu if the install button is unavailable.'}
+                  </span>
+                </div>
+                <button
+                  className="primary-button compact-action"
+                  type="button"
+                  disabled={installState === 'installed'}
+                  onClick={installApp}
+                >
+                  <Download size={16} />
+                  {installState === 'installed' ? 'Installed' : 'Install'}
+                </button>
+              </div>
             </div>
             <h2>Data Sources</h2>
             <p>
@@ -1258,15 +1328,27 @@ function App() {
               </div>
             </div>
             <div className="settings-roadmap">
-              <p className="eyebrow">What is still missing</p>
+              <p className="eyebrow">Product roadmap</p>
               <h2>Best next upgrades</h2>
-              <div className="roadmap-grid">
-                <span>Real Sky Ireland EPG feed</span>
-                <span>Push reminders for next episodes</span>
-                <span>Calendar view for releases</span>
-                <span>Better taste profile from seen/favorites</span>
-                <span>Per-person list notes and ratings</span>
-                <span>Home screen install prompt</span>
+              <div className="roadmap-lanes">
+                <div>
+                  <strong>Now</strong>
+                  <span>Calendar view for episodes and cinema releases</span>
+                  <span>Watch statuses: watching, waiting, completed, dropped</span>
+                  <span>Per-person notes and ratings on shared lists</span>
+                </div>
+                <div>
+                  <strong>Next</strong>
+                  <span>Push reminders for next episodes</span>
+                  <span>Better taste profile from seen, favorites, and genres</span>
+                  <span>Dashboard for hours, genres, ratings, and service usage</span>
+                </div>
+                <div>
+                  <strong>Later</strong>
+                  <span>Conversational AI search and recommendations</span>
+                  <span>Tags for mood, language, runtime, theme, and format</span>
+                  <span>Trakt or JustWatch-style availability sync</span>
+                </div>
               </div>
             </div>
             <button className="primary-button secondary-action" type="button" onClick={logout}>

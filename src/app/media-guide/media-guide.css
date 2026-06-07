@@ -1096,6 +1096,11 @@ button:disabled {
   font-size: 13px;
 }
 
+.compact-action {
+  flex: 0 0 auto;
+  min-width: 128px;
+}
+
 .genre-preferences {
   display: flex;
   gap: 8px;
@@ -1131,6 +1136,32 @@ button:disabled {
   color: var(--mg-muted);
   font-size: 13px;
   font-weight: 650;
+}
+
+.roadmap-lanes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.roadmap-lanes > div {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--mg-border);
+  border-radius: 14px;
+  background: rgba(0, 208, 195, 0.07);
+}
+
+.roadmap-lanes strong {
+  color: var(--mg-ink);
+}
+
+.roadmap-lanes span {
+  color: var(--mg-muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .empty {
@@ -1339,8 +1370,13 @@ button:disabled {
 
   .status-rail,
   .shared-list-grid,
-  .roadmap-grid {
+  .roadmap-grid,
+  .roadmap-lanes {
     grid-template-columns: 1fr;
+  }
+
+  .compact-action {
+    width: 100%;
   }
 
   .media-card {
