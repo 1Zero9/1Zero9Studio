@@ -920,6 +920,51 @@ button:disabled {
   margin-top: 12px;
 }
 
+.calendar-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--mg-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.compact-heading {
+  margin: 0;
+}
+
+.calendar-list {
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: rgba(0, 208, 195, 0.08);
+}
+
+.calendar-item time {
+  color: var(--mg-sun);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.calendar-item strong,
+.calendar-item span {
+  display: block;
+}
+
+.calendar-item span {
+  color: var(--mg-muted);
+  font-size: 12px;
+}
+
 .watch-item {
   gap: 10px;
   padding: 10px;
@@ -932,6 +977,30 @@ button:disabled {
 
 .watch-item.done {
   opacity: 0.55;
+}
+
+.watch-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 6px 0;
+}
+
+.watch-status-row select {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--mg-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--mg-ink);
+  font-weight: 650;
+}
+
+.watch-status-row small {
+  color: var(--mg-muted);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .check {

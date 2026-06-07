@@ -35,6 +35,7 @@ type ThemeMode = 'dark' | 'light'
 type ListingTimeMode = 'from_now' | 'full_day'
 type DiscoveryMediaType = 'all' | 'movie' | 'tv'
 type DiscoveryStatusFilter = 'all' | 'unselected' | RecommendationItem['status']
+type WatchStatus = 'planned' | 'watching' | 'waiting' | 'completed' | 'dropped'
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -95,6 +96,7 @@ type WatchingItem = {
   cadence: string
   notes: string
   done: boolean
+  status?: WatchStatus
 }
 
 type RecommendationList = {
@@ -226,7 +228,7 @@ function App() {
 
   const enabledProviders = providers.filter((provider) => provider.enabled)
   const dueSoon = watching
-    .filter((item) => !item.done)
+    .filter((item) => !['completed', 'dropped'].includes(getWatchStatus(item)))
     .sort((a, b) => a.nextEpisode.localeCompare(b.nextEpisode))
     .slice(0, 3)
   const discoveryStatusByKey = useMemo(
@@ -317,6 +319,30 @@ function App() {
     () => new Set(watching.map((item) => normalizeTitle(item.title))),
     [watching],
   )
+  const calendarEvents = useMemo(() => {
+    const watchEvents = watching
+      .filter((item) => !['completed', 'dropped'].includes(getWatchStatus(item)))
+      .map((item) => ({
+        id: `watch-${item.id}`,
+        date: item.nextEpisode,
+        title: item.title,
+        meta: `${watchStatusLabel(getWatchStatus(item))} - ${item.service || 'My Shows'}`,
+      }))
+    const cinemaEvents = cinema
+      .filter((item) => item.release_date)
+      .slice(0, 12)
+      .map((item) => ({
+        id: `cinema-${item.id}`,
+        date: item.release_date as string,
+        title: item.title ?? item.name ?? 'Cinema release',
+        meta: 'Cinema release',
+      }))
+
+    return [...watchEvents, ...cinemaEvents]
+      .filter((item) => item.date)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 18)
+  }, [cinema, watching])
 
   const visibleStreamingItems = useMemo(
     () =>
@@ -582,22 +608,32 @@ function App() {
       nextEpisode: String(data.get('nextEpisode') || new Date().toISOString().slice(0, 10)),
       cadence: String(data.get('cadence') || 'Weekly'),
       notes: String(data.get('notes') ?? ''),
-      done: false,
+      status: String(data.get('status') || 'watching') as WatchStatus,
+      done: String(data.get('status') || 'watching') === 'completed',
     }
     await persistWatchingItem(item)
     event.currentTarget.reset()
   }
 
   async function toggleWatching(item: WatchingItem) {
-    const nextDone = !item.done
-    setWatching((current) => current.map((row) => (row.id === item.id ? { ...row, done: nextDone } : row)))
+    const nextStatus = getWatchStatus(item) === 'completed' ? 'watching' : 'completed'
+    await updateWatchingStatus(item, nextStatus)
+  }
+
+  async function updateWatchingStatus(item: WatchingItem, status: WatchStatus) {
+    const nextDone = status === 'completed'
+    setWatching((current) =>
+      current.map((row) => (row.id === item.id ? { ...row, status, done: nextDone } : row)),
+    )
     try {
       const response = await fetch('/api/media-guide/watchlist', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: item.id, done: nextDone }),
+        body: JSON.stringify({ id: item.id, done: nextDone, status }),
       })
       if (!response.ok) throw new Error('Could not update watchlist item.')
+      const saved = (await response.json()) as WatchingItem
+      setWatching((current) => current.map((row) => (row.id === item.id ? saved : row)))
       setWatchlistSource('neon')
     } catch {
       setWatchlistSource('local')
@@ -1103,6 +1139,13 @@ function App() {
                 <option>One-off</option>
                 <option>Unknown</option>
               </select>
+              <select name="status" defaultValue="watching">
+                <option value="watching">Watching</option>
+                <option value="waiting">Waiting for next series</option>
+                <option value="planned">Plan to watch</option>
+                <option value="completed">Completed</option>
+                <option value="dropped">Dropped</option>
+              </select>
               <input name="notes" placeholder="Episode, season, note" />
             </div>
             <button className="primary-button" type="submit">
@@ -1110,28 +1153,71 @@ function App() {
               Add to My Shows
             </button>
           </form>
-          <div className="watch-list">
-            {watching.map((item) => (
-              <article className={item.done ? 'watch-item done' : 'watch-item'} key={item.id}>
-                <button className="check" type="button" aria-label={`Mark ${item.title} watched`} onClick={() => toggleWatching(item)}>
-                  {item.done && <Check size={16} />}
-                </button>
-                <div>
-                  <h2>{item.title}</h2>
-                  <p>{item.service}</p>
-                  {item.notes && <span>{item.notes}</span>}
+          <div className="calendar-panel">
+            <div className="section-heading compact-heading">
+              <div>
+                <p className="eyebrow">Calendar</p>
+                <h2>Upcoming dates</h2>
+              </div>
+              <CalendarDays size={18} />
+            </div>
+            <div className="calendar-list">
+              {calendarEvents.map((item) => (
+                <div className="calendar-item" key={item.id}>
+                  <time>{formatShortDate(item.date)}</time>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <span>{item.meta}</span>
+                  </div>
                 </div>
-                <div className="date-pill">{formatShortDate(item.nextEpisode)}</div>
-                <button
-                  className="icon-button quiet"
-                  type="button"
-                  aria-label={`Remove ${item.title}`}
-                  onClick={() => removeWatching(item.id)}
-                >
-                  <Trash2 size={17} />
-                </button>
-              </article>
-            ))}
+              ))}
+              {!calendarEvents.length && <p className="muted-copy">Track shows or load cinema releases to fill the calendar.</p>}
+            </div>
+          </div>
+          <div className="watch-list">
+            {watching.map((item) => {
+              const watchStatus = getWatchStatus(item)
+              return (
+                <article className={watchStatus === 'completed' ? 'watch-item done' : 'watch-item'} key={item.id}>
+                  <button
+                    className="check"
+                    type="button"
+                    aria-label={`Mark ${item.title} completed`}
+                    onClick={() => toggleWatching(item)}
+                  >
+                    {watchStatus === 'completed' && <Check size={16} />}
+                  </button>
+                  <div>
+                    <h2>{item.title}</h2>
+                    <p>{item.service}</p>
+                    <div className="watch-status-row">
+                      <select
+                        aria-label={`${item.title} watch status`}
+                        value={watchStatus}
+                        onChange={(event) => updateWatchingStatus(item, event.target.value as WatchStatus)}
+                      >
+                        <option value="planned">Plan to watch</option>
+                        <option value="watching">Watching</option>
+                        <option value="waiting">Waiting for next series</option>
+                        <option value="completed">Completed</option>
+                        <option value="dropped">Dropped</option>
+                      </select>
+                      <small>{item.cadence}</small>
+                    </div>
+                    {item.notes && <span>{item.notes}</span>}
+                  </div>
+                  <div className="date-pill">{formatShortDate(item.nextEpisode)}</div>
+                  <button
+                    className="icon-button quiet"
+                    type="button"
+                    aria-label={`Remove ${item.title}`}
+                    onClick={() => removeWatching(item.id)}
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </article>
+              )
+            })}
           </div>
         </section>
       )}
@@ -1708,6 +1794,19 @@ function getTmdbItemKey(item: TmdbItem) {
 function getRecommendationItemKey(item: RecommendationItem) {
   if (!item.tmdbId) return ''
   return `${item.mediaType || 'movie'}-${item.tmdbId}`
+}
+
+function getWatchStatus(item: WatchingItem): WatchStatus {
+  if (item.status) return item.status
+  return item.done ? 'completed' : 'watching'
+}
+
+function watchStatusLabel(status: WatchStatus) {
+  if (status === 'planned') return 'Plan to watch'
+  if (status === 'waiting') return 'Waiting'
+  if (status === 'completed') return 'Completed'
+  if (status === 'dropped') return 'Dropped'
+  return 'Watching'
 }
 
 function normalizeTitle(title: string) {

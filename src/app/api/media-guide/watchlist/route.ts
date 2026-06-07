@@ -11,6 +11,7 @@ type WatchlistRow = {
   cadence: string | null
   notes: string | null
   done: boolean
+  status: string | null
 }
 
 type WatchlistPayload = {
@@ -21,6 +22,7 @@ type WatchlistPayload = {
   cadence?: string
   notes?: string
   done?: boolean
+  status?: string
 }
 
 export async function GET() {
@@ -29,7 +31,7 @@ export async function GET() {
 
   const sql = await getSql()
   const rows = await sql`
-    select id, title, service, next_episode, cadence, notes, done
+    select id, title, service, next_episode, cadence, notes, done, status
     from media_watchlist
     order by done asc, next_episode asc nulls last, created_at desc
   `
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
 
   const sql = await getSql()
   const rows = await sql`
-    insert into media_watchlist (id, title, service, next_episode, cadence, notes, done)
+    insert into media_watchlist (id, title, service, next_episode, cadence, notes, done, status)
     values (
       ${payload.id ?? crypto.randomUUID()},
       ${payload.title.trim()},
@@ -56,9 +58,10 @@ export async function POST(request: Request) {
       ${payload.nextEpisode || null},
       ${payload.cadence ?? 'Weekly'},
       ${payload.notes ?? ''},
-      ${payload.done ?? false}
+      ${payload.done ?? false},
+      ${payload.status ?? (payload.done ? 'completed' : 'watching')}
     )
-    returning id, title, service, next_episode, cadence, notes, done
+    returning id, title, service, next_episode, cadence, notes, done, status
   `
 
   return NextResponse.json(mapRow(rows[0] as WatchlistRow), { status: 201 })
@@ -76,9 +79,10 @@ export async function PATCH(request: Request) {
   const sql = await getSql()
   const rows = await sql`
     update media_watchlist
-    set done = ${Boolean(payload.done)}
+    set done = ${Boolean(payload.done)},
+        status = ${payload.status ?? (payload.done ? 'completed' : 'watching')}
     where id = ${payload.id}
-    returning id, title, service, next_episode, cadence, notes, done
+    returning id, title, service, next_episode, cadence, notes, done, status
   `
 
   if (!rows.length) {
@@ -123,10 +127,12 @@ async function ensureTable(sql: NeonQueryFunction<false, false>) {
       next_episode date,
       cadence text,
       notes text,
+      status text,
       done boolean default false,
       created_at timestamp default current_timestamp
     )
   `
+  await sql`alter table media_watchlist add column if not exists status text`
 }
 
 function mapRow(row: WatchlistRow) {
@@ -138,6 +144,7 @@ function mapRow(row: WatchlistRow) {
     cadence: row.cadence ?? 'Unknown',
     notes: row.notes ?? '',
     done: row.done,
+    status: row.status ?? (row.done ? 'completed' : 'watching'),
   }
 }
 
