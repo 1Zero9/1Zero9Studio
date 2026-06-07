@@ -1,0 +1,28 @@
+# File Manifest
+
+- `source/package.json`
+- `source/next.config.ts`
+- `source/middleware.ts`
+- `source/docs/MEDIA_GUIDE_CHANGELOG.md`
+- `source/src/app/media-guide/MediaGuide.tsx`
+- `source/src/app/media-guide/media-guide.css`
+- `source/src/app/media-guide/page.tsx`
+- `source/src/app/media-guide/login/page.tsx`
+- `source/src/app/media-guide/login/LoginForm.tsx`
+- `source/src/app/media-guide/share/[slug]/page.tsx`
+- `source/src/app/api/media-guide/epg/route.ts`
+- `source/src/app/api/media-guide/login/route.ts`
+- `source/src/app/api/media-guide/logout/route.ts`
+- `source/src/app/api/media-guide/recommendations/route.ts`
+- `source/src/app/api/media-guide/tmdb/route.ts`
+- `source/src/app/api/media-guide/watchlist/route.ts`
+- `source/src/lib/media-guide-auth.ts`
+- `source/src/lib/media-guide-db.ts`
+- `source/src/components/ConditionalNavigation.tsx`
+- `source/tsconfig.json`
+- `source/public/media-guide.webmanifest`
+- `source/public/media-guide-sw.js`
+- `source/public/media-guide-icon.svg`
+- `source/public/media-guide-icon-180.png`
+- `source/public/media-guide-icon-192.png`
+- `source/public/media-guide-icon-512.png`
