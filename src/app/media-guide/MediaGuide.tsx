@@ -150,7 +150,7 @@ const starterWatching: WatchingItem[] = [
     id: 'starter-slow-horses',
     title: 'Example: Slow Horses',
     service: 'Apple TV+',
-    nextEpisode: new Date().toISOString().slice(0, 10),
+    nextEpisode: '2026-06-07',
     cadence: 'Weekly',
     notes: 'Replace this with one of your own shows.',
     type: 'show',
@@ -795,7 +795,7 @@ function App() {
   }
 
   return (
-    <main className={themeClassName(themeMode)}>
+    <main className={themeClassName(themeMode)} suppressHydrationWarning>
       {toast && <div className="toast">{toast}</div>}
       <header className="topbar">
         <div>
@@ -1869,15 +1869,19 @@ function SkeletonRows() {
 }
 
 function useStoredState<T>(key: string, initialValue: T) {
-  const [value, setValue] = useState<T>(() => {
-    if (typeof window === 'undefined') return initialValue
-    const stored = localStorage.getItem(key)
-    return stored ? (JSON.parse(stored) as T) : initialValue
-  })
+  const [value, setValue] = useState<T>(initialValue)
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
+    const stored = localStorage.getItem(key)
+    if (stored) setValue(JSON.parse(stored) as T)
+    setHydrated(true)
+  }, [key])
+
+  useEffect(() => {
+    if (!hydrated) return
     localStorage.setItem(key, JSON.stringify(value))
-  }, [key, value])
+  }, [hydrated, key, value])
 
   return [value, setValue] as const
 }
@@ -2024,7 +2028,20 @@ function formatIrelandDate(date: Date) {
 }
 
 function formatShortDate(value: string) {
-  return new Intl.DateTimeFormat('en-IE', { day: '2-digit', month: 'short' }).format(new Date(value))
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number)
+    return new Intl.DateTimeFormat('en-IE', {
+      day: '2-digit',
+      month: 'short',
+      timeZone: 'Europe/Dublin',
+    }).format(new Date(Date.UTC(year, month - 1, day, 12)))
+  }
+
+  return new Intl.DateTimeFormat('en-IE', {
+    day: '2-digit',
+    month: 'short',
+    timeZone: 'Europe/Dublin',
+  }).format(new Date(value))
 }
 
 export default App
