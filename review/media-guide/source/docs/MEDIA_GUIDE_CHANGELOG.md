@@ -6,6 +6,11 @@
 - Rebuild the external review pack with `npm run media:review-pack` when Media Guide files change.
 - Use patch versions for UI polish and small fixes, minor versions for new user-facing features, and major versions only for breaking changes or large data model shifts.
 
+## 0.2.3 - Watched and Rating Signals
+- Added per-title watched tracking in My List so a film can be completed and a show can record each watched episode without leaving the active list.
+- Added Steve's own five-star rating control to each My List item so future recommendations can learn from personal taste.
+- Extended the Neon watchlist table with `user_rating`, `last_watched_at`, and `watched_count` fields for recommendation logic.
+
 ## 0.2.2 - External Review Pack
 - Added a generated `review/media-guide` folder that contains only the Media Guide source, API routes, auth/database helpers, middleware scope, PWA assets, and review notes.
 - Added `npm run media:review-pack` so the review folder can be regenerated from the live embedded app.

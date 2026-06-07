@@ -11,6 +11,9 @@ type WatchlistRow = {
   cadence: string | null
   notes: string | null
   type: string | null
+  user_rating: number | null
+  last_watched_at: string | null
+  watched_count: number | null
   done: boolean
   status: string | null
 }
@@ -23,6 +26,9 @@ type WatchlistPayload = {
   cadence?: string
   notes?: string
   type?: string
+  userRating?: number | null
+  lastWatchedAt?: string | null
+  watchedCount?: number
   done?: boolean
   status?: string
 }
@@ -33,7 +39,7 @@ export async function GET() {
 
   const sql = await getSql()
   const rows = await sql`
-    select id, title, service, next_episode, cadence, notes, type, done, status
+    select id, title, service, next_episode, cadence, notes, type, user_rating, last_watched_at, watched_count, done, status
     from media_watchlist
     order by done asc, next_episode asc nulls last, created_at desc
   `
@@ -51,8 +57,11 @@ export async function POST(request: Request) {
   }
 
   const sql = await getSql()
+  const userRating = normalizeRating(payload.userRating)
   const rows = await sql`
-    insert into media_watchlist (id, title, service, next_episode, cadence, notes, type, done, status)
+    insert into media_watchlist (
+      id, title, service, next_episode, cadence, notes, type, user_rating, last_watched_at, watched_count, done, status
+    )
     values (
       ${payload.id ?? crypto.randomUUID()},
       ${payload.title.trim()},
@@ -61,10 +70,13 @@ export async function POST(request: Request) {
       ${payload.cadence ?? 'Weekly'},
       ${payload.notes ?? ''},
       ${payload.type ?? 'show'},
+      ${userRating},
+      ${payload.lastWatchedAt || null},
+      ${payload.watchedCount ?? 0},
       ${payload.done ?? false},
       ${payload.status ?? (payload.done ? 'completed' : 'watching')}
     )
-    returning id, title, service, next_episode, cadence, notes, type, done, status
+    returning id, title, service, next_episode, cadence, notes, type, user_rating, last_watched_at, watched_count, done, status
   `
 
   return NextResponse.json(mapRow(rows[0] as WatchlistRow), { status: 201 })
@@ -80,12 +92,16 @@ export async function PATCH(request: Request) {
   }
 
   const sql = await getSql()
+  const userRating = normalizeRating(payload.userRating)
   const rows = await sql`
     update media_watchlist
-    set done = ${Boolean(payload.done)},
-        status = ${payload.status ?? (payload.done ? 'completed' : 'watching')}
+    set done = coalesce(${payload.done ?? null}, done),
+        status = coalesce(${payload.status ?? null}, status),
+        user_rating = coalesce(${userRating}, user_rating),
+        last_watched_at = coalesce(${payload.lastWatchedAt || null}, last_watched_at),
+        watched_count = coalesce(${payload.watchedCount ?? null}, watched_count)
     where id = ${payload.id}
-    returning id, title, service, next_episode, cadence, notes, type, done, status
+    returning id, title, service, next_episode, cadence, notes, type, user_rating, last_watched_at, watched_count, done, status
   `
 
   if (!rows.length) {
@@ -131,6 +147,9 @@ async function ensureTable(sql: NeonQueryFunction<false, false>) {
       cadence text,
       notes text,
       type text default 'show',
+      user_rating int,
+      last_watched_at date,
+      watched_count int default 0,
       status text,
       done boolean default false,
       created_at timestamp default current_timestamp
@@ -138,6 +157,9 @@ async function ensureTable(sql: NeonQueryFunction<false, false>) {
   `
   await sql`alter table media_watchlist add column if not exists status text`
   await sql`alter table media_watchlist add column if not exists type text default 'show'`
+  await sql`alter table media_watchlist add column if not exists user_rating int`
+  await sql`alter table media_watchlist add column if not exists last_watched_at date`
+  await sql`alter table media_watchlist add column if not exists watched_count int default 0`
 }
 
 function mapRow(row: WatchlistRow) {
@@ -149,9 +171,17 @@ function mapRow(row: WatchlistRow) {
     cadence: row.cadence ?? 'Unknown',
     notes: row.notes ?? '',
     type: row.type ?? 'show',
+    userRating: row.user_rating ?? null,
+    lastWatchedAt: row.last_watched_at ?? null,
+    watchedCount: row.watched_count ?? 0,
     done: row.done,
     status: row.status ?? (row.done ? 'completed' : 'watching'),
   }
+}
+
+function normalizeRating(value: number | null | undefined) {
+  if (value === null || value === undefined) return null
+  return Math.min(5, Math.max(1, Math.round(value)))
 }
 
 async function requireMediaGuideSession() {

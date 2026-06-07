@@ -99,6 +99,9 @@ type WatchingItem = {
   cadence: string
   notes: string
   type?: WatchItemType
+  userRating?: number | null
+  lastWatchedAt?: string | null
+  watchedCount?: number
   done: boolean
   status?: WatchStatus
 }
@@ -130,7 +133,7 @@ const defaultProviders: Provider[] = [
   { id: 0, label: 'Paramount+', match: ['Paramount Plus', 'Paramount+'], enabled: true },
 ]
 
-const appVersion = '0.2.2'
+const appVersion = '0.2.3'
 const watchStatusOrder: WatchStatus[] = ['watching', 'waiting', 'planned', 'completed', 'dropped']
 
 const fallbackStreaming: TmdbItem[] = [
@@ -154,6 +157,9 @@ const starterWatching: WatchingItem[] = [
     cadence: 'Weekly',
     notes: 'Replace this with one of your own shows.',
     type: 'show',
+    userRating: null,
+    lastWatchedAt: null,
+    watchedCount: 0,
     done: false,
   },
 ]
@@ -628,6 +634,9 @@ function App() {
       cadence: String(data.get('cadence') || 'Weekly'),
       notes: String(data.get('notes') ?? ''),
       type: String(data.get('type') || 'show') as WatchItemType,
+      userRating: null,
+      lastWatchedAt: null,
+      watchedCount: 0,
       status: String(data.get('status') || 'watching') as WatchStatus,
       done: String(data.get('status') || 'watching') === 'completed',
     }
@@ -642,19 +651,46 @@ function App() {
 
   async function updateWatchingStatus(item: WatchingItem, status: WatchStatus) {
     const nextDone = status === 'completed'
+    await updateWatchingItem(item, { done: nextDone, status })
+  }
+
+  async function markWatched(item: WatchingItem) {
+    const nextStatus = item.type === 'film' ? 'completed' : 'watching'
+    await updateWatchingItem(
+      item,
+      {
+        done: nextStatus === 'completed',
+        lastWatchedAt: formatIrelandDate(new Date()),
+        status: nextStatus,
+        watchedCount: (item.watchedCount ?? 0) + 1,
+      },
+      item.type === 'film' ? `${item.title} marked watched` : `${item.title} episode watched`,
+    )
+  }
+
+  async function updateWatchingRating(item: WatchingItem, userRating: number) {
+    await updateWatchingItem(item, { userRating }, `${item.title} rated ${userRating} stars`)
+  }
+
+  async function updateWatchingItem(
+    item: WatchingItem,
+    patch: Partial<Pick<WatchingItem, 'done' | 'lastWatchedAt' | 'status' | 'userRating' | 'watchedCount'>>,
+    successMessage?: string,
+  ) {
     setWatching((current) =>
-      current.map((row) => (row.id === item.id ? { ...row, status, done: nextDone } : row)),
+      current.map((row) => (row.id === item.id ? { ...row, ...patch } : row)),
     )
     try {
       const response = await fetch('/api/media-guide/watchlist', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: item.id, done: nextDone, status }),
+        body: JSON.stringify({ id: item.id, ...patch }),
       })
       if (!response.ok) throw new Error('Could not update watchlist item.')
       const saved = (await response.json()) as WatchingItem
       setWatching((current) => current.map((row) => (row.id === item.id ? saved : row)))
       setWatchlistSource('neon')
+      if (successMessage) setToast(successMessage)
     } catch {
       setWatchlistSource('local')
     }
@@ -1259,6 +1295,31 @@ function App() {
                             <option value="dropped">Dropped</option>
                           </select>
                           <small>{item.cadence}</small>
+                        </div>
+                        <div className="watch-feedback-row">
+                          <button type="button" onClick={() => markWatched(item)}>
+                            <Check size={14} />
+                            Watched
+                          </button>
+                          <div className="star-rating" aria-label={`${item.title} rating`}>
+                            {[1, 2, 3, 4, 5].map((rating) => (
+                              <button
+                                aria-label={`Rate ${item.title} ${rating} stars`}
+                                className={(item.userRating ?? 0) >= rating ? 'active' : ''}
+                                key={rating}
+                                type="button"
+                                onClick={() => updateWatchingRating(item, rating)}
+                              >
+                                <Star size={14} fill="currentColor" />
+                              </button>
+                            ))}
+                          </div>
+                          {(item.watchedCount ?? 0) > 0 && (
+                            <small>
+                              Watched {item.watchedCount} {item.watchedCount === 1 ? 'time' : 'times'}
+                              {item.lastWatchedAt ? ` - last ${formatShortDate(item.lastWatchedAt)}` : ''}
+                            </small>
+                          )}
                         </div>
                         {item.notes && <span>{item.notes}</span>}
                       </div>

@@ -1132,6 +1132,64 @@ button:disabled {
   font-weight: 650;
 }
 
+.watch-feedback-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin: 6px 0 2px;
+}
+
+.watch-feedback-row > button,
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid var(--mg-border);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.watch-feedback-row > button {
+  gap: 5px;
+  padding: 0 9px;
+  color: var(--mg-ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.watch-feedback-row > button:hover,
+.star-rating button:hover {
+  border-color: rgba(0, 208, 195, 0.5);
+  background: rgba(0, 208, 195, 0.12);
+}
+
+.star-rating {
+  gap: 1px;
+  padding: 2px;
+}
+
+.star-rating button {
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--mg-muted);
+}
+
+.star-rating button.active {
+  color: var(--mg-sun);
+}
+
+.watch-feedback-row small {
+  color: var(--mg-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
 .check {
   width: 28px;
   height: 28px;
