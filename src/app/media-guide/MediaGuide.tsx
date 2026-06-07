@@ -570,9 +570,12 @@ function App() {
   }
 
   async function addRecommendation(item: TmdbItem, status: RecommendationItem['status']) {
+    const targetListId =
+      status === 'recommend' ? selectedListId || recommendationLists[0]?.id || null : null
+    const targetListName = recommendationLists.find((list) => list.id === targetListId)?.name
     const payload = {
       action: 'add-item',
-      listId: status === 'recommend' ? selectedListId || null : null,
+      listId: targetListId,
       item: {
         tmdbId: item.id,
         mediaType: item.media_type ?? (item.name ? 'tv' : 'movie'),
@@ -584,7 +587,10 @@ function App() {
       },
     }
 
-    setToast(statusLabel(status, item.title ?? item.name ?? 'Title'))
+    if ((status === 'favorite' || status === 'recommend') && discoveryStatusFilter === 'unselected') {
+      setDiscoveryStatusFilter('all')
+    }
+    setToast(statusLabel(status, item.title ?? item.name ?? 'Title', targetListName))
     const response = await fetch('/api/media-guide/recommendations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -593,7 +599,6 @@ function App() {
     if (!response.ok) return
     const saved = (await response.json()) as RecommendationItem
     setRecommendationItems((current) => [saved, ...current])
-    if (status === 'recommend') setTab('lists')
   }
 
   function toggleHiddenGenre(id: number) {
@@ -1095,6 +1100,12 @@ function App() {
               onRemove={removeRecommendationItem}
             />
             <StatusBucket
+              icon={<Send size={17} />}
+              items={recommendationItems.filter((item) => item.status === 'recommend')}
+              label="Recommended"
+              onRemove={removeRecommendationItem}
+            />
+            <StatusBucket
               icon={<ThumbsDown size={17} />}
               items={recommendationItems.filter((item) => item.status === 'not_interested')}
               label="Not for me"
@@ -1457,7 +1468,7 @@ function DiscoveryFilters({
       <div className="segmented-actions status-filter-toggle" aria-label="Recommendation status">
         {[
           ['all', 'All'],
-          ['unselected', 'New'],
+          ['unselected', 'Unmarked'],
           ['seen', 'Seen'],
           ['favorite', 'Fav'],
           ['recommend', 'Recommend'],
@@ -1487,7 +1498,7 @@ function RecommendationTarget({
   selectedListId: string
 }) {
   if (!lists.length) {
-    return <p className="notice">Create a share list in Lists to send recommendations to someone.</p>
+    return <p className="notice">Recommend saves to your Recommended bucket. Create a share list in Lists to send picks to someone.</p>
   }
 
   return (
@@ -1639,10 +1650,12 @@ function getProgrammeChannelId(item: TvMazeEpisode) {
   return String(item.show.id)
 }
 
-function statusLabel(status: RecommendationItem['status'], title: string) {
+function statusLabel(status: RecommendationItem['status'], title: string, listName?: string) {
   if (status === 'seen') return `${title} marked seen`
   if (status === 'favorite') return `${title} added to favorites`
-  if (status === 'recommend') return `${title} added to recommendations`
+  if (status === 'recommend') {
+    return listName ? `${title} added to ${listName}` : `${title} added to recommendations`
+  }
   return `${title} hidden from discovery`
 }
 
