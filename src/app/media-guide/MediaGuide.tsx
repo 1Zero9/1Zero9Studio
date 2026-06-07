@@ -305,6 +305,10 @@ function App() {
       return matchesChannel && matchesMode && matchesTerm && matchesTime
     })
   }, [channelFilter, channelMode, favoriteChannelSet, listingTimeMode, now, query, selectedDate, tvItems])
+  const trackedTitleSet = useMemo(
+    () => new Set(watching.map((item) => normalizeTitle(item.title))),
+    [watching],
+  )
 
   const visibleStreamingItems = useMemo(
     () =>
@@ -508,6 +512,11 @@ function App() {
   }
 
   async function persistWatchingItem(item: WatchingItem) {
+    if (watching.some((row) => normalizeTitle(row.title) === normalizeTitle(item.title))) {
+      setToast(`${item.title} is already in My Shows`)
+      return
+    }
+
     setWatching((current) => [item, ...current])
     try {
       const response = await fetch('/api/media-guide/watchlist', {
@@ -975,6 +984,7 @@ function App() {
             onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
             posterScale={posterScale}
             statusByKey={discoveryStatusByKey}
+            trackedTitleSet={trackedTitleSet}
           />
           {!tmdbLoading && visibleStreamingItems.length === 0 && (
             <EmptyState
@@ -1019,6 +1029,7 @@ function App() {
                 onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
                 posterScale={posterScale}
                 statusByKey={discoveryStatusByKey}
+                trackedTitleSet={trackedTitleSet}
               />
             </>
           ) : (
@@ -1294,6 +1305,7 @@ function MediaGrid({
   onTrack,
   posterScale,
   statusByKey,
+  trackedTitleSet,
 }: {
   genreMap: Record<number, string>
   items: TmdbItem[]
@@ -1301,6 +1313,7 @@ function MediaGrid({
   onTrack: (item: TmdbItem) => void
   posterScale: number
   statusByKey: Map<string, Set<RecommendationItem['status']>>
+  trackedTitleSet: Set<string>
 }) {
   const gridStyle = { '--poster-scale': posterScale / 100 } as CSSProperties
 
@@ -1308,7 +1321,8 @@ function MediaGrid({
     <div className="media-grid" style={gridStyle}>
       {items.map((item) => {
         const itemStatuses = statusByKey.get(getTmdbItemKey(item)) ?? new Set<RecommendationItem['status']>()
-        const hasStatus = itemStatuses.size > 0
+        const isTracked = trackedTitleSet.has(normalizeTitle(item.title ?? item.name ?? ''))
+        const hasStatus = itemStatuses.size > 0 || isTracked
 
         return (
           <article
@@ -1346,7 +1360,7 @@ function MediaGrid({
               <p>{item.overview || 'No summary available.'}</p>
             </div>
             <div className="media-actions">
-              <button type="button" onClick={() => onTrack(item)}>
+              <button className={isTracked ? 'selected-action' : ''} type="button" onClick={() => onTrack(item)}>
                 <Plus size={16} />
                 Track
               </button>
@@ -1614,6 +1628,10 @@ function getRecommendationItemKey(item: RecommendationItem) {
   return `${item.mediaType || 'movie'}-${item.tmdbId}`
 }
 
+function normalizeTitle(title: string) {
+  return title.trim().toLowerCase()
+}
+
 function isVisibleDiscoveryItem(item: TmdbItem, hiddenGenres: Set<number>) {
   if (item.genre_ids?.some((id) => hiddenGenres.has(id))) return false
   return true
@@ -1637,7 +1655,7 @@ function filterDiscoveryItems(
     const matchesMediaType = mediaType === 'all' || (item.media_type ?? (item.name ? 'tv' : 'movie')) === mediaType
     const matchesStatus =
       statusFilter === 'all'
-        ? !statuses.has('seen') && !statuses.has('not_interested')
+        ? !statuses.has('not_interested')
         : statusFilter === 'unselected'
           ? statuses.size === 0
           : statuses.has(statusFilter)
