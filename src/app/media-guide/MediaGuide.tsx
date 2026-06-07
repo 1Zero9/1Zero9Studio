@@ -10,6 +10,7 @@ import {
   Download,
   Eye,
   Filter,
+  Flag,
   Heart,
   ListPlus,
   MonitorPlay,
@@ -31,7 +32,7 @@ import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import './media-guide.css'
 
 type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'lists' | 'settings'
-type ThemeMode = 'dark' | 'light'
+type ThemeMode = 'dark' | 'light' | 'trackside'
 type ListingTimeMode = 'from_now' | 'full_day'
 type DiscoveryMediaType = 'all' | 'movie' | 'tv'
 type DiscoveryStatusFilter = 'all' | 'unselected' | RecommendationItem['status']
@@ -125,6 +126,8 @@ const defaultProviders: Provider[] = [
   { id: 0, label: 'Apple TV+', match: ['Apple TV Plus', 'Apple TV+', 'Apple TV'], enabled: true },
   { id: 0, label: 'Paramount+', match: ['Paramount Plus', 'Paramount+'], enabled: true },
 ]
+
+const appVersion = '0.1.0'
 
 const fallbackStreaming: TmdbItem[] = [
   {
@@ -749,13 +752,14 @@ function App() {
   }
 
   return (
-    <main className={themeMode === 'light' ? 'app-shell light-mode' : 'app-shell'}>
+    <main className={themeClassName(themeMode)}>
       {toast && <div className="toast">{toast}</div>}
       <header className="topbar">
         <div>
           <p className="eyebrow">Ireland only - {new Intl.DateTimeFormat('en-IE', { weekday: 'long' }).format(new Date())}</p>
           <h1>Media Guide</h1>
           <p className="hero-copy">Tonight's TV, streaming picks, cinema releases, and lists for people you recommend to.</p>
+          <span className="version-badge">v{appVersion}</span>
         </div>
         <button className="icon-button" type="button" aria-label="Settings" onClick={() => setTab('settings')}>
           <Settings size={20} />
@@ -1310,7 +1314,7 @@ function App() {
               <div className="settings-controls">
                 <div>
                   <strong>Theme</strong>
-                  <span>Use the dark performance look or a lighter daylight version.</span>
+                  <span>Choose the current performance look, daylight mode, or the Trackside motorsport theme.</span>
                 </div>
                 <div className="segmented-actions">
                   <button
@@ -1328,6 +1332,14 @@ function App() {
                   >
                     <Sun size={14} />
                     Light
+                  </button>
+                  <button
+                    className={themeMode === 'trackside' ? 'active' : ''}
+                    type="button"
+                    onClick={() => setThemeMode('trackside')}
+                  >
+                    <Flag size={14} />
+                    Trackside
                   </button>
                 </div>
               </div>
@@ -1393,6 +1405,13 @@ function App() {
                 <span>
                   Watchlist storage: {watchlistSource === 'neon' ? 'Neon database' : watchlistSource === 'syncing' ? 'checking Neon' : 'local fallback'}
                 </span>
+              </div>
+              <ChevronRight size={18} />
+            </div>
+            <div className="source-list">
+              <div>
+                <strong>App version</strong>
+                <span>Media Guide v{appVersion}</span>
               </div>
               <ChevronRight size={18} />
             </div>
@@ -1789,6 +1808,12 @@ function providersChanged(left: Provider[], right: Provider[]) {
 
 function getTmdbItemKey(item: TmdbItem) {
   return `${item.media_type ?? (item.name ? 'tv' : 'movie')}-${item.id}`
+}
+
+function themeClassName(theme: ThemeMode) {
+  if (theme === 'light') return 'app-shell light-mode'
+  if (theme === 'trackside') return 'app-shell trackside-mode'
+  return 'app-shell'
 }
 
 function getRecommendationItemKey(item: RecommendationItem) {

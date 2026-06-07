@@ -52,6 +52,25 @@
     linear-gradient(180deg, #fbfff8 0%, var(--mg-bg) 52%, #eaf2ed 100%);
 }
 
+.app-shell.trackside-mode {
+  --mg-ink: #111318;
+  --mg-muted: #5f6670;
+  --mg-dim: #8a9098;
+  --mg-bg: #f4f4f2;
+  --mg-panel: rgba(255, 255, 255, 0.9);
+  --mg-panel-strong: rgba(255, 255, 255, 0.98);
+  --mg-border: rgba(17, 19, 24, 0.14);
+  --mg-teal: #d71920;
+  --mg-coral: #d71920;
+  --mg-sun: #d71920;
+  --mg-blue: #20242c;
+  --mg-shadow: 0 18px 42px rgba(17, 19, 24, 0.16);
+  background:
+    linear-gradient(135deg, rgba(215, 25, 32, 0.14) 0 1px, transparent 1px 28px),
+    linear-gradient(116deg, transparent 0 64%, rgba(215, 25, 32, 0.12) 64% 69%, transparent 69%),
+    linear-gradient(180deg, #ffffff 0%, var(--mg-bg) 52%, #e7e8e9 100%);
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -161,6 +180,14 @@
     linear-gradient(145deg, rgba(0, 208, 195, 0.58), rgba(235, 255, 249, 0.92) 54%, rgba(255, 255, 255, 0.96));
 }
 
+.trackside-mode .topbar {
+  border-color: rgba(17, 19, 24, 0.18);
+  border-radius: 10px;
+  background:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.88), transparent 24%),
+    linear-gradient(124deg, #ffffff 0 48%, #f0f1f2 48% 58%, #d71920 58% 63%, #111318 63% 100%);
+}
+
 .topbar::after {
   content: '';
   position: absolute;
@@ -173,6 +200,34 @@
   background: linear-gradient(90deg, transparent, var(--mg-sun), transparent);
   box-shadow: 0 0 28px rgba(215, 255, 50, 0.52);
   transform: skewX(-20deg);
+}
+
+.trackside-mode .topbar::after {
+  right: -18px;
+  bottom: 14px;
+  width: 42%;
+  height: 6px;
+  border-radius: 0;
+  background: repeating-linear-gradient(90deg, #d71920 0 22px, #111318 22px 36px, #ffffff 36px 44px);
+  box-shadow: none;
+}
+
+.version-badge {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border: 1px solid var(--mg-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--mg-ink);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.trackside-mode .version-badge {
+  border-color: rgba(215, 25, 32, 0.28);
+  background: rgba(215, 25, 32, 0.08);
+  color: #111318;
 }
 
 .topbar > * {
@@ -549,6 +604,22 @@ button:disabled {
   box-shadow: 0 12px 28px rgba(17, 46, 41, 0.1);
 }
 
+.trackside-mode .channel-panel,
+.trackside-mode .media-card,
+.trackside-mode .watch-item,
+.trackside-mode .calendar-panel,
+.trackside-mode .settings-roadmap,
+.trackside-mode .status-bucket,
+.trackside-mode .recommendation-list,
+.trackside-mode .add-form,
+.trackside-mode .settings-panel,
+.trackside-mode .source-list {
+  border-radius: 10px;
+  background:
+    linear-gradient(110deg, rgba(215, 25, 32, 0.06), transparent 34%),
+    var(--mg-panel);
+}
+
 .channel-panel-heading {
   display: flex;
   justify-content: space-between;
@@ -609,6 +680,29 @@ button:disabled {
   background: linear-gradient(135deg, var(--mg-teal), #007f83 58%, var(--mg-sun));
   color: #06100f;
   box-shadow: 0 8px 18px rgba(0, 208, 195, 0.24);
+}
+
+.trackside-mode .segmented-actions button.active,
+.trackside-mode .provider.active,
+.trackside-mode .tab.active,
+.trackside-mode .primary-button,
+.trackside-mode .media-actions button.selected-action {
+  background: linear-gradient(135deg, #d71920, #981116);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(215, 25, 32, 0.2);
+}
+
+.trackside-mode .tab,
+.trackside-mode .provider,
+.trackside-mode .media-actions button,
+.trackside-mode .icon-button,
+.trackside-mode .field,
+.trackside-mode .range-field,
+.trackside-mode .segmented-actions,
+.trackside-mode .date-pill,
+.trackside-mode .calendar-item,
+.trackside-mode .mini-item {
+  border-radius: 8px;
 }
 
 .channel-chip-row {
@@ -1376,6 +1470,11 @@ button:disabled {
   .light-mode .tabs {
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 18px 54px rgba(17, 46, 41, 0.16), 0 0 0 1px rgba(0, 118, 111, 0.06);
+  }
+
+  .trackside-mode .tabs {
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 54px rgba(17, 19, 24, 0.16), 0 0 0 1px rgba(215, 25, 32, 0.1);
   }
 
   .tab {
