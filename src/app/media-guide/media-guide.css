@@ -703,7 +703,8 @@ button:disabled {
 }
 
 .media-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  --poster-scale: 1;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(150px, calc(190px * var(--poster-scale)), 260px), 1fr));
 }
 
 .media-card {
@@ -803,10 +804,45 @@ button:disabled {
 }
 
 .discovery-filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, auto) auto minmax(190px, 240px);
   gap: 9px;
   align-items: stretch;
   margin-bottom: 12px;
+}
+
+.media-type-toggle {
+  min-height: 52px;
+  width: max-content;
+}
+
+.media-type-toggle button {
+  white-space: nowrap;
+}
+
+.range-field {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 13px;
+  border: 1px solid var(--mg-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--mg-muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.range-field input {
+  width: 100%;
+  accent-color: var(--mg-lime);
+}
+
+.range-field strong {
+  color: var(--mg-ink);
+  font-size: 13px;
 }
 
 .list-target {
@@ -1170,10 +1206,6 @@ button:disabled {
   .app-shell {
     padding: 24px;
   }
-
-  .media-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 720px) {
@@ -1273,11 +1305,15 @@ button:disabled {
     flex: 1;
   }
 
+  .media-type-toggle,
+  .range-field {
+    width: 100%;
+  }
+
   .compact {
     flex-basis: auto;
   }
 
-  .media-grid,
   .status-rail,
   .shared-list-grid,
   .roadmap-grid {
@@ -1285,14 +1321,14 @@ button:disabled {
   }
 
   .media-card {
-    grid-template-columns: 92px minmax(0, 1fr);
+    grid-template-columns: clamp(78px, calc(92px * var(--poster-scale)), 128px) minmax(0, 1fr);
     grid-template-rows: auto auto;
   }
 
   .media-card img,
   .media-card .poster-fallback.large {
     height: 100%;
-    min-height: 148px;
+    min-height: clamp(126px, calc(148px * var(--poster-scale)), 190px);
     grid-row: span 2;
     aspect-ratio: auto;
   }

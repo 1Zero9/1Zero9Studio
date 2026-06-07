@@ -26,12 +26,13 @@ import {
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import './media-guide.css'
 
 type Tab = 'today' | 'streaming' | 'cinema' | 'watching' | 'lists' | 'settings'
 type ThemeMode = 'dark' | 'light'
 type ListingTimeMode = 'from_now' | 'full_day'
+type DiscoveryMediaType = 'all' | 'movie' | 'tv'
 
 type TvMazeEpisode = {
   id: number | string
@@ -62,6 +63,7 @@ type TmdbItem = {
   id: number
   title?: string
   name?: string
+  media_type?: 'movie' | 'tv'
   overview: string
   poster_path: string | null
   vote_average: number
@@ -123,6 +125,7 @@ const fallbackStreaming: TmdbItem[] = [
     poster_path: null,
     vote_average: 0,
     provider: 'Ireland streaming',
+    media_type: 'movie',
   },
 ]
 
@@ -196,6 +199,11 @@ function App() {
   const [channelFilter, setChannelFilter] = useState('all')
   const [discoveryQuery, setDiscoveryQuery] = useState('')
   const [discoveryGenreId, setDiscoveryGenreId] = useState(0)
+  const [discoveryMediaType, setDiscoveryMediaType] = useStoredState<DiscoveryMediaType>(
+    'mediaguide.discoveryMediaType',
+    'all',
+  )
+  const [posterScale, setPosterScale] = useStoredState('mediaguide.posterScale', 100)
   const [recommendationLists, setRecommendationLists] = useState<RecommendationList[]>([])
   const [recommendationItems, setRecommendationItems] = useState<RecommendationItem[]>([])
   const [selectedListId, setSelectedListId] = useState('')
@@ -208,23 +216,23 @@ function App() {
     .filter((item) => !item.done)
     .sort((a, b) => a.nextEpisode.localeCompare(b.nextEpisode))
     .slice(0, 3)
-  const hiddenTmdbIds = useMemo(
+  const hiddenTmdbKeys = useMemo(
     () =>
       new Set(
         recommendationItems
           .filter((item) => item.tmdbId && (item.status === 'seen' || item.status === 'not_interested'))
-          .map((item) => item.tmdbId as number),
+          .map((item) => `${item.mediaType || 'movie'}-${item.tmdbId}`),
       ),
     [recommendationItems],
   )
   const hiddenGenres = useMemo(() => new Set(hiddenGenreIds), [hiddenGenreIds])
   const filteredStreamingItems = useMemo(
-    () => streaming.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbIds, hiddenGenres)),
-    [hiddenGenres, hiddenTmdbIds, streaming],
+    () => streaming.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbKeys, hiddenGenres)),
+    [hiddenGenres, hiddenTmdbKeys, streaming],
   )
   const filteredCinemaItems = useMemo(
-    () => cinema.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbIds, hiddenGenres)),
-    [cinema, hiddenGenres, hiddenTmdbIds],
+    () => cinema.filter((item) => isVisibleDiscoveryItem(item, hiddenTmdbKeys, hiddenGenres)),
+    [cinema, hiddenGenres, hiddenTmdbKeys],
   )
   const genreOptions = useMemo(() => {
     const ids = new Set<number>()
@@ -291,11 +299,11 @@ function App() {
   }, [channelFilter, channelMode, favoriteChannelSet, listingTimeMode, now, query, selectedDate, tvItems])
 
   const visibleStreamingItems = useMemo(
-    () => filterDiscoveryItems(filteredStreamingItems, discoveryQuery, discoveryGenreId),
-    [discoveryGenreId, discoveryQuery, filteredStreamingItems],
+    () => filterDiscoveryItems(filteredStreamingItems, discoveryQuery, discoveryGenreId, discoveryMediaType),
+    [discoveryGenreId, discoveryMediaType, discoveryQuery, filteredStreamingItems],
   )
   const visibleCinemaItems = useMemo(
-    () => filterDiscoveryItems(filteredCinemaItems, discoveryQuery, discoveryGenreId),
+    () => filterDiscoveryItems(filteredCinemaItems, discoveryQuery, discoveryGenreId, 'movie'),
     [discoveryGenreId, discoveryQuery, filteredCinemaItems],
   )
 
@@ -536,7 +544,7 @@ function App() {
       listId: status === 'recommend' ? selectedListId || null : null,
       item: {
         tmdbId: item.id,
-        mediaType: item.name ? 'tv' : 'movie',
+        mediaType: item.media_type ?? (item.name ? 'tv' : 'movie'),
         status,
         title: item.title ?? item.name ?? 'Untitled',
         service: item.provider ?? 'Streaming',
@@ -894,10 +902,15 @@ function App() {
           </div>
           <DiscoveryFilters
             discoveryGenreId={discoveryGenreId}
+            discoveryMediaType={discoveryMediaType}
             discoveryQuery={discoveryQuery}
             genreOptions={genreOptions}
             onGenreChange={setDiscoveryGenreId}
+            onMediaTypeChange={setDiscoveryMediaType}
+            onPosterScaleChange={setPosterScale}
             onQueryChange={setDiscoveryQuery}
+            posterScale={posterScale}
+            showMediaType
           />
           <div className="provider-row">
             {providers.map((provider) => (
@@ -922,6 +935,7 @@ function App() {
             items={visibleStreamingItems}
             onAction={addRecommendation}
             onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
+            posterScale={posterScale}
           />
           {!tmdbLoading && visibleStreamingItems.length === 0 && (
             <EmptyState
@@ -946,7 +960,9 @@ function App() {
             discoveryQuery={discoveryQuery}
             genreOptions={genreOptions}
             onGenreChange={setDiscoveryGenreId}
+            onPosterScaleChange={setPosterScale}
             onQueryChange={setDiscoveryQuery}
+            posterScale={posterScale}
           />
           {cinema.length ? (
             <>
@@ -960,6 +976,7 @@ function App() {
                 items={visibleCinemaItems}
                 onAction={addRecommendation}
                 onTrack={(item) => persistWatchingItem(mediaToWatchingItem(item))}
+                posterScale={posterScale}
               />
             </>
           ) : (
@@ -1227,16 +1244,20 @@ function MediaGrid({
   items,
   onAction,
   onTrack,
+  posterScale,
 }: {
   genreMap: Record<number, string>
   items: TmdbItem[]
   onAction: (item: TmdbItem, status: RecommendationItem['status']) => void
   onTrack: (item: TmdbItem) => void
+  posterScale: number
 }) {
+  const gridStyle = { '--poster-scale': posterScale / 100 } as CSSProperties
+
   return (
-    <div className="media-grid">
+    <div className="media-grid" style={gridStyle}>
       {items.map((item) => (
-        <article className="media-card" key={`${item.provider}-${item.id}`}>
+        <article className="media-card" key={`${item.media_type ?? 'movie'}-${item.provider}-${item.id}`}>
           {item.poster_path ? (
             <img src={`https://image.tmdb.org/t/p/w342${item.poster_path}`} alt="" />
           ) : (
@@ -1245,7 +1266,11 @@ function MediaGrid({
             </div>
           )}
           <div>
-            <span>{item.provider ?? item.release_date ?? item.first_air_date ?? 'Ireland'}</span>
+            <span>
+              {[item.media_type === 'tv' ? 'TV show' : 'Movie', item.provider ?? item.release_date ?? item.first_air_date ?? 'Ireland']
+                .filter(Boolean)
+                .join(' - ')}
+            </span>
             <h2>{item.title ?? item.name}</h2>
             {item.genre_ids && (
               <div className="media-genres">
@@ -1290,16 +1315,26 @@ function MediaGrid({
 
 function DiscoveryFilters({
   discoveryGenreId,
+  discoveryMediaType = 'all',
   discoveryQuery,
   genreOptions,
   onGenreChange,
+  onMediaTypeChange,
+  onPosterScaleChange,
   onQueryChange,
+  posterScale,
+  showMediaType = false,
 }: {
   discoveryGenreId: number
+  discoveryMediaType?: DiscoveryMediaType
   discoveryQuery: string
   genreOptions: { id: number; name: string }[]
   onGenreChange: (id: number) => void
+  onMediaTypeChange?: (type: DiscoveryMediaType) => void
+  onPosterScaleChange: (scale: number) => void
   onQueryChange: (query: string) => void
+  posterScale: number
+  showMediaType?: boolean
 }) {
   return (
     <div className="discovery-filters">
@@ -1317,6 +1352,37 @@ function DiscoveryFilters({
             </option>
           ))}
         </select>
+      </label>
+      {showMediaType && (
+        <div className="segmented-actions media-type-toggle" aria-label="Media type">
+          {[
+            ['all', 'Both'],
+            ['movie', 'Movies'],
+            ['tv', 'TV Shows'],
+          ].map(([value, label]) => (
+            <button
+              className={discoveryMediaType === value ? 'active' : ''}
+              key={value}
+              type="button"
+              onClick={() => onMediaTypeChange?.(value as DiscoveryMediaType)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      <label className="range-field">
+        <span>Image size</span>
+        <input
+          type="range"
+          min="80"
+          max="140"
+          step="10"
+          value={posterScale}
+          onInput={(event) => onPosterScaleChange(Number(event.currentTarget.value))}
+          onChange={(event) => onPosterScaleChange(Number(event.target.value))}
+        />
+        <strong>{posterScale}%</strong>
       </label>
     </div>
   )
@@ -1439,20 +1505,26 @@ function providersChanged(left: Provider[], right: Provider[]) {
   })
 }
 
-function isVisibleDiscoveryItem(item: TmdbItem, hiddenTmdbIds: Set<number>, hiddenGenres: Set<number>) {
-  if (hiddenTmdbIds.has(item.id)) return false
+function isVisibleDiscoveryItem(item: TmdbItem, hiddenTmdbKeys: Set<string>, hiddenGenres: Set<number>) {
+  if (hiddenTmdbKeys.has(`${item.media_type ?? (item.name ? 'tv' : 'movie')}-${item.id}`)) return false
   if (item.genre_ids?.some((id) => hiddenGenres.has(id))) return false
   return true
 }
 
-function filterDiscoveryItems(items: TmdbItem[], query: string, genreId: number) {
+function filterDiscoveryItems(
+  items: TmdbItem[],
+  query: string,
+  genreId: number,
+  mediaType: DiscoveryMediaType,
+) {
   const term = query.trim().toLowerCase()
   return items.filter((item) => {
     const title = item.title ?? item.name ?? ''
     const provider = item.provider ?? ''
     const matchesTerm = !term || `${title} ${provider} ${item.overview}`.toLowerCase().includes(term)
     const matchesGenre = !genreId || item.genre_ids?.includes(genreId)
-    return matchesTerm && matchesGenre
+    const matchesMediaType = mediaType === 'all' || (item.media_type ?? (item.name ? 'tv' : 'movie')) === mediaType
+    return matchesTerm && matchesGenre && matchesMediaType
   })
 }
 

@@ -12,6 +12,7 @@ type TmdbItem = {
   id: number
   title?: string
   name?: string
+  media_type?: 'movie' | 'tv'
   overview: string
   poster_path: string | null
   vote_average: number
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       refreshedAt: new Date().toISOString(),
       genreMap: { ...movieGenres, ...tvGenres },
       providers: providerMap,
-      streaming: [...movieRows, ...tvRows].slice(0, 18),
+      streaming: [...movieRows, ...tvRows].sort((a, b) => b.vote_average - a.vote_average).slice(0, 60),
       cinema: cinemaRows,
     },
     { headers: { 'Cache-Control': 'private, max-age=900' } },
@@ -91,6 +92,7 @@ async function fetchTmdbDiscover(
       const data = (await response.json()) as { results: TmdbItem[] }
       return data.results.slice(0, 8).map((item) => ({
         ...item,
+        media_type: type,
         provider: provider.label,
       }))
     }),
@@ -110,7 +112,7 @@ async function fetchTmdbCinema(apiKey: string): Promise<TmdbItem[]> {
   )
   if (!response.ok) throw new Error('Could not load cinema releases.')
   const data = (await response.json()) as { results: TmdbItem[] }
-  return data.results.slice(0, 18).map((item) => ({ ...item, provider: item.release_date }))
+  return data.results.slice(0, 18).map((item) => ({ ...item, media_type: 'movie', provider: item.release_date }))
 }
 
 async function fetchTmdbGenres(apiKey: string, type: 'movie' | 'tv') {
@@ -121,16 +123,17 @@ async function fetchTmdbGenres(apiKey: string, type: 'movie' | 'tv') {
 }
 
 function dedupeByProvider(items: TmdbItem[]) {
-  const seen = new Map<number, TmdbItem>()
+  const seen = new Map<string, TmdbItem>()
   items.forEach((item) => {
-    const existing = seen.get(item.id)
+    const key = `${item.media_type ?? 'movie'}-${item.id}`
+    const existing = seen.get(key)
     if (!existing) {
-      seen.set(item.id, item)
+      seen.set(key, item)
       return
     }
 
     const providers = new Set([...(existing.provider?.split(' + ') ?? []), item.provider].filter(Boolean))
-    seen.set(item.id, { ...existing, provider: Array.from(providers).join(' + ') })
+    seen.set(key, { ...existing, provider: Array.from(providers).join(' + ') })
   })
 
   return Array.from(seen.values()).sort((a, b) => b.vote_average - a.vote_average)
