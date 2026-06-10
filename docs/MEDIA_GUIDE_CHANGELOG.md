@@ -6,6 +6,9 @@
 - Rebuild the external review pack with `npm run media:review-pack` when Media Guide files change.
 - Use patch versions for UI polish and small fixes, minor versions for new user-facing features, and major versions only for breaking changes or large data model shifts.
 
+## 0.2.5 - Config Redirects
+- Added Next config redirects for `/media-guide`, `/media-guide/login`, and `/media-guide/*` so the old embedded app is bypassed before auth or page rendering.
+
 ## 0.2.4 - Runway Redirect
 - Redirected old `/media-guide` page routes to the standalone Runway app at `https://runway.1zero9.com`.
 - Preserved `/media-guide/share/*` paths as `/share/*` on Runway and sent `/media-guide/login` to `/login`.
