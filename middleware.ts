@@ -8,6 +8,17 @@ export async function middleware(request: NextRequest) {
   const isMediaGuide = pathname === '/media-guide' || pathname.startsWith('/media-guide/')
   const isMediaGuideApi = pathname.startsWith('/api/media-guide/')
 
+  if (isMediaGuide) {
+    const runwayUrl = new URL(request.url)
+    runwayUrl.protocol = 'https:'
+    runwayUrl.hostname = 'runway.1zero9.com'
+    runwayUrl.port = ''
+    runwayUrl.pathname = mapRunwayPath(pathname)
+    const response = NextResponse.redirect(runwayUrl, 308)
+    response.headers.set('Cache-Control', 'no-store')
+    return response
+  }
+
   if (!isMediaGuide && !isMediaGuideApi) {
     return NextResponse.next()
   }
@@ -47,6 +58,12 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/media-guide/:path*', '/api/media-guide/:path*'],
+}
+
+function mapRunwayPath(pathname: string) {
+  if (pathname === '/media-guide') return '/'
+  if (pathname === '/media-guide/login') return '/login'
+  return pathname.replace(/^\/media-guide/, '') || '/'
 }
 
 async function isValidToken(token: string, password: string, secret: string) {

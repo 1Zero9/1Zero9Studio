@@ -6,6 +6,10 @@
 - Rebuild the external review pack with `npm run media:review-pack` when Media Guide files change.
 - Use patch versions for UI polish and small fixes, minor versions for new user-facing features, and major versions only for breaking changes or large data model shifts.
 
+## 0.2.4 - Runway Redirect
+- Redirected old `/media-guide` page routes to the standalone Runway app at `https://runway.1zero9.com`.
+- Preserved `/media-guide/share/*` paths as `/share/*` on Runway and sent `/media-guide/login` to `/login`.
+
 ## 0.2.3 - Watched and Rating Signals
 - Added per-title watched tracking in My List so a film can be completed and a show can record each watched episode without leaving the active list.
 - Added Steve's own five-star rating control to each My List item so future recommendations can learn from personal taste.
