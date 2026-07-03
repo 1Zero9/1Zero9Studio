@@ -1,38 +1,41 @@
 {
-  "name": "1zero9-studio",
-  "version": "0.1.0",
+  "name": "1zero9",
+  "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": ">=20 <23"
+    "node": ">=20.9"
   },
   "scripts": {
-    "dev": "rm -rf .next && next dev",
-    "dev:fast": "next dev",
-    "clean:dev": "rm -rf .next && next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.67.0",
-    "@google/generative-ai": "^0.24.1",
-    "@supabase/supabase-js": "^2.86.0",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "framer-motion": "^12.23.24",
-    "next": "^15.0.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "resend": "^6.5.2",
-    "typescript": "^5.0.0"
+    "@content-collections/core": "^0.11.0",
+    "@content-collections/mdx": "^0.2.2",
+    "@content-collections/next": "^0.2.6",
+    "feed": "^5.1.0",
+    "motion": "^12.0.0",
+    "next": "^16.0.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "schema-dts": "^1.1.5",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.11",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^15.0.7",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.18"
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "prettier": "^3.5.0",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.8.0"
   }
 }
