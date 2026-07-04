@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
         destination: "/projects/holiday-concierge",
         permanent: true,
       },
+      // Media guide migrated to the standalone Runway app
+      {
+        source: "/media-guide",
+        destination: "https://runway.1zero9.com/",
+        permanent: true,
+      },
+      {
+        source: "/media-guide/:path*",
+        destination: "https://runway.1zero9.com/:path*",
+        permanent: true,
+      },
     ];
   },
 };
