@@ -75,8 +75,12 @@ export default function Home() {
             <span id="selected-work">selected work</span>
           </SectionLabel>
           <div className="grid gap-6 sm:grid-cols-2">
-            {featured.map((project) => (
-              <ProjectCard key={project.slug} project={project} />
+            {featured.map((project, i) => (
+              <ProjectCard
+                key={project.slug}
+                project={project}
+                lead={i === 0 && featured.length % 2 === 1}
+              />
             ))}
           </div>
           <p className="mt-10 text-sm">

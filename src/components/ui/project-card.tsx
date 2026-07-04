@@ -4,11 +4,19 @@ import type { Project } from "@/lib/content";
 import { Logo } from "@/components/brand/logo";
 import { Meta } from "@/components/ui/meta";
 
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({
+  project,
+  lead = false,
+}: {
+  project: Project;
+  lead?: boolean;
+}) {
   return (
     <Link
       href={`/projects/${project.slug}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-accent/60"
+      className={`group flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-accent/60 ${
+        lead ? "sm:col-span-2" : ""
+      }`}
     >
       {project.cover ? (
         <div className="overflow-hidden border-b border-border">
@@ -17,8 +25,12 @@ export function ProjectCard({ project }: { project: Project }) {
             alt={project.coverAlt ?? ""}
             width={1600}
             height={1000}
-            sizes="(min-width: 1024px) 32rem, 100vw"
-            className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
+            sizes={
+              lead ? "(min-width: 1100px) 64rem, 100vw" : "(min-width: 1024px) 32rem, 100vw"
+            }
+            className={`w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02] ${
+              lead ? "aspect-[21/9]" : "aspect-[16/10]"
+            }`}
           />
         </div>
       ) : (
