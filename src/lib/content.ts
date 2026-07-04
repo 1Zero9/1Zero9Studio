@@ -3,7 +3,10 @@
  * needs replacing, this file is the swap point — routes and components
  * stay untouched.
  */
-import { allProjects as generatedProjects } from "content-collections";
+import {
+  allProjects as generatedProjects,
+  allWritings as generatedWriting,
+} from "content-collections";
 
 const hideDrafts = process.env.NODE_ENV === "production";
 
@@ -23,3 +26,14 @@ export function getProject(slug: string) {
 }
 
 export type Project = (typeof allProjects)[number];
+
+export const allWriting = generatedWriting
+  .filter((post) => !hideDrafts || !post.draft)
+  .filter((post) => post.status !== "archived")
+  .sort((a, b) => b.date.localeCompare(a.date));
+
+export function getPost(slug: string) {
+  return allWriting.find((post) => post.slug === slug);
+}
+
+export type Post = (typeof allWriting)[number];

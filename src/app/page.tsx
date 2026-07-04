@@ -4,7 +4,7 @@ import { Container } from "@/components/layout/container";
 import { Reveal } from "@/components/motion/reveal";
 import { Meta } from "@/components/ui/meta";
 import { TextLink } from "@/components/ui/text-link";
-import { featuredProjects } from "@/lib/content";
+import { allWriting, featuredProjects } from "@/lib/content";
 import { site } from "@/lib/site";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -17,6 +17,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 export default function Home() {
   const featured = featuredProjects();
+  const latestWriting = allWriting.slice(0, 3);
 
   return (
     <>
@@ -69,6 +70,34 @@ export default function Home() {
           </p>
         </section>
       </Container>
+
+      {latestWriting.length > 0 && (
+        <Container className="pb-24">
+          <section aria-labelledby="writing">
+            <SectionLabel>
+              <span id="writing">writing</span>
+            </SectionLabel>
+            <ul>
+              {latestWriting.map((post) => (
+                <li key={post.slug} className="border-t border-border">
+                  <Link
+                    href={`/writing/${post.slug}`}
+                    className="group flex items-baseline justify-between gap-6 py-5"
+                  >
+                    <span className="font-display text-xl tracking-tight transition-colors group-hover:text-muted">
+                      {post.title}
+                    </span>
+                    <Meta>{post.date}</Meta>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-8 text-sm">
+              <TextLink href="/writing">all writing</TextLink>
+            </p>
+          </section>
+        </Container>
+      )}
 
       <Container className="pb-28">
         <section aria-labelledby="contact">

@@ -66,6 +66,21 @@
   }
 }
 
+/*
+ * Shiki dual-theme tokens: rehype-pretty-code emits the light theme as
+ * the base colour with the dark values in --shiki-dark vars. Dark is our
+ * default (no attribute), so flip unless light is explicitly set.
+ */
+:root:not([data-theme="light"]) code[data-theme*=" "],
+:root:not([data-theme="light"]) code[data-theme*=" "] span {
+  color: var(--shiki-dark);
+}
+
+[data-theme="light"] code[data-theme*=" "],
+[data-theme="light"] code[data-theme*=" "] span {
+  color: var(--shiki-light);
+}
+
 @layer components {
   .prose {
     --tw-prose-body: var(--fg);

@@ -22,6 +22,9 @@ export function createMetadata({
     description,
     alternates: {
       canonical: url,
+      types: {
+        "application/rss+xml": new URL("/feed.xml", site.url).toString(),
+      },
     },
     openGraph: {
       type: "website",

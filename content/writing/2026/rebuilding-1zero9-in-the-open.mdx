@@ -1,0 +1,55 @@
+---
+title: Rebuilding 1zero9.com in the open
+summary: Why I deleted my own website, kept only the logo, and what the first day of the rebuild taught me about motion and Largest Contentful Paint.
+date: 2026-07-04
+tags: [meta, nextjs, performance]
+status: featured
+draft: false
+---
+
+This site used to be a studio website — service tiers, a portfolio grid,
+a site-builder wizard, even an AI holiday concierge living under the same
+roof. All of it worked. None of it said what I actually wanted to say.
+
+So I deleted it. One git tag preserves the whole era
+(`archive/pre-rebuild-2026-07`); the only survivor is the logo — a single
+continuous line that draws "109" as a waveform. That line became the
+brief for everything else: **signal over noise**.
+
+## The stack
+
+Next.js 16, React 19, Tailwind CSS 4, and MDX compiled through
+content-collections with Zod-validated frontmatter. Adding a project is
+one folder and one file; getting the frontmatter wrong fails the build,
+which is exactly the kind of error you want at authoring time instead of
+in production:
+
+```ts
+const projects = defineCollection({
+  name: "projects",
+  directory: "content/projects",
+  include: "*/index.mdx",
+  schema: z.object({
+    title: z.string().min(1).max(80),
+    summary: z.string().min(1).max(200),
+    date: isoDate,
+    status: z.enum(["featured", "active", "archived"]),
+  }),
+});
+```
+
+## The lesson of day one
+
+The first Lighthouse run came back at 91 — because I'd done the obvious
+thing and wrapped entrance animations in a client-side motion library.
+Server-rendered HTML arrived with `opacity: 0` inlined, and the largest
+content block stayed invisible until React hydrated. LCP: 3.4 seconds,
+for an effect that lasts half a second.
+
+The fix was to make the animations CSS keyframes instead. They start at
+first paint, need no JavaScript at all, and `prefers-reduced-motion`
+collapses them via one global rule. LCP dropped to 2.6 seconds on a
+throttled mobile lab run, and the only client JavaScript left on the page
+is the theme toggle.
+
+Restraint, it turns out, is also a performance strategy.

@@ -8,12 +8,20 @@ export function Footer() {
         <p className="font-mono text-xs text-faint">
           © {new Date().getFullYear()} {site.author.name}
         </p>
-        <a
-          href={`mailto:${site.author.email}`}
-          className="font-mono text-xs text-muted transition-colors hover:text-fg"
-        >
-          {site.author.email}
-        </a>
+        <span className="flex items-center gap-6">
+          <a
+            href="/feed.xml"
+            className="font-mono text-xs text-muted transition-colors hover:text-fg"
+          >
+            rss
+          </a>
+          <a
+            href={`mailto:${site.author.email}`}
+            className="font-mono text-xs text-muted transition-colors hover:text-fg"
+          >
+            {site.author.email}
+          </a>
+        </span>
       </Container>
     </footer>
   );
