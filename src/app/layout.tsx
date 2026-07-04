@@ -1,5 +1,7 @@
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { createMetadata } from "@/lib/metadata";
+import { personJsonLd, webSiteJsonLd } from "@/lib/jsonld";
+import { JsonLd } from "@/components/seo/json-ld";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { SkipLink } from "@/components/layout/skip-link";
 import { Header } from "@/components/layout/header";
@@ -37,6 +39,8 @@ export default function RootLayout({
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
     >
       <body className="flex min-h-svh flex-col">
+        <JsonLd data={personJsonLd} />
+        <JsonLd data={webSiteJsonLd} />
         <ThemeProvider>
           <SkipLink />
           <Header />
