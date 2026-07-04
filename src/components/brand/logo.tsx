@@ -9,8 +9,9 @@ export function Logo({
   return (
     <svg
       viewBox="160 260 700 440"
-      role="img"
-      aria-label={title}
+      {...(title
+        ? { role: "img", "aria-label": title }
+        : { "aria-hidden": true })}
       className={className}
       fill="currentColor"
     >
