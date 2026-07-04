@@ -37,12 +37,12 @@ export function ogImage({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#0c0c0d",
-          color: "#ededec",
+          backgroundColor: "#000000",
+          color: "#f5f5f2",
           padding: 72,
         }}
       >
-        <LogoOgMark width={110} height={69} color="#ededec" />
+        <LogoOgMark width={110} height={69} color="#f5f5f2" />
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div
             style={{
@@ -54,7 +54,7 @@ export function ogImage({
             {title}
           </div>
           {subtitle ? (
-            <div style={{ fontSize: 28, color: "#a3a3a0", lineHeight: 1.4 }}>
+            <div style={{ fontSize: 28, color: "#a8a8a4", lineHeight: 1.4 }}>
               {subtitle}
             </div>
           ) : null}

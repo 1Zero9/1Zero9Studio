@@ -14,11 +14,11 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#0c0c0d",
+          backgroundColor: "#000000",
           borderRadius: 12,
         }}
       >
-        <LogoOgMark width={52} height={33} color="#ededec" />
+        <LogoOgMark width={52} height={33} color="#f5f5f2" />
       </div>
     ),
     size,

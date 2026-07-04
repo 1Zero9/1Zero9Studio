@@ -14,10 +14,10 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#0c0c0d",
+          backgroundColor: "#000000",
         }}
       >
-        <LogoOgMark width={140} height={88} color="#ededec" />
+        <LogoOgMark width={140} height={88} color="#f5f5f2" />
       </div>
     ),
     size,
