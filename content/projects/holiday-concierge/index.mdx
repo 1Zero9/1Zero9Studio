@@ -1,0 +1,48 @@
+---
+title: Holiday Concierge
+summary: An AI travel-planning concierge — conversational planning backed by live flight and hotel data, a background job queue, and a human-readable admin console.
+date: 2026-01-15
+tags: [ai, automation, product]
+status: featured
+order: 1
+draft: false
+---
+
+## The idea
+
+Most travel tools make you do the work: endless filters, tabs, and
+re-searching. I wanted to test the opposite shape — you describe the trip
+you're imagining, and a concierge does the legwork, checks real
+availability, and comes back with a considered plan.
+
+## How it works
+
+A conversational planner sits on top of Google's Gemini, but the model is
+only one component. The system around it does the heavy lifting:
+
+- **Live data** — flight and hotel offers come from the Amadeus APIs, with
+  hotel coverage supplemented through Booking.com. When a provider is
+  unavailable, the system degrades gracefully to clearly-labelled estimates
+  instead of failing or pretending.
+- **Sessions and accounts** — Supabase handles auth and storage across an
+  eight-table schema (profiles, sessions, messages, plans, jobs,
+  notifications, admins, system logs), with row-level security throughout.
+- **A job queue** — longer research tasks run as background jobs processed
+  on a schedule, so the conversation never blocks on a slow search. Users
+  get notified in-app (and by email via Resend) when a plan is ready.
+- **An admin console** — every session, job, and log line is inspectable.
+  An AI system you can't observe is an AI system you can't trust.
+
+## Lessons
+
+The interesting engineering wasn't the model call — it was everything
+around it: queueing, fallbacks, observability, and knowing when to show an
+honest estimate instead of a confident guess. Orchestration is the
+product.
+
+## Status
+
+Built and run as a working system through 2025–26; now retired from the
+live site as part of this rebuild. The architecture — model + queue +
+live-data fallbacks + observable admin — is the template I reuse for
+agentic products.

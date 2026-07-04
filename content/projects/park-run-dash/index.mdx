@@ -1,0 +1,37 @@
+---
+title: Park Run Dash
+summary: A 5km side-scrolling running game built with no engine and no framework — just canvas, vanilla JavaScript, and an unreasonable attention to mobile input.
+date: 2025-11-01
+tags: [games, javascript, experiment]
+status: featured
+order: 2
+draft: false
+---
+
+## The constraint
+
+Build a playable game with nothing but a canvas element, vanilla
+JavaScript, and CSS. No engine, no framework, no build step. Three files.
+
+Park Run Dash is a side-scroller themed on the Saturday-morning 5k:
+you run, you dodge, you try to hold pace to the finish line.
+
+## What it actually took
+
+The game loop was the easy part. The real work — the part that doesn't
+show up in a screenshot — was making it feel right on phones:
+
+- **Input** — touch controls with tap fallbacks, because "works on my
+  desktop keyboard" is not a control scheme.
+- **Safari** — landscape fullscreen on iOS Safari has its own opinions
+  about viewport units, address bars, and orientation. Winning that fight
+  took more commits than the gameplay did.
+- **Small screens** — maximising the playfield in landscape without
+  clipping the HUD, across an unreasonable range of aspect ratios.
+
+## Lessons
+
+Constraints are clarifying. With no engine to lean on, every frame drawn
+is a decision you made. And shipping something small but *finished* —
+playable by anyone, on whatever device is in their pocket — teaches you
+more about the platform than a tutorial ever will.
