@@ -46,14 +46,14 @@ export default async function PostPage({
   return (
     <Container className="py-16">
       <JsonLd data={articleJsonLd(post)} />
-      <header>
+      <header className="max-w-3xl">
         <Meta>
           {post.date} · {post.readingTime} min read
         </Meta>
-        <h1 className="mt-3 font-display text-4xl tracking-tight">
+        <h1 className="mt-4 font-display text-5xl leading-tight tracking-tight sm:text-6xl">
           {post.title}
         </h1>
-        <p className="mt-4 max-w-prose text-lg text-muted">{post.summary}</p>
+        <p className="mt-6 text-lg text-muted">{post.summary}</p>
       </header>
 
       <div className="mt-12 border-t border-border pt-12">

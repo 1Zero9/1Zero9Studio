@@ -20,8 +20,10 @@ export default function WritingPage() {
 
   return (
     <Container className="py-16">
-      <h1 className="font-display text-4xl tracking-tight">writing</h1>
-      <p className="mt-4 max-w-prose text-muted">
+      <h1 className="font-display text-5xl tracking-tight sm:text-6xl">
+        writing
+      </h1>
+      <p className="mt-6 max-w-2xl text-lg text-muted">
         Essays and build notes — what the work taught me.
       </p>
 

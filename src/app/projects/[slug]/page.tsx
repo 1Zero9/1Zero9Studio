@@ -44,16 +44,14 @@ export default async function ProjectPage({
   return (
     <Container className="py-16">
       <JsonLd data={projectJsonLd(project)} />
-      <header>
+      <header className="max-w-3xl">
         <Meta>
           {project.year} · {project.readingTime} min read
         </Meta>
-        <h1 className="mt-3 font-display text-4xl tracking-tight">
+        <h1 className="mt-4 font-display text-5xl leading-tight tracking-tight sm:text-6xl">
           {project.title}
         </h1>
-        <p className="mt-4 max-w-prose text-lg text-muted">
-          {project.summary}
-        </p>
+        <p className="mt-6 text-lg text-muted">{project.summary}</p>
         <div className="mt-6 flex flex-wrap items-center gap-2">
           {project.tags.map((tag) => (
             <Tag key={tag}>{tag}</Tag>
