@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { Mdx } from "@/components/mdx/mdx";
@@ -64,6 +65,20 @@ export default async function ProjectPage({
           </p>
         )}
       </header>
+
+      {project.cover && (
+        <div className="mt-12 overflow-hidden rounded-xl border border-border">
+          <Image
+            src={project.cover}
+            alt={project.coverAlt ?? ""}
+            width={1600}
+            height={1000}
+            sizes="(min-width: 1024px) 60rem, 100vw"
+            priority
+            className="w-full"
+          />
+        </div>
+      )}
 
       <div className="mt-12 border-t border-border pt-12">
         <Prose>
