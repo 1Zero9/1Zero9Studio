@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { site } from "@/lib/site";
 import { Container } from "@/components/layout/container";
 
@@ -9,6 +10,12 @@ export function Footer() {
           © {new Date().getFullYear()} {site.author.name}
         </p>
         <span className="flex items-center gap-6">
+          <Link
+            href="/colophon"
+            className="font-mono text-xs text-muted transition-colors hover:text-fg"
+          >
+            colophon
+          </Link>
           <a
             href="/feed.xml"
             className="font-mono text-xs text-muted transition-colors hover:text-fg"

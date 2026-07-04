@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LogoReveal } from "@/components/brand/logo-reveal";
 import { Container } from "@/components/layout/container";
-import { Reveal } from "@/components/motion/reveal";
 import { Meta } from "@/components/ui/meta";
 import { TextLink } from "@/components/ui/text-link";
 import { allWriting, featuredProjects } from "@/lib/content";
@@ -43,25 +42,23 @@ export default function Home() {
             <span id="selected-work">selected work</span>
           </SectionLabel>
           <ul>
-            {featured.map((project, i) => (
+            {featured.map((project) => (
               <li key={project.slug} className="border-t border-border">
-                <Reveal delay={i * 0.06}>
-                  <Link
-                    href={`/projects/${project.slug}`}
-                    className="group block py-8"
-                  >
-                    <div className="flex items-baseline justify-between gap-6">
-                      <h3 className="font-display text-2xl tracking-tight transition-colors group-hover:text-muted">
-                        {project.title}
-                      </h3>
-                      <Meta>{project.year}</Meta>
-                    </div>
-                    <p className="mt-2 max-w-prose text-sm text-muted">
-                      {project.summary}
-                    </p>
-                    <Meta className="mt-4">{project.tags.join(" · ")}</Meta>
-                  </Link>
-                </Reveal>
+                <Link
+                  href={`/projects/${project.slug}`}
+                  className="group block py-8"
+                >
+                  <div className="flex items-baseline justify-between gap-6">
+                    <h3 className="font-display text-2xl tracking-tight transition-colors group-hover:text-muted">
+                      {project.title}
+                    </h3>
+                    <Meta>{project.year}</Meta>
+                  </div>
+                  <p className="mt-2 max-w-prose text-sm text-muted">
+                    {project.summary}
+                  </p>
+                  <Meta className="mt-4">{project.tags.join(" · ")}</Meta>
+                </Link>
               </li>
             ))}
           </ul>

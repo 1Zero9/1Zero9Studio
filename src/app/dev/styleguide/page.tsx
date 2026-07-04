@@ -7,7 +7,6 @@ import { TextLink } from "@/components/ui/text-link";
 import { Tag } from "@/components/ui/tag";
 import { Meta } from "@/components/ui/meta";
 import { Prose } from "@/components/ui/prose";
-import { Reveal } from "@/components/motion/reveal";
 
 export const metadata: Metadata = {
   title: "Styleguide",
@@ -136,12 +135,10 @@ export default function Styleguide() {
       </Section>
 
       <Section label="motion">
-        <Reveal>
-          <p className="max-w-prose text-muted">
-            This block reveals with an 8px rise and fade — or a plain fade when
-            reduced motion is set.
-          </p>
-        </Reveal>
+        <p className="max-w-prose text-muted">
+          The one entrance animation is the logo wipe above. Everything else
+          is hover/focus transitions — motion explains, never decorates.
+        </p>
       </Section>
     </Container>
   );

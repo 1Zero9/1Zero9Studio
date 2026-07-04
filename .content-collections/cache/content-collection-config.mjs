@@ -16,7 +16,10 @@ var mdxOptions = {
     [
       rehypePrettyCode,
       {
-        theme: { dark: "github-dark-default", light: "github-light-default" },
+        theme: {
+          dark: "github-dark-default",
+          light: "github-light-high-contrast"
+        },
         keepBackground: false
       }
     ]
