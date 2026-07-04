@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoReveal } from "@/components/brand/logo-reveal";
 import { SignalLine } from "@/components/brand/signal-line";
 import { Container } from "@/components/layout/container";
 import { Meta } from "@/components/ui/meta";
@@ -36,11 +37,12 @@ export default function Home() {
           aria-hidden="true"
           className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[36rem]"
         />
-        <Container className="relative pt-16 pb-10 sm:pt-24">
-          <p className="font-mono text-sm tracking-wide text-muted">
+        <Container className="relative pt-16 pb-10 sm:pt-20">
+          <LogoReveal className="h-20 w-auto sm:h-32" />
+          <p className="mt-10 font-mono text-sm tracking-wide text-muted">
             {site.author.name} · 1Zero9
           </p>
-          <h1 className="mt-8 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
+          <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
             I design and build products where technology becomes{" "}
             <em className="text-accent">useful</em>.
           </h1>
