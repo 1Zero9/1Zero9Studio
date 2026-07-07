@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@content-collections/core": "^0.11.0",
