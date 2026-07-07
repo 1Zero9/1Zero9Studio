@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { createMetadata } from "@/lib/metadata";
 import { personJsonLd, webSiteJsonLd } from "@/lib/jsonld";
@@ -49,6 +50,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
