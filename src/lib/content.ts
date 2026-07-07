@@ -7,6 +7,7 @@ import {
   allProjects as generatedProjects,
   allWritings as generatedWriting,
 } from "content-collections";
+import { prisma } from "@/lib/db";
 
 const hideDrafts = process.env.NODE_ENV === "production";
 
@@ -26,6 +27,23 @@ export function getProject(slug: string) {
 }
 
 export type Project = (typeof allProjects)[number];
+
+// Admin-managed screenshots/links per project, stored in Postgres and keyed
+// by MDX slug. Kept separate from getProject() so build-time-only call sites
+// (generateMetadata, opengraph-image) never touch the database.
+export function getProjectMedia(slug: string) {
+  return prisma.projectMedia.findMany({
+    where: { projectSlug: slug },
+    orderBy: { order: "asc" },
+  });
+}
+
+export function getProjectLinks(slug: string) {
+  return prisma.projectLink.findMany({
+    where: { projectSlug: slug },
+    orderBy: { order: "asc" },
+  });
+}
 
 export const allWriting = generatedWriting
   .filter((post) => !hideDrafts || !post.draft)

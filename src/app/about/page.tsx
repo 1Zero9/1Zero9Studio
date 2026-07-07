@@ -6,8 +6,7 @@ import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
   title: "About",
-  description:
-    "Who I am, how I work, and how to reach me.",
+  description: "Who's behind 1Zero9, how the studio works, and how to reach me.",
   path: "/about",
 });
 
@@ -18,17 +17,24 @@ export default function AboutPage() {
 
       <div className="mt-12 flex max-w-prose flex-col gap-6 text-fg">
         <p>
-          I&apos;m {site.author.name}. I design and build products — AI
-          systems, web platforms, automation, and the occasional game. 1Zero9
-          is my workshop: the place where ideas get built, shipped, and
-          written about honestly.
+          1Zero9 is a small studio — currently just me, {site.author.name} —
+          building bespoke AI systems and custom software for people who need
+          something built around a real problem, not squeezed into a
+          generic tool.
         </p>
         <p>
           I care about the whole stack of a product: the thinking before the
           first line of code, the architecture that keeps it maintainable,
           the design that makes it feel inevitable, and the details most
-          people never notice. The projects here tell those stories in full —
-          problems, decisions, and lessons included.
+          people never notice. That&apos;s what a solo studio gets you — one
+          person accountable for the whole thing, not a project handed
+          between departments.
+        </p>
+        <p>
+          The projects section tells those stories in full — problems,
+          decisions, and lessons included. If you&apos;re working out whether
+          I&apos;m the right fit for something you&apos;re building, that&apos;s
+          the honest version of my work.
         </p>
         <p>
           The fastest way to reach me is email:{" "}

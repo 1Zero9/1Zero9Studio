@@ -2,10 +2,17 @@ import { withContentCollections } from "@content-collections/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
+  },
   async redirects() {
     return [
       { source: "/portfolio", destination: "/projects", permanent: true },
-      { source: "/services", destination: "/", permanent: true },
       { source: "/builder", destination: "/", permanent: true },
       { source: "/contact", destination: "/about", permanent: true },
       { source: "/parkrun", destination: "/projects/park-run-dash", permanent: true },
@@ -24,6 +31,34 @@ const nextConfig: NextConfig = {
         source: "/media-guide/:path*",
         destination: "https://runway.1zero9.com/:path*",
         permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https://*.public.blob.vercel-storage.com",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: csp },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
       },
     ];
   },

@@ -5,6 +5,7 @@ import { site } from "@/lib/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
     "/",
+    "/services",
     "/projects",
     "/writing",
     "/about",

@@ -9,12 +9,21 @@ import { TextLink } from "@/components/ui/text-link";
 import { allProjects, allWriting, featuredProjects } from "@/lib/content";
 import { site } from "@/lib/site";
 
-const capabilities = [
-  "ai systems",
-  "security",
-  "automation",
-  "web platforms",
-  "games",
+const capabilities = ["ai systems", "automation", "security", "web platforms"];
+
+const engagements = [
+  {
+    name: "Foundation",
+    desc: "A clean, custom-built presence — the right first step when the business needs a real site, not a template with your logo on it.",
+  },
+  {
+    name: "Growth",
+    desc: "A working platform: content, bookings, integrations. For a business that's outgrown what a website builder can do.",
+  },
+  {
+    name: "Bespoke Platform",
+    desc: "A custom AI system or application built around a specific problem — accounts, data, logic, integrations. The kind of thing generic tools can't do.",
+  },
 ];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -43,13 +52,14 @@ export default function Home() {
             {site.author.name} · 1Zero9
           </p>
           <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
-            I design and build products where technology becomes{" "}
-            <em className="text-accent">useful</em>.
+            Bespoke AI systems and software, built around{" "}
+            <em className="text-accent">your</em> problem.
           </h1>
           <p className="mt-8 max-w-2xl text-lg text-muted">
-            {allProjects.length} real projects — shipped for sport, security,
-            healthcare and education. Told honestly: the problem, the build,
-            and what it taught me.
+            Not a template with your logo on it, and not another generic
+            AI wrapper. {allProjects.length} real projects — shipped for
+            sport, security, healthcare and education — told honestly: the
+            problem, the build, and what it taught me.
           </p>
           <ul className="mt-8 flex flex-wrap items-center gap-2">
             {capabilities.map((capability) => (
@@ -58,18 +68,33 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <Meta className="mt-10">
-            <span
-              aria-hidden="true"
-              className="mr-2 inline-block size-1.5 animate-pulse rounded-full bg-accent align-middle"
-            />
-            currently: rebuilding 1zero9.com in the open
-          </Meta>
+          <p className="mt-10 text-sm">
+            <TextLink href="/services">what I build →</TextLink>
+          </p>
         </Container>
         <SignalLine className="relative" />
       </div>
 
       <Container className="pt-20 pb-28">
+        <section aria-labelledby="engagements">
+          <SectionLabel>
+            <span id="engagements">how I engage</span>
+          </SectionLabel>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {engagements.map((e) => (
+              <div key={e.name} className="rounded-md border border-border p-5">
+                <p className="font-display text-lg tracking-tight">{e.name}</p>
+                <p className="mt-2 text-sm text-muted">{e.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-sm">
+            <TextLink href="/services">full breakdown of how I work</TextLink>
+          </p>
+        </section>
+      </Container>
+
+      <Container className="pb-28">
         <section aria-labelledby="selected-work">
           <SectionLabel>
             <span id="selected-work">selected work</span>

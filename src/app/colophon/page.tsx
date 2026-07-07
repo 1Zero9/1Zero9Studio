@@ -37,7 +37,11 @@ export default function ColophonPage() {
           </p>
           <h2>Stack</h2>
           <ul>
-            <li>Next.js 16 (App Router, fully static output) on Vercel</li>
+            <li>
+              Next.js 16 (App Router), static-first with on-demand
+              revalidation for project media managed via a private admin
+              tool, on Vercel
+            </li>
             <li>TypeScript strict, React 19</li>
             <li>Tailwind CSS 4 — tokens as CSS variables, dark mode first</li>
             <li>
