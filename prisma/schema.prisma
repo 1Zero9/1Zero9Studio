@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ProjectMedia {
+  id          String   @id @default(cuid())
+  projectSlug String
+  url         String
+  alt         String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([projectSlug])
+}
+
+model ProjectLink {
+  id          String   @id @default(cuid())
+  projectSlug String
+  label       String
+  url         String
+  kind        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([projectSlug])
+}
+
+model AdminLoginToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+}

@@ -8,11 +8,18 @@ import { Meta } from "@/components/ui/meta";
 import { Prose } from "@/components/ui/prose";
 import { Tag } from "@/components/ui/tag";
 import { TextLink } from "@/components/ui/text-link";
-import { allProjects, getProject } from "@/lib/content";
+import {
+  allProjects,
+  getProject,
+  getProjectLinks,
+  getProjectMedia,
+} from "@/lib/content";
 import { projectJsonLd } from "@/lib/jsonld";
 import { createMetadata } from "@/lib/metadata";
 
 type Params = { slug: string };
+
+export const revalidate = 3600;
 
 export function generateStaticParams(): Params[] {
   return allProjects.map((project) => ({ slug: project.slug }));
@@ -42,6 +49,11 @@ export default async function ProjectPage({
   const project = getProject(slug);
   if (!project) notFound();
 
+  const [media, links] = await Promise.all([
+    getProjectMedia(slug),
+    getProjectLinks(slug),
+  ]);
+
   return (
     <Container className="py-16">
       <JsonLd data={projectJsonLd(project)} />
@@ -58,10 +70,15 @@ export default async function ProjectPage({
             <Tag key={tag}>{tag}</Tag>
           ))}
         </div>
-        {(project.url ?? project.repo) && (
-          <p className="mt-6 flex gap-6 text-sm">
+        {(project.url ?? project.repo ?? links.length > 0) && (
+          <p className="mt-6 flex flex-wrap gap-6 text-sm">
             {project.url && <TextLink href={project.url}>visit</TextLink>}
             {project.repo && <TextLink href={project.repo}>source</TextLink>}
+            {links.map((link) => (
+              <TextLink key={link.id} href={link.url}>
+                {link.label}
+              </TextLink>
+            ))}
           </p>
         )}
       </header>
@@ -85,6 +102,26 @@ export default async function ProjectPage({
           <Mdx code={project.mdx} />
         </Prose>
       </div>
+
+      {media.length > 0 && (
+        <div className="mt-12 grid gap-4 border-t border-border pt-12 sm:grid-cols-2">
+          {media.map((item) => (
+            <div
+              key={item.id}
+              className="overflow-hidden rounded-xl border border-border"
+            >
+              <Image
+                src={item.url}
+                alt={item.alt}
+                width={1200}
+                height={750}
+                sizes="(min-width: 1024px) 30rem, 100vw"
+                className="w-full"
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </Container>
   );
 }
