@@ -12,10 +12,14 @@ export async function sendAdminLoginEmail(email: string, token: string) {
   verifyUrl.searchParams.set("token", token);
 
   const resend = new Resend(apiKey);
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from,
     to: email,
     subject: "Your 1Zero9 admin sign-in link",
     text: `Sign in to the 1Zero9 admin portal: ${verifyUrl.toString()}\n\nThis link expires in 15 minutes and can only be used once.`,
   });
+
+  if (error) {
+    throw new Error(`Failed to send admin login email: ${error.message}`);
+  }
 }
