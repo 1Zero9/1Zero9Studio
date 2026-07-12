@@ -43,6 +43,12 @@ export async function createLoginToken(email: string) {
     .setExpirationTime(expiresAt)
     .sign(getSecret());
 
+  // Opportunistic cleanup — this table has no scheduled job, so prune
+  // stale rows on the low-frequency write path instead of letting it grow forever.
+  await prisma.adminLoginToken.deleteMany({
+    where: { expiresAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+  });
+
   await prisma.adminLoginToken.create({
     data: { tokenHash: hashToken(token), expiresAt },
   });
