@@ -14,7 +14,6 @@ const nextConfig: NextConfig = {
     return [
       { source: "/portfolio", destination: "/projects", permanent: true },
       { source: "/builder", destination: "/", permanent: true },
-      { source: "/contact", destination: "/about", permanent: true },
       { source: "/parkrun", destination: "/projects/park-run-dash", permanent: true },
       {
         source: "/holiday-agent/:path*",

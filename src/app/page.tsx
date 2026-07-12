@@ -55,11 +55,16 @@ export default function Home() {
             Bespoke AI systems and software, built around{" "}
             <em className="text-accent">your</em> problem.
           </h1>
-          <p className="mt-8 max-w-2xl text-lg text-muted">
-            Not a template with your logo on it, and not another generic
-            AI wrapper. {allProjects.length} real projects — shipped for
-            sport, security, healthcare and education — told honestly: the
-            problem, the build, and what it taught me.
+          <p className="mt-6 max-w-2xl text-xl text-fg">
+            One person, start to finish — from the first conversation to
+            something live and maintained. No handoffs between departments,
+            no template with your logo on it.
+          </p>
+          <p className="mt-4 max-w-2xl text-lg text-muted">
+            Not another generic AI wrapper, either. {allProjects.length} real
+            projects — shipped for sport, security, healthcare and
+            education — told honestly: the problem, the build, and what it
+            taught me.
           </p>
           <ul className="mt-8 flex flex-wrap items-center gap-2">
             {capabilities.map((capability) => (
