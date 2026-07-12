@@ -47,9 +47,12 @@ jobs:
 
       - run: npm run lint
 
-      - run: npm run typecheck
-
+      # content-collections generates its virtual module as a side effect
+      # of next build starting up, so build must run before typecheck can
+      # resolve `content-collections` imports on a clean checkout.
       - run: npm run build
+
+      - run: npm run typecheck
 
       # Automated accessibility check (axe-core) against the built app —
       # backs up the colophon's public claim of a11y verification "on
