@@ -26,7 +26,9 @@ export default function AdminDashboardPage() {
           </li>
         ))}
       </ul>
-      <p className="mt-10 text-sm">
+      <p className="mt-10 flex flex-wrap gap-6 text-sm">
+        <TextLink href="/admin/testimonials">testimonials</TextLink>
+        <TextLink href="/admin/copy">site copy</TextLink>
         <TextLink href="/admin/calculator">quote calculator</TextLink>
       </p>
     </div>

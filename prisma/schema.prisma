@@ -29,6 +29,33 @@ model ProjectLink {
   @@index([projectSlug])
 }
 
+model ProjectOutcome {
+  id          String   @id @default(cuid())
+  projectSlug String
+  text        String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([projectSlug])
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  quote       String
+  author      String
+  role        String?
+  projectSlug String?
+  published   Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model SiteCopy {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
 model AdminLoginToken {
   id        String    @id @default(cuid())
   tokenHash String    @unique

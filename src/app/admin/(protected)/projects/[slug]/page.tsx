@@ -2,14 +2,22 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Meta } from "@/components/ui/meta";
 import { TextLink } from "@/components/ui/text-link";
-import { getProject, getProjectLinks, getProjectMedia } from "@/lib/content";
+import {
+  getProject,
+  getProjectLinks,
+  getProjectMedia,
+  getProjectOutcomes,
+} from "@/lib/content";
 import {
   addProjectLink,
   addProjectMedia,
+  addProjectOutcome,
   deleteProjectLink,
   deleteProjectMedia,
+  deleteProjectOutcome,
   moveProjectLink,
   moveProjectMedia,
+  moveProjectOutcome,
 } from "./actions";
 
 type Params = { slug: string };
@@ -23,9 +31,10 @@ export default async function AdminProjectPage({
   const project = getProject(slug);
   if (!project) notFound();
 
-  const [media, links] = await Promise.all([
+  const [media, links, outcomes] = await Promise.all([
     getProjectMedia(slug),
     getProjectLinks(slug),
+    getProjectOutcomes(slug),
   ]);
 
   return (
@@ -84,6 +93,52 @@ export default async function AdminProjectPage({
             className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:border-faint"
           >
             upload
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-12 border-t border-border pt-10">
+        <h2 className="font-mono text-xs tracking-wide text-faint">outcomes</h2>
+        <p className="mt-2 text-xs text-muted">
+          Short, honest results shown on the public case study — e.g. what the
+          build saved, handled, or made possible.
+        </p>
+        <ul className="mt-4 divide-y divide-border">
+          {outcomes.map((outcome) => (
+            <li key={outcome.id} className="flex items-center justify-between gap-4 py-3">
+              <p className="min-w-0 truncate text-sm">{outcome.text}</p>
+              <div className="flex shrink-0 gap-2 text-xs">
+                <form action={moveProjectOutcome.bind(null, slug, outcome.id, "up")}>
+                  <button type="submit" className="text-faint hover:text-fg">↑</button>
+                </form>
+                <form action={moveProjectOutcome.bind(null, slug, outcome.id, "down")}>
+                  <button type="submit" className="text-faint hover:text-fg">↓</button>
+                </form>
+                <form action={deleteProjectOutcome.bind(null, slug, outcome.id)}>
+                  <button type="submit" className="text-faint hover:text-accent">
+                    delete
+                  </button>
+                </form>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <form
+          action={addProjectOutcome.bind(null, slug)}
+          className="mt-6 flex flex-wrap items-end gap-3"
+        >
+          <input
+            type="text"
+            name="text"
+            placeholder="outcome"
+            required
+            className="min-w-[20rem] rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus-visible:border-accent"
+          />
+          <button
+            type="submit"
+            className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:border-faint"
+          >
+            add outcome
           </button>
         </form>
       </section>

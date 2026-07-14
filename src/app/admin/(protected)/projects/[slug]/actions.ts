@@ -67,6 +67,62 @@ export async function moveProjectMedia(
   revalidatePath(`/admin/projects/${slug}`);
 }
 
+export async function addProjectOutcome(slug: string, formData: FormData) {
+  await requireAdminSession();
+
+  const text = String(formData.get("text") ?? "").trim();
+  if (!text) {
+    throw new Error("Outcome text is required.");
+  }
+
+  const maxOrder = await prisma.projectOutcome.aggregate({
+    where: { projectSlug: slug },
+    _max: { order: true },
+  });
+
+  await prisma.projectOutcome.create({
+    data: { projectSlug: slug, text, order: (maxOrder._max.order ?? -1) + 1 },
+  });
+
+  revalidatePath(`/projects/${slug}`);
+  revalidatePath(`/admin/projects/${slug}`);
+}
+
+export async function deleteProjectOutcome(slug: string, id: string) {
+  await requireAdminSession();
+
+  await prisma.projectOutcome.deleteMany({ where: { id, projectSlug: slug } });
+
+  revalidatePath(`/projects/${slug}`);
+  revalidatePath(`/admin/projects/${slug}`);
+}
+
+export async function moveProjectOutcome(
+  slug: string,
+  id: string,
+  direction: "up" | "down",
+) {
+  await requireAdminSession();
+
+  const items = await prisma.projectOutcome.findMany({
+    where: { projectSlug: slug },
+    orderBy: { order: "asc" },
+  });
+  const index = items.findIndex((item) => item.id === id);
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || swapIndex < 0 || swapIndex >= items.length) return;
+
+  const current = items[index]!;
+  const swap = items[swapIndex]!;
+  await prisma.$transaction([
+    prisma.projectOutcome.update({ where: { id: current.id }, data: { order: swap.order } }),
+    prisma.projectOutcome.update({ where: { id: swap.id }, data: { order: current.order } }),
+  ]);
+
+  revalidatePath(`/projects/${slug}`);
+  revalidatePath(`/admin/projects/${slug}`);
+}
+
 export async function addProjectLink(slug: string, formData: FormData) {
   await requireAdminSession();
 

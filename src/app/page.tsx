@@ -7,8 +7,17 @@ import { Meta } from "@/components/ui/meta";
 import { ProjectCard } from "@/components/ui/project-card";
 import { Tag } from "@/components/ui/tag";
 import { TextLink } from "@/components/ui/text-link";
-import { allProjects, allWriting, featuredProjects } from "@/lib/content";
+import {
+  allProjects,
+  allWriting,
+  featuredProjects,
+  getProject,
+  getPublishedTestimonials,
+  getSiteCopy,
+} from "@/lib/content";
 import { site } from "@/lib/site";
+
+export const revalidate = 3600;
 
 const capabilities = ["ai systems", "automation", "security", "web platforms"];
 
@@ -36,9 +45,13 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Home() {
+export default async function Home() {
   const featured = featuredProjects();
   const latestWriting = allWriting.slice(0, 3);
+  const [audience, testimonials] = await Promise.all([
+    getSiteCopy("home.audience"),
+    getPublishedTestimonials(),
+  ]);
 
   return (
     <>
@@ -66,6 +79,9 @@ export default function Home() {
             healthcare and education — each told honestly: the problem, the
             build, and what it taught me.
           </p>
+          {audience && (
+            <p className="mt-4 max-w-2xl text-lg text-muted">{audience}</p>
+          )}
           <ul className="mt-8 flex flex-wrap items-center gap-2">
             {capabilities.map((capability) => (
               <li key={capability}>
@@ -136,6 +152,48 @@ export default function Home() {
           </p>
         </section>
       </Container>
+
+      {testimonials.length > 0 && (
+        <Container className="pb-28">
+          <section aria-labelledby="testimonials">
+            <SectionLabel>
+              <span id="testimonials">what clients say</span>
+            </SectionLabel>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {testimonials.map((t) => {
+                const project = t.projectSlug ? getProject(t.projectSlug) : null;
+                return (
+                  <figure
+                    key={t.id}
+                    className="flex flex-col rounded-md border border-border p-6"
+                  >
+                    <blockquote className="flex-1 font-display text-xl leading-snug tracking-tight sm:text-2xl">
+                      &ldquo;{t.quote}&rdquo;
+                    </blockquote>
+                    <figcaption className="mt-5">
+                      <Meta>
+                        {t.author}
+                        {t.role ? ` · ${t.role}` : ""}
+                        {project && (
+                          <>
+                            {" · "}
+                            <Link
+                              href={`/projects/${project.slug}`}
+                              className="underline underline-offset-4 hover:text-fg"
+                            >
+                              {project.title}
+                            </Link>
+                          </>
+                        )}
+                      </Meta>
+                    </figcaption>
+                  </figure>
+                );
+              })}
+            </div>
+          </section>
+        </Container>
+      )}
 
       {latestWriting.length > 0 && (
         <Container className="pb-28">

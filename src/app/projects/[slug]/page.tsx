@@ -13,6 +13,7 @@ import {
   getProject,
   getProjectLinks,
   getProjectMedia,
+  getProjectOutcomes,
 } from "@/lib/content";
 import { projectJsonLd } from "@/lib/jsonld";
 import { createMetadata } from "@/lib/metadata";
@@ -49,9 +50,10 @@ export default async function ProjectPage({
   const project = getProject(slug);
   if (!project) notFound();
 
-  const [media, links] = await Promise.all([
+  const [media, links, outcomes] = await Promise.all([
     getProjectMedia(slug),
     getProjectLinks(slug),
+    getProjectOutcomes(slug),
   ]);
 
   return (
@@ -95,6 +97,26 @@ export default async function ProjectPage({
             className="w-full"
           />
         </div>
+      )}
+
+      {outcomes.length > 0 && (
+        <section
+          aria-label="Outcomes"
+          className="mt-12 rounded-md border border-border p-6 sm:p-8"
+        >
+          <h2 className="flex items-center gap-3 font-mono text-xs tracking-wide text-faint">
+            <span aria-hidden="true" className="inline-block h-px w-8 bg-accent" />
+            outcomes
+          </h2>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+            {outcomes.map((outcome) => (
+              <li key={outcome.id} className="flex gap-3">
+                <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                <span className="text-fg">{outcome.text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <div className="mt-12 border-t border-border pt-12">

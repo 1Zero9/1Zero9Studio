@@ -45,6 +45,25 @@ export function getProjectLinks(slug: string) {
   });
 }
 
+export function getProjectOutcomes(slug: string) {
+  return prisma.projectOutcome.findMany({
+    where: { projectSlug: slug },
+    orderBy: { order: "asc" },
+  });
+}
+
+export function getPublishedTestimonials() {
+  return prisma.testimonial.findMany({
+    where: { published: true },
+    orderBy: { order: "asc" },
+  });
+}
+
+export async function getSiteCopy(key: string) {
+  const row = await prisma.siteCopy.findUnique({ where: { key } });
+  return row?.value.trim() || null;
+}
+
 export const allWriting = generatedWriting
   .filter((post) => !hideDrafts || !post.draft)
   .filter((post) => post.status !== "archived")
