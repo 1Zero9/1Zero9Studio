@@ -156,7 +156,7 @@
 @utility animate-signal-pulse {
   stroke-dasharray: 0.05 1;
   stroke-dashoffset: 0.05;
-  filter: drop-shadow(0 0 6px var(--accent));
+  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--accent) 60%, transparent));
   animation: signal-pulse 12s cubic-bezier(0.4, 0, 0.6, 1) 2.2s infinite;
 }
 

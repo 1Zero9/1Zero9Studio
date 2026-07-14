@@ -30,7 +30,7 @@ export function SignalLine({ className = "" }: { className?: string }) {
       <path
         d={WAVEFORM}
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
