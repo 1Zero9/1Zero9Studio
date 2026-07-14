@@ -135,6 +135,31 @@
   animation: signal-draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
 }
 
+/*
+ * Recurring transmission: a short bright segment sweeps the waveform,
+ * then the line rests — a live signal, not a loop of noise. The dash
+ * sits just off-path at rest, so reduced-motion users (whose animation
+ * collapses to a single instant frame) see only the static line.
+ */
+@keyframes signal-pulse {
+  0% {
+    stroke-dashoffset: 0.14;
+  }
+  20% {
+    stroke-dashoffset: -1;
+  }
+  100% {
+    stroke-dashoffset: -1;
+  }
+}
+
+@utility animate-signal-pulse {
+  stroke-dasharray: 0.14 1;
+  stroke-dashoffset: 0.14;
+  filter: drop-shadow(0 0 6px var(--accent));
+  animation: signal-pulse 12s cubic-bezier(0.4, 0, 0.6, 1) 2.2s infinite;
+}
+
 @utility hero-glow {
   background: radial-gradient(
     52rem circle at 22% -10%,
