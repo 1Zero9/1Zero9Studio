@@ -62,10 +62,7 @@ export default async function Home() {
         />
         <Container className="relative pt-16 sm:pt-20">
           <LogoReveal className="h-20 w-auto sm:h-32" />
-          <p className="mt-10 font-mono text-sm tracking-wide text-muted">
-            {site.author.name} · 1Zero9
-          </p>
-          <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
+          <h1 className="mt-10 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
             Bespoke AI systems and software, built around{" "}
             <em className="text-accent">your</em> problem.
           </h1>
