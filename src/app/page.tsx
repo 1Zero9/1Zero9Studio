@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoReveal } from "@/components/brand/logo-reveal";
+import { ButtonLink } from "@/components/ui/button";
 import { SignalLine } from "@/components/brand/signal-line";
 import { Container } from "@/components/layout/container";
 import { Meta } from "@/components/ui/meta";
@@ -61,10 +62,9 @@ export default function Home() {
             no template with your logo on it.
           </p>
           <p className="mt-4 max-w-2xl text-lg text-muted">
-            Not another generic AI wrapper, either. {allProjects.length} real
-            projects — shipped for sport, security, healthcare and
-            education — told honestly: the problem, the build, and what it
-            taught me.
+            {allProjects.length} real projects shipped — for sport, security,
+            healthcare and education — each told honestly: the problem, the
+            build, and what it taught me.
           </p>
           <ul className="mt-8 flex flex-wrap items-center gap-2">
             {capabilities.map((capability) => (
@@ -73,9 +73,12 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <p className="mt-10 text-sm">
-            <TextLink href="/services">what I build →</TextLink>
-          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <ButtonLink href="/contact">start a conversation</ButtonLink>
+            <ButtonLink href="/projects" variant="ghost">
+              see the work
+            </ButtonLink>
+          </div>
         </Container>
         <SignalLine className="relative" />
       </div>
@@ -87,10 +90,23 @@ export default function Home() {
           </SectionLabel>
           <div className="grid gap-6 sm:grid-cols-3">
             {engagements.map((e) => (
-              <div key={e.name} className="rounded-md border border-border p-5">
+              <Link
+                key={e.name}
+                href="/services"
+                className="group flex flex-col rounded-md border border-border p-5 transition-colors hover:border-accent/60"
+              >
                 <p className="font-display text-lg tracking-tight">{e.name}</p>
-                <p className="mt-2 text-sm text-muted">{e.desc}</p>
-              </div>
+                <p className="mt-2 flex-1 text-sm text-muted">{e.desc}</p>
+                <Meta className="mt-4 flex items-center justify-between">
+                  <span>how it works</span>
+                  <span
+                    aria-hidden="true"
+                    className="transition-all group-hover:translate-x-1 group-hover:text-accent"
+                  >
+                    &rarr;
+                  </span>
+                </Meta>
+              </Link>
             ))}
           </div>
           <p className="mt-10 text-sm">
@@ -162,6 +178,11 @@ export default function Home() {
             >
               Say hello.
             </a>
+          </p>
+          <p className="mt-6 max-w-2xl text-muted">
+            Tell me a bit about the problem you&apos;re solving and where you
+            are with it — that&apos;s usually enough to start a real
+            conversation.
           </p>
         </section>
       </Container>

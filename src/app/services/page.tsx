@@ -28,6 +28,25 @@ const engagements = [
   },
 ];
 
+const steps = [
+  {
+    name: "The conversation",
+    desc: "You describe the problem in plain language — no spec required. That's usually enough to tell whether I'm the right fit.",
+  },
+  {
+    name: "Shape & scope",
+    desc: "The engagement gets scoped and priced against your specific project — what gets built, and what it costs. No fixed packages.",
+  },
+  {
+    name: "The build",
+    desc: "One person accountable for the whole thing. You talk directly to the person writing the code, the entire way through.",
+  },
+  {
+    name: "Live & maintained",
+    desc: "It ships, and it stays looked after — not handed off and forgotten the day it goes live.",
+  },
+];
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="mb-10 flex items-center gap-3 font-mono text-xs tracking-wide text-faint">
@@ -94,6 +113,25 @@ export default function ServicesPage() {
             and what they taught me.
           </p>
         </div>
+      </div>
+
+      <div className="mt-20">
+        <SectionLabel>
+          <span>what happens next</span>
+        </SectionLabel>
+        <ol className="grid gap-6 sm:grid-cols-4">
+          {steps.map((step, i) => (
+            <li key={step.name}>
+              <p className="font-mono text-xs tracking-wide text-accent">
+                {String(i + 1).padStart(2, "0")}
+              </p>
+              <p className="mt-2 font-display text-lg tracking-tight">
+                {step.name}
+              </p>
+              <p className="mt-2 text-sm text-muted">{step.desc}</p>
+            </li>
+          ))}
+        </ol>
       </div>
 
       <div className="mt-20 border-t border-border pt-16">

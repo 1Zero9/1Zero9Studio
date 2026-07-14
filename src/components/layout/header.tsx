@@ -3,6 +3,7 @@ import { site } from "@/lib/site";
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/layout/container";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { ButtonLink } from "@/components/ui/button";
 
 export function Header() {
   return (
@@ -29,6 +30,15 @@ export function Header() {
             ))}
             <li>
               <ThemeToggle />
+            </li>
+            <li className="hidden sm:block">
+              <ButtonLink
+                href="/contact"
+                variant="ghost"
+                className="px-3 py-1.5 hover:border-accent/60"
+              >
+                say hello
+              </ButtonLink>
             </li>
           </ul>
         </nav>
