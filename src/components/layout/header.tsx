@@ -12,7 +12,7 @@ export function Header() {
         <Link
           href="/"
           aria-label="1Zero9 — home"
-          className="text-fg transition-colors hover:text-muted"
+          className="text-fg transition-colors hover:text-accent"
         >
           <Logo className="h-5 w-auto" />
         </Link>
@@ -22,7 +22,7 @@ export function Header() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="text-sm text-muted transition-colors hover:text-fg"
+                  className="text-sm text-muted transition-colors hover:text-accent"
                 >
                   {item.label}
                 </Link>
@@ -35,7 +35,7 @@ export function Header() {
               <ButtonLink
                 href="/contact"
                 variant="ghost"
-                className="px-3 py-1.5 hover:border-accent/60"
+                className="px-3 py-1.5"
               >
                 say hello
               </ButtonLink>

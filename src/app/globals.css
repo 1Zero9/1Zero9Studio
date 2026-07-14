@@ -62,8 +62,12 @@
   }
 
   ::selection {
-    background-color: var(--fg);
+    background-color: var(--accent);
     color: var(--bg);
+  }
+
+  [data-theme="light"] ::selection {
+    color: var(--surface);
   }
 
   :focus-visible {

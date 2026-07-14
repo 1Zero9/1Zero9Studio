@@ -4,7 +4,7 @@ const variants = {
   primary:
     "bg-fg text-bg hover:bg-muted focus-visible:bg-muted",
   ghost:
-    "border border-border text-fg hover:border-faint focus-visible:border-faint",
+    "border border-border text-fg hover:border-accent/60 focus-visible:border-accent/60",
 } as const;
 
 const base =

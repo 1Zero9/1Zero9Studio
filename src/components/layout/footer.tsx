@@ -11,7 +11,7 @@ export function Footer() {
           <Link
             href="/"
             aria-label="1Zero9 — home"
-            className="text-muted transition-colors hover:text-fg"
+            className="text-muted transition-colors hover:text-accent"
           >
             <Logo className="h-5 w-auto" />
           </Link>
@@ -32,8 +32,8 @@ export function Footer() {
         </div>
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-xs text-faint">
-            © {new Date().getFullYear()} {site.author.name} · signal over
-            noise
+            © {new Date().getFullYear()} {site.author.name} ·{" "}
+            <span className="text-accent">signal</span> over noise
           </p>
           <span className="flex items-center gap-6">
             <Link

@@ -6,7 +6,7 @@ export function TextLink({ className = "", ...props }: TextLinkProps) {
   return (
     <Link
       {...props}
-      className={`underline decoration-faint underline-offset-4 transition-colors hover:decoration-fg ${className}`}
+      className={`underline decoration-accent/50 underline-offset-4 transition-colors hover:decoration-accent ${className}`}
     />
   );
 }
