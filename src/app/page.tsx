@@ -60,7 +60,7 @@ export default async function Home() {
           aria-hidden="true"
           className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[36rem]"
         />
-        <Container className="relative pt-16 pb-10 sm:pt-20">
+        <Container className="relative pt-16 sm:pt-20">
           <LogoReveal className="h-20 w-auto sm:h-32" />
           <p className="mt-10 font-mono text-sm tracking-wide text-muted">
             {site.author.name} · 1Zero9
@@ -69,7 +69,10 @@ export default async function Home() {
             Bespoke AI systems and software, built around{" "}
             <em className="text-accent">your</em> problem.
           </h1>
-          <p className="mt-6 max-w-2xl text-xl text-fg">
+        </Container>
+        <SignalLine className="relative my-2 sm:my-4" />
+        <Container className="relative pb-10">
+          <p className="mt-4 max-w-2xl text-xl text-fg">
             One person, start to finish — from the first conversation to
             something live and maintained. No handoffs between departments,
             no template with your logo on it.
@@ -96,7 +99,6 @@ export default async function Home() {
             </ButtonLink>
           </div>
         </Container>
-        <SignalLine className="relative" />
       </div>
 
       <Container className="pt-20 pb-28">
