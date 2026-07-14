@@ -24,10 +24,12 @@ type Params = { slug: string };
 
 export default async function AdminProjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<Params>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
-  const { slug } = await params;
+  const [{ slug }, { saved }] = await Promise.all([params, searchParams]);
   const project = getProject(slug);
   if (!project) notFound();
 
@@ -40,8 +42,16 @@ export default async function AdminProjectPage({
   return (
     <div>
       <TextLink href="/admin">back to projects</TextLink>
-      <h1 className="mt-4 font-display text-3xl tracking-tight">{project.title}</h1>
+      <div className="mt-4 flex items-center justify-between">
+        <h1 className="font-display text-3xl tracking-tight">{project.title}</h1>
+        <TextLink href={`/admin/projects/${slug}/edit`}>edit case study</TextLink>
+      </div>
       <Meta className="mt-1">{project.slug}</Meta>
+      {saved && (
+        <p className="mt-4 rounded-md border border-border p-3 text-sm text-muted" role="status">
+          Changes committed — live on the site in ~2–3 minutes.
+        </p>
+      )}
 
       <section className="mt-10">
         <h2 className="font-mono text-xs tracking-wide text-faint">screenshots</h2>
