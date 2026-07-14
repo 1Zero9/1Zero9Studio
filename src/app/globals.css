@@ -143,7 +143,7 @@
  */
 @keyframes signal-pulse {
   0% {
-    stroke-dashoffset: 0.14;
+    stroke-dashoffset: 0.05;
   }
   20% {
     stroke-dashoffset: -1;
@@ -154,8 +154,8 @@
 }
 
 @utility animate-signal-pulse {
-  stroke-dasharray: 0.14 1;
-  stroke-dashoffset: 0.14;
+  stroke-dasharray: 0.05 1;
+  stroke-dashoffset: 0.05;
   filter: drop-shadow(0 0 6px var(--accent));
   animation: signal-pulse 12s cubic-bezier(0.4, 0, 0.6, 1) 2.2s infinite;
 }
