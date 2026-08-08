@@ -128,6 +128,44 @@
 .kinetic-hero__orbit--one { width: 30vw; aspect-ratio: 1; right: 8%; top: 4%; transform: translate(var(--mx), var(--my)); }
 .kinetic-hero__orbit--two { width: 13vw; aspect-ratio: 1; right: 24%; top: 24%; transform: translate(var(--mx), var(--my)); }
 
+/* Motion — scroll reveal + pointer glow -------------------------------- */
+.reveal { transition: opacity 760ms cubic-bezier(.2,.8,.2,1) var(--reveal-delay, 0ms), transform 760ms cubic-bezier(.2,.8,.2,1) var(--reveal-delay, 0ms); }
+.reveal.is-hidden { opacity: 0; transform: translateY(2.75rem); }
+
+.has-glow { position: relative; isolation: isolate; }
+.has-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: var(--glow-blend, soft-light);
+  background: radial-gradient(38rem circle at var(--gx, 50%) var(--gy, 30%), var(--glow-color, rgba(255,255,255,0.5)), transparent 62%);
+  transition: opacity 320ms ease;
+}
+.has-glow:hover::after { opacity: 1; }
+.has-glow--dark { --glow-color: rgba(255,255,255,0.55); --glow-blend: soft-light; }
+.has-glow--light { --glow-color: rgba(21,21,16,0.32); --glow-blend: multiply; }
+.has-glow--accent { --glow-color: rgba(255,255,255,0.6); --glow-blend: soft-light; }
+@media (hover: none) { .has-glow::after { display: none; } }
+
+/* Press feedback on the big clickable cards ----------------------------- */
+.project-chapter, .more-work__list a, .work-browser__list a, .notes-page__list a, .story-next, .work-browser__preview {
+  transition-property: transform, padding, color, background;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(.2,.8,.2,1);
+}
+.project-chapter:active, .more-work__list a:active, .work-browser__list a:active, .notes-page__list a:active, .story-next:active, .work-browser__preview:active {
+  transform: scale(0.985);
+}
+.folio-footer__cta, .maker-page__links a, .elsewhere-strip a, .kinetic-hero__foot a {
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+.folio-footer__cta:active, .maker-page__links a:active, .elsewhere-strip a:active, .kinetic-hero__foot a:active {
+  transform: scale(0.97);
+}
+
 .elsewhere-strip { padding: clamp(4.5rem, 8vw, 7.5rem) 3.25vw; background: var(--bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .elsewhere-strip > p { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
 .elsewhere-strip h2 { max-width: 46rem; margin-top: 1.4rem; font-size: clamp(1.7rem, 3.1vw, 2.75rem); line-height: 1.18; letter-spacing: -0.03em; font-weight: 560; }

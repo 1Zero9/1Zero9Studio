@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
+import { Reveal } from "@/components/motion/reveal";
 import { createMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -12,18 +13,18 @@ export const metadata = createMetadata({
 export default function AboutPage() {
   return (
     <Container className="maker-page">
-      <header className="maker-page__hero">
+      <Reveal as="header" className="maker-page__hero">
         <p>About / Stephen Cranfield</p>
         <h1>I like taking an idea all the way to <span>working software.</span></h1>
-      </header>
+      </Reveal>
 
       <div className="maker-page__grid">
-        <aside>
+        <Reveal as="aside">
           <p>Based in Dublin</p>
           <p>Designing since curiosity</p>
           <p>Building at 1Zero9</p>
-        </aside>
-        <div className="maker-page__copy">
+        </Reveal>
+        <Reveal as="div" className="maker-page__copy" delay={80}>
           <p className="maker-page__lead">
             I’m Stephen. 1Zero9 is my workshop and public record of the things I
             design, build, test and learn from.
@@ -57,7 +58,7 @@ export default function AboutPage() {
             <Link href="/writing">Read the notes ↗</Link>
             <a href={`mailto:${site.author.email}`}>Email me ↗</a>
           </div>
-        </div>
+        </Reveal>
       </div>
     </Container>
   );

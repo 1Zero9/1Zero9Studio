@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Reveal } from "@/components/motion/reveal";
 
 export type WorkPreview = {
   slug: string;
@@ -27,12 +28,14 @@ export function WorkIndex({ projects }: { projects: WorkPreview[] }) {
     <div className="work-browser" style={{ "--work-accent": active.accent } as React.CSSProperties}>
       <div className="work-browser__list">
         {projects.map((project, index) => (
-          <Link
+          <Reveal
             key={project.slug}
+            as={Link}
             href={`/projects/${project.slug}`}
             onPointerEnter={() => setActiveSlug(project.slug)}
             onFocus={() => setActiveSlug(project.slug)}
             className={project.slug === active.slug ? "is-active" : ""}
+            delay={index * 40}
           >
             <span>{String(index + 1).padStart(2, "0")}</span>
             <strong>{project.title}</strong>
@@ -47,7 +50,7 @@ export function WorkIndex({ projects }: { projects: WorkPreview[] }) {
                 className="work-browser__mobile-image"
               />
             )}
-          </Link>
+          </Reveal>
         ))}
       </div>
       <Link href={`/projects/${active.slug}`} className="work-browser__preview" aria-label={`View ${active.title}`}>

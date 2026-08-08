@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { KineticHero } from "@/components/portfolio/kinetic-hero";
+import { Reveal, RevealLink } from "@/components/motion/reveal";
 import { allProjects, featuredProjects } from "@/lib/content";
 
 const kindLabel = { app: "App", website: "Website", experiment: "Experiment" };
@@ -13,27 +14,28 @@ export default function Home() {
     <>
       <KineticHero />
 
-      <section className="elsewhere-strip">
+      <Reveal as="section" className="elsewhere-strip" glow="light">
         <p>Elsewhere</p>
         <h2>I lead governance, security and AI enablement work in enterprise IT. Here, I build the tools myself.</h2>
         <Link href="/about">More about the day job <span aria-hidden="true">↗</span></Link>
-      </section>
+      </Reveal>
 
-      <section className="work-overture" id="work">
+      <Reveal as="section" className="work-overture" id="work" glow="dark">
         <p>Things I’ve made</p>
         <h2>
           Every project starts with a small itch—<em>something that could work better,</em>
           something I want to understand, or something that simply ought to exist.
         </h2>
-      </section>
+      </Reveal>
 
       <div className="project-chapters">
         {featured.map((project, index) => (
-          <Link
+          <RevealLink
             key={project.slug}
             href={`/projects/${project.slug}`}
             className={`project-chapter project-chapter--${(index % 5) + 1}`}
             style={{ "--project": project.accent } as React.CSSProperties}
+            glow="light"
           >
             <div className="project-chapter__number">{String(index + 1).padStart(2, "0")}</div>
             <div className="project-chapter__title">
@@ -59,29 +61,29 @@ export default function Home() {
               <span>Open the project ↗</span>
             </div>
             <div className="project-chapter__word" aria-hidden="true">{project.kind}</div>
-          </Link>
+          </RevealLink>
         ))}
       </div>
 
-      <section className="more-work">
+      <Reveal as="section" className="more-work" glow="light">
         <div className="more-work__intro">
           <p>Also in the workshop</p>
           <h2>More products, sites and experiments.</h2>
         </div>
         <div className="more-work__list">
-          {more.map((project) => (
-            <Link key={project.slug} href={`/projects/${project.slug}`}>
+          {more.map((project, index) => (
+            <RevealLink key={project.slug} href={`/projects/${project.slug}`} delay={index * 45}>
               <span style={{ backgroundColor: project.accent }} aria-hidden="true" />
               <strong>{project.title}</strong>
               <small>{kindLabel[project.kind]} / {project.year}</small>
               <b aria-hidden="true">↗</b>
-            </Link>
+            </RevealLink>
           ))}
         </div>
         <Link href="/projects" className="more-work__all">The complete project index <span>↗</span></Link>
-      </section>
+      </Reveal>
 
-      <section className="maker-statement">
+      <Reveal as="section" className="maker-statement" glow="light">
         <p>Behind 1Zero9</p>
         <h2>I’m Stephen. I make the idea, the interface and the thing underneath it.</h2>
         <div>
@@ -91,7 +93,7 @@ export default function Home() {
           </p>
           <Link href="/about">A little more about me ↗</Link>
         </div>
-      </section>
+      </Reveal>
     </>
   );
 }

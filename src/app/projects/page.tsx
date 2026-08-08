@@ -1,4 +1,5 @@
 import { WorkIndex, type WorkPreview } from "@/components/portfolio/work-index";
+import { Reveal } from "@/components/motion/reveal";
 import { allProjects } from "@/lib/content";
 import { createMetadata } from "@/lib/metadata";
 
@@ -22,11 +23,11 @@ export default function ProjectsPage() {
 
   return (
     <div className="work-page">
-      <header className="work-page__hero">
+      <Reveal as="header" className="work-page__hero">
         <p>Project index / {projects.length} things so far</p>
         <h1>Made from curiosity.<br /><em>Finished with intent.</em></h1>
         <span>Move through the list to explore ↓</span>
-      </header>
+      </Reveal>
       <WorkIndex projects={projects} />
     </div>
   );
