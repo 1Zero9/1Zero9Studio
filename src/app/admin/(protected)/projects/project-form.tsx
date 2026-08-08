@@ -10,6 +10,8 @@ export type ProjectFormDefaults = {
   date?: string;
   updated?: string;
   tags?: string[];
+  kind?: "app" | "website" | "experiment";
+  accent?: string;
   status?: string;
   order?: number;
   url?: string;
@@ -135,6 +137,32 @@ export function ProjectForm({
           />
         </Field>
 
+        <Field label="project type" hint="Controls where the project appears in the portfolio.">
+          <select
+            name="kind"
+            defaultValue={defaults.kind ?? "app"}
+            className={inputClass}
+          >
+            <option value="app">app</option>
+            <option value="website">website</option>
+            <option value="experiment">experiment</option>
+          </select>
+        </Field>
+
+        <Field label="project colour" hint="Used for the card, project page and interactions.">
+          <div className="flex gap-2">
+            <input
+              type="color"
+              name="accent"
+              defaultValue={defaults.accent ?? "#ff6b3d"}
+              className="h-10 w-12 rounded-md border border-border bg-surface p-1"
+            />
+            <span className="flex items-center font-mono text-xs text-faint">
+              visual identity
+            </span>
+          </div>
+        </Field>
+
         <Field label="status">
           <select
             name="status"
@@ -203,12 +231,11 @@ export function ProjectForm({
       </label>
 
       <Field
-        label="case study body (markdown)"
-        hint="Markdown with ## headings, lists and **bold** — same format as the existing case studies."
+        label="project story (optional for quick publish)"
+        hint="Leave blank to publish from the summary now. You can return later to add the full story with ## headings, lists and **bold** text."
       >
         <textarea
           name="body"
-          required
           rows={22}
           defaultValue={defaults.body}
           className={`${inputClass} font-mono text-xs leading-relaxed`}

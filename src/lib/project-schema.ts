@@ -19,6 +19,11 @@ export const projectFrontmatterSchema = z
     date: isoDate,
     updated: isoDate.optional(),
     tags: z.array(kebabTag).default([]),
+    kind: z.enum(["app", "website", "experiment"]).default("app"),
+    accent: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex colour")
+      .default("#ff6b3d"),
     status: z.enum(["featured", "active", "archived"]).default("active"),
     cover: z.string().optional(),
     coverAlt: z.string().optional(),

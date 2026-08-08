@@ -74,6 +74,8 @@ export function serializeProjectFile(
     "date",
     "updated",
     "tags",
+    "kind",
+    "accent",
     "status",
     "order",
     "url",

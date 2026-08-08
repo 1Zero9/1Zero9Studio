@@ -16,24 +16,23 @@ export default function ColophonPage() {
       <div className="mt-12">
         <Prose>
           <p>
-            This site is its own first case study. It was rebuilt from
-            scratch in July 2026 — the entire previous site was archived to
-            git history, and only the logo survived.
+            This site is the working index of 1Zero9: a place for products,
+            websites and experiments to live together without pretending to be
+            a traditional agency catalogue. The logo is the one element carried
+            across every version.
           </p>
           <h2>Concept</h2>
           <p>
-            The mark is a single continuous line drawing &ldquo;109&rdquo; as
-            a waveform. The site follows the same idea: signal over noise. A
-            near-monochrome palette, one accent used only to carry
-            information, and typography doing the work decoration usually
-            pretends to do.
+            The mark is a single continuous line drawing &ldquo;109&rdquo; as a
+            waveform. The site treats that signal as an active system: a grid,
+            status lights, project-specific colour and interfaces that respond
+            as the work is explored.
           </p>
           <h2>Type</h2>
           <p>
-            Headings are set in Fraunces, body text in Inter, and metadata in
-            JetBrains Mono — all variable fonts, self-hosted at build time
-            via <code>next/font</code>, so no third-party requests and no
-            layout shift.
+            The display and body type is Inter, with JetBrains Mono reserved
+            for labels and project metadata. Both are loaded at build time via
+            <code>next/font</code>.
           </p>
           <h2>Stack</h2>
           <ul>

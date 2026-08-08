@@ -12,8 +12,7 @@ export function parseProjectForm(formData: FormData): ParsedProjectForm {
   const text = (name: string) => String(formData.get(name) ?? "").trim();
   const optional = (name: string) => text(name) || undefined;
 
-  const body = String(formData.get("body") ?? "").replace(/\r\n/g, "\n").trim();
-  if (!body) return { ok: false, error: "The case study body is required." };
+  const submittedBody = String(formData.get("body") ?? "").replace(/\r\n/g, "\n").trim();
 
   const coverFileValue = formData.get("coverFile");
   const coverFile =
@@ -32,6 +31,8 @@ export function parseProjectForm(formData: FormData): ParsedProjectForm {
       .split(",")
       .map((tag) => tag.trim())
       .filter(Boolean),
+    kind: text("kind") || "app",
+    accent: text("accent") || "#ff6b3d",
     status: text("status") || "active",
     order: orderText ? Number(orderText) : undefined,
     url: optional("url"),
@@ -48,6 +49,7 @@ export function parseProjectForm(formData: FormData): ParsedProjectForm {
     return { ok: false, error: issues };
   }
 
+  const body = submittedBody || `## The idea\n\n${parsed.data.summary}`;
   return { ok: true, frontmatter: parsed.data, body, coverFile };
 }
 
