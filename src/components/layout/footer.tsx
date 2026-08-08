@@ -1,60 +1,24 @@
 import Link from "next/link";
-import { site } from "@/lib/site";
 import { Logo } from "@/components/brand/logo";
 import { Container } from "@/components/layout/container";
+import { site } from "@/lib/site";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border">
-      <Container className="py-12">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            aria-label="1Zero9 — home"
-            className="text-muted transition-colors hover:text-accent"
-          >
-            <Logo className="h-5 w-auto" />
-          </Link>
-          <nav aria-label="Footer">
-            <ul className="flex items-center gap-6">
-              {site.nav.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="text-sm text-muted transition-colors hover:text-fg"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+    <footer className="site-footer">
+      <Container>
+        <div className="site-footer__headline">
+          <Logo className="h-10 w-auto" />
+          <p>Have an idea worth making real?</p>
+          <a href={`mailto:${site.author.email}`}>Start a conversation ↗</a>
         </div>
-        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-xs text-faint">
-            © {new Date().getFullYear()} {site.author.name} ·{" "}
-            <span className="text-accent">signal</span> over noise
-          </p>
-          <span className="flex items-center gap-6">
-            <Link
-              href="/colophon"
-              className="font-mono text-xs text-muted transition-colors hover:text-fg"
-            >
-              colophon
-            </Link>
-            <a
-              href="/feed.xml"
-              className="font-mono text-xs text-muted transition-colors hover:text-fg"
-            >
-              rss
-            </a>
-            <a
-              href={`mailto:${site.author.email}`}
-              className="font-mono text-xs text-muted transition-colors hover:text-fg"
-            >
-              {site.author.email}
-            </a>
-          </span>
+        <div className="site-footer__base">
+          <p>© {new Date().getFullYear()} Stephen Cranfield · Dublin</p>
+          <nav aria-label="Footer navigation">
+            {site.nav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+            <Link href="/colophon">Colophon</Link>
+          </nav>
+          <p>Ideas → interfaces → working products</p>
         </div>
       </Container>
     </footer>

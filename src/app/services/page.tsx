@@ -1,149 +1,43 @@
+import Link from "next/link";
 import { Container } from "@/components/layout/container";
-import { TextLink } from "@/components/ui/text-link";
 import { createMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
-  title: "Services",
-  description:
-    "Bespoke AI systems and custom software, built around a real problem — not a generic tool or a template.",
+  title: "Working together",
+  description: "A short note on working with Stephen Cranfield.",
   path: "/services",
 });
 
-const engagements = [
-  {
-    name: "Foundation",
-    tagline: "A real presence, built for you",
-    desc: "A clean, custom-designed site — the right starting point when a business needs more than a template with its logo swapped in. Content, structure, and copy built around how the business actually talks to its customers.",
-  },
-  {
-    name: "Growth",
-    tagline: "A platform that does work for you",
-    desc: "Bookings, enquiries, content that updates itself, integrations with the tools already in use. For a business that's outgrown a brochure site and needs the site to actually run part of the operation.",
-  },
-  {
-    name: "Bespoke Platform",
-    tagline: "Custom-built, end to end",
-    desc: "A real application: accounts, a proper database, custom logic, third-party integrations, an AI system where one earns its place. Built the way software should be built when off-the-shelf doesn't fit.",
-  },
-];
-
-const steps = [
-  {
-    name: "The conversation",
-    desc: "You describe the problem in plain language — no spec required. That's usually enough to tell whether I'm the right fit.",
-  },
-  {
-    name: "Shape & scope",
-    desc: "The engagement gets scoped and priced against your specific project — what gets built, and what it costs. No fixed packages.",
-  },
-  {
-    name: "The build",
-    desc: "One person accountable for the whole thing. You talk directly to the person writing the code, the entire way through.",
-  },
-  {
-    name: "Live & maintained",
-    desc: "It ships, and it stays looked after — not handed off and forgotten the day it goes live.",
-  },
-];
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="mb-10 flex items-center gap-3 font-mono text-xs tracking-wide text-faint">
-      <span aria-hidden="true" className="inline-block h-px w-8 bg-accent" />
-      {children}
-    </h2>
-  );
-}
-
 export default function ServicesPage() {
   return (
-    <Container className="py-16">
-      <h1 className="max-w-3xl font-display text-4xl tracking-tight sm:text-5xl">
-        Software built around your problem, not the other way around.
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg text-muted">
-        A lot of &ldquo;AI-powered&rdquo; services on the market are the same
-        wrapper around the same model, sold to everyone. 1Zero9 builds the
-        thing your business actually needs — sometimes that includes AI,
-        sometimes it&apos;s a well-built platform with none — and takes it from
-        first conversation to something live and maintained.
-      </p>
-
-      <div className="mt-20">
-        <SectionLabel>
-          <span>how I engage</span>
-        </SectionLabel>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {engagements.map((e) => (
-            <div key={e.name} className="rounded-md border border-border p-6">
-              <p className="font-display text-xl tracking-tight">{e.name}</p>
-              <p className="mt-1 font-mono text-xs tracking-wide text-faint">
-                {e.tagline}
-              </p>
-              <p className="mt-4 text-sm text-muted">{e.desc}</p>
-            </div>
-          ))}
+    <Container className="maker-page">
+      <header className="maker-page__hero">
+        <p>Working together</p>
+        <h1>Good collaborations start with an <span>interesting problem.</span></h1>
+      </header>
+      <div className="maker-page__grid">
+        <aside><p>No fixed packages</p><p>Direct collaboration</p><p>Idea to launch</p></aside>
+        <div className="maker-page__copy">
+          <p className="maker-page__lead">
+            This is a portfolio, not a catalogue of services. But I do work with
+            people when the idea and the fit are right.
+          </p>
+          <p>
+            That might mean shaping and building a product, creating a website
+            that does more than sit online, or exploring a useful application of
+            AI. I work directly across the idea, interface and implementation.
+          </p>
+          <p>
+            The best way to understand how I work is through the projects. The
+            best way to start a conversation is simply to tell me what you’re
+            thinking about.
+          </p>
+          <div className="maker-page__links">
+            <Link href="/projects">See the work ↗</Link>
+            <a href={`mailto:${site.author.email}`}>Start a conversation ↗</a>
+          </div>
         </div>
-        <p className="mt-6 max-w-2xl text-sm text-faint">
-          These are shapes, not fixed packages — every engagement gets scoped
-          and priced against the specific project once we&apos;ve talked it
-          through.
-        </p>
-      </div>
-
-      <div className="mt-20">
-        <SectionLabel>
-          <span>how I work</span>
-        </SectionLabel>
-        <div className="max-w-2xl space-y-6 text-fg">
-          <p>
-            One person, accountable for the whole build — not a project
-            handed between departments. You talk to the person actually
-            writing the code, from the first call to the thing going live.
-          </p>
-          <p>
-            Every engagement starts with understanding the actual problem,
-            not pitching a pre-built solution. If the right answer is a
-            simple site and no AI at all, that&apos;s what gets built.
-          </p>
-          <p>
-            The <TextLink href="/projects">projects</TextLink> section is the
-            honest record of that: real builds, the decisions behind them,
-            and what they taught me.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-20">
-        <SectionLabel>
-          <span>what happens next</span>
-        </SectionLabel>
-        <ol className="grid gap-6 sm:grid-cols-4">
-          {steps.map((step, i) => (
-            <li key={step.name}>
-              <p className="font-mono text-xs tracking-wide text-accent">
-                {String(i + 1).padStart(2, "0")}
-              </p>
-              <p className="mt-2 font-display text-lg tracking-tight">
-                {step.name}
-              </p>
-              <p className="mt-2 text-sm text-muted">{step.desc}</p>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      <div className="mt-20 border-t border-border pt-16">
-        <p className="max-w-3xl font-display text-3xl leading-snug tracking-tight sm:text-4xl">
-          Have a project in mind?{" "}
-          <a
-            href={`mailto:${site.author.email}`}
-            className="underline decoration-accent underline-offset-8 transition-colors hover:text-muted"
-          >
-            Say hello.
-          </a>
-        </p>
       </div>
     </Container>
   );

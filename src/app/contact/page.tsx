@@ -1,47 +1,33 @@
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
-import { Meta } from "@/components/ui/meta";
 import { createMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
   title: "Contact",
-  description: "Get in touch about a project — email is the fastest way to reach me.",
+  description: "Get in touch with Stephen Cranfield.",
   path: "/contact",
 });
 
 export default function ContactPage() {
   return (
-    <Container className="py-16">
-      <h1 className="font-display text-4xl tracking-tight">contact</h1>
-
-      <div className="mt-12 flex max-w-prose flex-col gap-6">
-        <p className="max-w-2xl font-display text-3xl leading-snug tracking-tight sm:text-4xl">
-          Building something interesting?{" "}
-          <a
-            href={`mailto:${site.author.email}`}
-            className="underline decoration-accent underline-offset-8 transition-colors hover:text-muted"
-          >
-            Say hello.
+    <Container className="maker-page">
+      <header className="maker-page__hero">
+        <p>Contact / Dublin</p>
+        <h1>Have an idea you can’t stop <span>thinking about?</span></h1>
+      </header>
+      <div className="maker-page__grid">
+        <aside><p>The inbox is open</p></aside>
+        <div className="maker-page__copy">
+          <p className="maker-page__lead">
+            Tell me what it is, who it’s for, and why you think it should exist.
+          </p>
+          <a className="maker-page__email" href={`mailto:${site.author.email}`}>
+            {site.author.email} ↗
           </a>
-        </p>
-        <p className="text-fg">
-          Tell me a bit about the problem you&apos;re solving and where
-          you are with it — that&apos;s usually enough to start a real
-          conversation.
-        </p>
+          <div className="maker-page__links"><Link href="/projects">See what I’ve made ↗</Link></div>
+        </div>
       </div>
-
-      <Meta className="mt-16">
-        want the longer version first? see{" "}
-        <Link href="/about" className="underline underline-offset-4">
-          about
-        </Link>{" "}
-        or{" "}
-        <Link href="/services" className="underline underline-offset-4">
-          services
-        </Link>
-      </Meta>
     </Container>
   );
 }

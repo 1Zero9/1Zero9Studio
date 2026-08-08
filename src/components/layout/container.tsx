@@ -1,12 +1,13 @@
 export function Container({
   children,
   className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+  ...props
+}: React.ComponentProps<"div">) {
   return (
-    <div className={`mx-auto w-full max-w-5xl px-6 sm:px-8 ${className}`}>
+    <div
+      {...props}
+      className={`mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12 ${className}`}
+    >
       {children}
     </div>
   );

@@ -1,247 +1,130 @@
 import Link from "next/link";
 import { LogoReveal } from "@/components/brand/logo-reveal";
-import { ButtonLink } from "@/components/ui/button";
-import { SignalLine } from "@/components/brand/signal-line";
 import { Container } from "@/components/layout/container";
-import { Meta } from "@/components/ui/meta";
-import { ProjectCard } from "@/components/ui/project-card";
-import { Tag } from "@/components/ui/tag";
-import { TextLink } from "@/components/ui/text-link";
 import {
-  allProjects,
-  allWriting,
-  featuredProjects,
-  getProject,
-  getPublishedTestimonials,
-  getSiteCopy,
-} from "@/lib/content";
-import { site } from "@/lib/site";
+  ProjectExplorer,
+  ProjectStage,
+  type ProjectPreview,
+} from "@/components/portfolio/project-explorer";
+import { allProjects, featuredProjects } from "@/lib/content";
 
-export const revalidate = 3600;
+function preview(project: (typeof allProjects)[number]): ProjectPreview {
+  return {
+    slug: project.slug,
+    title: project.title,
+    summary: project.summary,
+    year: project.year,
+    kind: project.kind,
+    accent: project.accent,
+    cover: project.cover,
+    coverAlt: project.coverAlt,
+    tags: project.tags,
+    status: project.status,
+  };
+}
 
-const capabilities = ["ai systems", "automation", "security", "web platforms"];
-
-const engagements = [
-  {
-    name: "Foundation",
-    desc: "A clean, custom-built presence — the right first step when the business needs a real site, not a template with your logo on it.",
-  },
-  {
-    name: "Growth",
-    desc: "A working platform: content, bookings, integrations. For a business that's outgrown what a website builder can do.",
-  },
-  {
-    name: "Bespoke Platform",
-    desc: "A custom AI system or application built around a specific problem — accounts, data, logic, integrations. The kind of thing generic tools can't do.",
-  },
-];
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionIntro({ index, eyebrow, title }: { index: string; eyebrow: string; title: string }) {
   return (
-    <h2 className="mb-10 flex items-center gap-3 font-mono text-xs tracking-wide text-faint">
-      <span aria-hidden="true" className="inline-block h-px w-8 bg-accent" />
-      {children}
-    </h2>
+    <div className="section-intro">
+      <p><span>{index}</span>{eyebrow}</p>
+      <h2>{title}</h2>
+    </div>
   );
 }
 
-export default async function Home() {
-  const featured = featuredProjects();
-  const latestWriting = allWriting.slice(0, 3);
-  const [audience, testimonials] = await Promise.all([
-    getSiteCopy("home.audience"),
-    getPublishedTestimonials(),
-  ]);
+export default function Home() {
+  const projects = allProjects.map(preview);
+  const selected = featuredProjects().slice(0, 4).map(preview);
 
   return (
     <>
-      <div className="relative">
-        <div
-          aria-hidden="true"
-          className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[36rem]"
-        />
-        <Container className="relative pt-16 sm:pt-20">
-          <LogoReveal className="h-20 w-auto sm:h-32" />
-          <h1 className="mt-10 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
-            Bespoke AI systems and software, built around{" "}
-            <em className="text-accent">your</em> problem.
-          </h1>
-        </Container>
-        <SignalLine className="relative my-2 sm:my-4" />
-        <Container className="relative pb-10">
-          <p className="mt-4 max-w-2xl text-xl text-fg">
-            One person, start to finish — from the first conversation to
-            something live and maintained. No handoffs between departments,
-            no template with your logo on it.
-          </p>
-          <p className="mt-4 max-w-2xl text-lg text-muted">
-            {allProjects.length} real projects shipped — for sport, security,
-            healthcare and education — each told honestly: the problem, the
-            build, and what it taught me.
-          </p>
-          {audience && (
-            <p className="mt-4 max-w-2xl text-lg text-muted">{audience}</p>
-          )}
-          <ul className="mt-8 flex flex-wrap items-center gap-2">
-            {capabilities.map((capability) => (
-              <li key={capability}>
-                <Tag>{capability}</Tag>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <ButtonLink href="/contact">start a conversation</ButtonLink>
-            <ButtonLink href="/projects" variant="ghost">
-              see the work
-            </ButtonLink>
+      <section className="home-hero">
+        <Container className="relative">
+          <div className="home-hero__status">
+            <span aria-hidden="true" />
+            Independent maker · Dublin, Ireland
           </div>
-        </Container>
-      </div>
 
-      <Container className="pt-20 pb-28">
-        <section aria-labelledby="engagements">
-          <SectionLabel>
-            <span id="engagements">how I engage</span>
-          </SectionLabel>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {engagements.map((e) => (
-              <Link
-                key={e.name}
-                href="/services"
-                className="group flex flex-col rounded-md border border-border p-5 transition-colors hover:border-accent/60"
-              >
-                <p className="font-display text-lg tracking-tight">{e.name}</p>
-                <p className="mt-2 flex-1 text-sm text-muted">{e.desc}</p>
-                <Meta className="mt-4 flex items-center justify-between">
-                  <span>how it works</span>
-                  <span
-                    aria-hidden="true"
-                    className="transition-all group-hover:translate-x-1 group-hover:text-accent"
-                  >
-                    &rarr;
-                  </span>
-                </Meta>
-              </Link>
-            ))}
+          <div className="home-hero__mark" aria-hidden="true">
+            <LogoReveal className="h-auto w-full" />
           </div>
-          <p className="mt-10 text-sm">
-            <TextLink href="/services">full breakdown of how I work</TextLink>
-          </p>
-        </section>
-      </Container>
 
-      <Container className="pb-28">
-        <section aria-labelledby="selected-work">
-          <SectionLabel>
-            <span id="selected-work">selected work</span>
-          </SectionLabel>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {featured.map((project, i) => (
-              <ProjectCard
-                key={project.slug}
-                project={project}
-                lead={i === 0 && featured.length % 2 === 1}
-              />
-            ))}
-          </div>
-          <p className="mt-10 text-sm">
-            <TextLink href="/projects">
-              all projects ({allProjects.length})
-            </TextLink>
-          </p>
-        </section>
-      </Container>
-
-      {testimonials.length > 0 && (
-        <Container className="pb-28">
-          <section aria-labelledby="testimonials">
-            <SectionLabel>
-              <span id="testimonials">what clients say</span>
-            </SectionLabel>
-            <div className="grid gap-6 sm:grid-cols-2">
-              {testimonials.map((t) => {
-                const project = t.projectSlug ? getProject(t.projectSlug) : null;
-                return (
-                  <figure
-                    key={t.id}
-                    className="flex flex-col rounded-md border border-border p-6"
-                  >
-                    <blockquote className="flex-1 font-display text-xl leading-snug tracking-tight sm:text-2xl">
-                      &ldquo;{t.quote}&rdquo;
-                    </blockquote>
-                    <figcaption className="mt-5">
-                      <Meta>
-                        {t.author}
-                        {t.role ? ` · ${t.role}` : ""}
-                        {project && (
-                          <>
-                            {" · "}
-                            <Link
-                              href={`/projects/${project.slug}`}
-                              className="underline underline-offset-4 hover:text-fg"
-                            >
-                              {project.title}
-                            </Link>
-                          </>
-                        )}
-                      </Meta>
-                    </figcaption>
-                  </figure>
-                );
-              })}
+          <div className="home-hero__copy">
+            <p className="home-hero__kicker">Stephen Cranfield / 1Zero9</p>
+            <h1>
+              Ideas, designed into <em>working things.</em>
+            </h1>
+            <div className="home-hero__support">
+              <p>
+                I design and build apps, digital products and websites—turning
+                ideas into useful, finished experiences from first sketch to launch.
+              </p>
+              <div>
+                <Link href="#selected-work">Explore the work <span>↓</span></Link>
+                <Link href="/about">More about me <span>↗</span></Link>
+              </div>
             </div>
-          </section>
-        </Container>
-      )}
+          </div>
 
-      {latestWriting.length > 0 && (
-        <Container className="pb-28">
-          <section aria-labelledby="writing">
-            <SectionLabel>
-              <span id="writing">writing</span>
-            </SectionLabel>
-            <ul>
-              {latestWriting.map((post) => (
-                <li key={post.slug} className="border-t border-border">
-                  <Link
-                    href={`/writing/${post.slug}`}
-                    className="group flex flex-col gap-1 py-6 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-                  >
-                    <span className="font-display text-xl tracking-tight transition-colors group-hover:text-muted sm:text-2xl">
-                      {post.title}
-                    </span>
-                    <Meta>{post.date}</Meta>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-10 text-sm">
-              <TextLink href="/writing">all writing</TextLink>
-            </p>
-          </section>
+          <div className="home-hero__signal" aria-hidden="true">
+            <span /><i /><b /><i /><span />
+          </div>
         </Container>
-      )}
+      </section>
 
-      <Container className="pb-32">
-        <section aria-labelledby="contact">
-          <SectionLabel>
-            <span id="contact">contact</span>
-          </SectionLabel>
-          <p className="max-w-3xl font-display text-3xl leading-snug tracking-tight sm:text-4xl">
-            Building something interesting?{" "}
-            <a
-              href={`mailto:${site.author.email}`}
-              className="underline decoration-accent underline-offset-8 transition-colors hover:text-muted"
-            >
-              Say hello.
-            </a>
+      <Container className="portfolio-section" id="selected-work">
+        <SectionIntro
+          index="01"
+          eyebrow="Selected work"
+          title="Made to be used, not just looked at."
+        />
+        <ProjectStage projects={selected} />
+      </Container>
+
+      <section className="manifesto-band">
+        <Container>
+          <p className="manifesto-band__label">The practice</p>
+          <p className="manifesto-band__statement">
+            One person across the entire product: <span>idea</span>, interaction,
+            identity, code and the last ten percent that makes it feel finished.
           </p>
-          <p className="mt-6 max-w-2xl text-muted">
-            Tell me a bit about the problem you&apos;re solving and where you
-            are with it — that&apos;s usually enough to start a real
-            conversation.
+          <div className="manifesto-band__steps" aria-label="My process">
+            {["Find the useful idea", "Shape the experience", "Build the real thing", "Learn and improve"].map((step, index) => (
+              <div key={step}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <p>{step}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      <Container className="portfolio-section">
+        <SectionIntro
+          index="02"
+          eyebrow="Project index"
+          title="Apps, websites and useful experiments."
+        />
+        <ProjectExplorer projects={projects} />
+      </Container>
+
+      <Container className="home-about">
+        <div className="home-about__label">About the maker</div>
+        <div>
+          <p className="home-about__lead">
+            I’m Stephen. I’m interested in the whole journey from “what if?” to
+            something people can actually open, understand and use.
           </p>
-        </section>
+          <p className="home-about__body">
+            1Zero9 is where I collect that work—the personal products, client
+            websites, experiments and lessons that come from making them real.
+          </p>
+          <div className="home-about__links">
+            <Link href="/about">My approach ↗</Link>
+            <Link href="/writing">Build notes ↗</Link>
+            <a href="mailto:onezeronine@gmail.com">Say hello ↗</a>
+          </div>
+        </div>
       </Container>
     </>
   );
