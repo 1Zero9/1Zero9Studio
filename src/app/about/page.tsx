@@ -29,6 +29,13 @@ export default function AboutPage() {
             design, build, test and learn from.
           </p>
           <p>
+            Alongside 1Zero9, I work in enterprise governance, security and AI
+            enablement — helping large organisations adopt AI responsibly and
+            turning ambiguous, high-risk areas into structured, workable
+            practice. This site is where that same instinct plays out
+            hands-on: building the thing, not just governing it.
+          </p>
+          <p>
             My projects often begin as small questions: could household jobs be
             shared more fairly? Could a personal media guide learn someone’s
             taste? Could security teams get the value of generative AI without

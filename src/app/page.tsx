@@ -13,6 +13,12 @@ export default function Home() {
     <>
       <KineticHero />
 
+      <section className="elsewhere-strip">
+        <p>Elsewhere</p>
+        <h2>I lead governance, security and AI enablement work in enterprise IT. Here, I build the tools myself.</h2>
+        <Link href="/about">More about the day job <span aria-hidden="true">↗</span></Link>
+      </section>
+
       <section className="work-overture" id="work">
         <p>Things I’ve made</p>
         <h2>
