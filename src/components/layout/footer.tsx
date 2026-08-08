@@ -1,26 +1,24 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { Container } from "@/components/layout/container";
-import { site } from "@/lib/site";
 
 export function Footer() {
   return (
-    <footer className="site-footer">
-      <Container>
-        <div className="site-footer__headline">
-          <Logo className="h-10 w-auto" />
-          <p>Have an idea worth making real?</p>
-          <a href={`mailto:${site.author.email}`}>Start a conversation ↗</a>
-        </div>
-        <div className="site-footer__base">
-          <p>© {new Date().getFullYear()} Stephen Cranfield · Dublin</p>
-          <nav aria-label="Footer navigation">
-            {site.nav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
-            <Link href="/colophon">Colophon</Link>
-          </nav>
-          <p>Ideas → interfaces → working products</p>
-        </div>
-      </Container>
+    <footer className="folio-footer">
+      <div className="folio-footer__mark"><Logo title="" /></div>
+      <p className="folio-footer__eyebrow">One more idea?</p>
+      <a href="mailto:onezeronine@gmail.com" className="folio-footer__cta">
+        Let’s make it real.<span>↗</span>
+      </a>
+      <div className="folio-footer__base">
+        <p>Stephen Cranfield · Dublin · {new Date().getFullYear()}</p>
+        <nav aria-label="Footer navigation">
+          <Link href="/projects">Work</Link>
+          <Link href="/about">About</Link>
+          <Link href="/writing">Notes</Link>
+          <Link href="/colophon">Colophon</Link>
+        </nav>
+        <p>Designed and built at 1Zero9</p>
+      </div>
     </footer>
   );
 }
