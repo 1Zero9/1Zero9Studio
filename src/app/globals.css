@@ -3,7 +3,7 @@
 
 :root {
   color-scheme: light;
-  --bg: #dfe4de;
+  --bg: #ffffff;
   --surface: #f8faf7;
   --border: #afb8b1;
   --fg: #111318;
@@ -17,7 +17,7 @@
 
 [data-theme="light"], [data-theme="dark"] {
   color-scheme: light;
-  --bg: #dfe4de;
+  --bg: #ffffff;
   --surface: #f8faf7;
   --border: #afb8b1;
   --fg: #111318;
@@ -423,7 +423,7 @@
 .folio-header nav { align-self: stretch; justify-self: end; gap: 0; }
 .folio-header nav a { display: grid; min-width: 5.5rem; height: 100%; place-items: center; padding: 0 1rem; border-left: 1px solid #343943; }
 .folio-header nav a::after { display: none; }
-.folio-header nav a:hover { background: var(--signal); }
+.folio-header nav a:hover { background: var(--signal); color: var(--fg); }
 .folio-header__hello { display: grid; align-self: stretch; min-width: 7rem; place-items: center; justify-self: stretch; background: var(--signal); color: var(--fg); }
 .folio-header__hello:hover { background: var(--accent); color: #fff; }
 .reveal { transition-property: transform, clip-path; clip-path: inset(0); }
@@ -544,7 +544,7 @@
 .portfolio-project__meta p { font-family: var(--font-mono); font-size: 0.57rem; color: var(--muted); }
 .portfolio-project__meta h3 { margin-top: 0.35rem; font-size: clamp(1.5rem, 2.4vw, 2.35rem); line-height: 1.05; letter-spacing: -0.045em; }
 .portfolio-project__meta > span { color: var(--project); font-size: 1.35rem; transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
-.portfolio-project:hover { background: color-mix(in oklab, var(--project) 7%, var(--surface)); }
+.portfolio-project:hover { background: var(--signal); }
 .portfolio-project:hover .portfolio-project__meta > span { transform: translate(0.2rem, -0.2rem); }
 .portfolio-project__summary { max-width: 39rem; margin-top: 1rem; font-size: 0.9rem; line-height: 1.6; color: var(--muted); }
 
@@ -565,12 +565,14 @@
 .work-group__header h2 { margin-top: 0.5rem; font-size: clamp(2.8rem, 4.6vw, 4.8rem); line-height: 0.95; letter-spacing: -0.06em; }
 .work-group__header > p { max-width: 25rem; padding-bottom: 0.5rem; line-height: 1.6; color: var(--muted); }
 .work-group__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(2rem, 3vw, 3.5rem); margin-top: 3rem; }
-.work-card { display: block; }
+.work-card { display: block; padding: 1rem; background: transparent; transition: background 240ms ease; }
 .work-card__image { aspect-ratio: 8 / 5; }
 .work-card__title { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-top: 1.25rem; }
 .work-card__title h3 { font-size: clamp(1.5rem, 2.4vw, 2.5rem); line-height: 1; letter-spacing: -0.05em; }
-.work-card__title span { font-family: var(--font-mono); font-size: 0.55rem; color: var(--muted); }
+.work-card__title span { font-family: var(--font-mono); font-size: 0.55rem; color: var(--muted); transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
 .work-card > p { margin-top: 0.8rem; font-size: 0.84rem; line-height: 1.55; color: var(--muted); }
+.work-card:hover { background: var(--signal); }
+.work-card:hover .work-card__title span { transform: translate(0.2rem, -0.2rem); }
 
 /* Keep the case studies expressive, but no longer oversized. */
 .story-hero { min-height: auto; padding-inline: var(--portfolio-gutter); }
