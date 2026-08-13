@@ -25,7 +25,7 @@ export default function ProjectsPage() {
     <div className="work-page">
       <Reveal as="header" className="work-page__hero">
         <p>Project index · {projects.length} projects</p>
-        <h1>Work designed,<br /><em>built and shipped.</em></h1>
+        <h1>A record of things<br /><em>I’ve made.</em></h1>
         <span>Websites · PWA Apps · Apps</span>
       </Reveal>
       <WorkIndex projects={projects} />

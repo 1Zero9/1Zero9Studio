@@ -63,11 +63,11 @@ export default function Home() {
       <Reveal as="section" className="portfolio-context">
         <p className="portfolio-eyebrow">What this work shows</p>
         <div>
-          <h2>From the first question to the thing people can use.</h2>
+          <h2>The work covers product thinking, interface design and development.</h2>
           <p>
-            I work across product thinking, UX, visual design and development. These
-            are independently made projects—not concepts—and each case study explains
-            the problem, decisions and build behind the finished work.
+            These are independently made projects rather than visual concepts. Each
+            case study records the problem, the choices I made and how the finished
+            product was built.
           </p>
         </div>
       </Reveal>
@@ -75,7 +75,7 @@ export default function Home() {
       <section className="portfolio-work" id="work">
         <Reveal as="header" className="portfolio-work__header">
           <p className="portfolio-eyebrow">Selected work</p>
-          <h2>Three kinds of work.<br />One end-to-end approach.</h2>
+          <h2>Websites, PWA apps<br />and software.</h2>
         </Reveal>
 
         <nav className="portfolio-categories" aria-label="Project categories">
@@ -125,7 +125,7 @@ export default function Home() {
 
       <Reveal as="section" className="portfolio-close">
         <p className="portfolio-eyebrow">Beyond the side projects</p>
-        <h2>I bring the same curiosity to governance, security and AI enablement in enterprise IT.</h2>
+        <h2>By day, I work in governance, security and AI enablement in enterprise IT.</h2>
         <Link href="/about">More about how I work <span aria-hidden="true">↗</span></Link>
       </Reveal>
     </>
