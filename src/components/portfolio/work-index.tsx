@@ -1,74 +1,70 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { Reveal } from "@/components/motion/reveal";
+import { Reveal, RevealLink } from "@/components/motion/reveal";
 
 export type WorkPreview = {
   slug: string;
   title: string;
   summary: string;
-  kind: "app" | "website" | "experiment";
+  kind: "app" | "pwa" | "website";
   year: string;
   accent: string;
   cover?: string;
   coverAlt?: string;
 };
 
-const label = { app: "App", website: "Website", experiment: "Experiment" };
+const groups = [
+  { kind: "website" as const, label: "Websites", note: "Audience-first sites with a clear job to do." },
+  { kind: "pwa" as const, label: "PWA Apps", note: "Installable products built with the reach of the web." },
+  { kind: "app" as const, label: "Apps", note: "Useful software, tools and product experiments." },
+];
 
 export function WorkIndex({ projects }: { projects: WorkPreview[] }) {
-  const [activeSlug, setActiveSlug] = useState(projects[0]?.slug ?? "");
-  const active = projects.find((project) => project.slug === activeSlug) ?? projects[0];
-
-  if (!active) return null;
-
   return (
-    <div className="work-browser" style={{ "--work-accent": active.accent } as React.CSSProperties}>
-      <div className="work-browser__list">
-        {projects.map((project, index) => (
-          <Reveal
-            key={project.slug}
-            as={Link}
-            href={`/projects/${project.slug}`}
-            onPointerEnter={() => setActiveSlug(project.slug)}
-            onFocus={() => setActiveSlug(project.slug)}
-            className={project.slug === active.slug ? "is-active" : ""}
-            delay={index * 40}
-          >
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{project.title}</strong>
-            <small>{label[project.kind]} / {project.year}</small>
-            <b aria-hidden="true">↗</b>
-            {project.cover && (
-              <Image
-                src={project.cover}
-                alt=""
-                width={800}
-                height={500}
-                className="work-browser__mobile-image"
-              />
-            )}
-          </Reveal>
-        ))}
-      </div>
-      <Link href={`/projects/${active.slug}`} className="work-browser__preview" aria-label={`View ${active.title}`}>
-        {active.cover ? (
-          <Image
-            key={active.cover}
-            src={active.cover}
-            alt={active.coverAlt ?? ""}
-            width={1600}
-            height={1000}
-            sizes="45vw"
-            className="work-browser__preview-image"
-          />
-        ) : (
-          <span>{active.title.charAt(0)}</span>
-        )}
-        <p>{active.summary}</p>
-      </Link>
+    <div className="work-groups">
+      {groups.map((group) => {
+        const groupProjects = projects.filter((project) => project.kind === group.kind);
+        return (
+          <section className="work-group" id={group.kind} key={group.kind}>
+            <Reveal as="header" className="work-group__header">
+              <div>
+                <p>{String(groupProjects.length).padStart(2, "0")} projects</p>
+                <h2>{group.label}</h2>
+              </div>
+              <p>{group.note}</p>
+            </Reveal>
+            <div className="work-group__grid">
+              {groupProjects.map((project, index) => (
+                <RevealLink
+                  href={`/projects/${project.slug}`}
+                  className="work-card"
+                  style={{ "--project": project.accent } as React.CSSProperties}
+                  key={project.slug}
+                  delay={index * 45}
+                >
+                  <div className="work-card__image">
+                    {project.cover ? (
+                      <Image
+                        src={project.cover}
+                        alt={project.coverAlt ?? ""}
+                        width={1000}
+                        height={625}
+                        sizes="(min-width: 1000px) 31vw, (min-width: 640px) 48vw, 100vw"
+                      />
+                    ) : (
+                      <span aria-hidden="true">{project.title.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className="work-card__title">
+                    <h3>{project.title}</h3>
+                    <span>{project.year} ↗</span>
+                  </div>
+                  <p>{project.summary}</p>
+                </RevealLink>
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

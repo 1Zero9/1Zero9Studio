@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return createMetadata({ title: project.title, description: project.summary, path: `/projects/${slug}` });
 }
 
-const kindLabel = { app: "App", website: "Website", experiment: "Experiment" };
+const kindLabel = { app: "App", pwa: "PWA App", website: "Website" };
 
 export default async function ProjectPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;

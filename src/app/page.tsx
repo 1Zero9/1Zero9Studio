@@ -2,97 +2,131 @@ import Image from "next/image";
 import Link from "next/link";
 import { KineticHero } from "@/components/portfolio/kinetic-hero";
 import { Reveal, RevealLink } from "@/components/motion/reveal";
-import { allProjects, featuredProjects } from "@/lib/content";
+import { allProjects, type Project } from "@/lib/content";
 
-const kindLabel = { app: "App", website: "Website", experiment: "Experiment" };
+const categories = [
+  {
+    kind: "website" as const,
+    label: "Websites",
+    description: "Clear, responsive sites built around a real audience and a real outcome.",
+  },
+  {
+    kind: "pwa" as const,
+    label: "PWA Apps",
+    description: "Installable web products that bring app-like utility to any device.",
+  },
+  {
+    kind: "app" as const,
+    label: "Apps",
+    description: "Purpose-built tools, product experiments and end-to-end software.",
+  },
+];
+
+function ProjectTile({ project, priority = false }: { project: Project; priority?: boolean }) {
+  return (
+    <Link
+      href={`/projects/${project.slug}`}
+      className="portfolio-project"
+      style={{ "--project": project.accent } as React.CSSProperties}
+    >
+      <div className="portfolio-project__image">
+        {project.cover ? (
+          <Image
+            src={project.cover}
+            alt={project.coverAlt ?? ""}
+            width={1200}
+            height={750}
+            sizes="(min-width: 900px) 46vw, 100vw"
+            priority={priority}
+          />
+        ) : (
+          <span aria-hidden="true">{project.title.charAt(0)}</span>
+        )}
+      </div>
+      <div className="portfolio-project__meta">
+        <div>
+          <p>{project.year}</p>
+          <h3>{project.title}</h3>
+        </div>
+        <span aria-hidden="true">↗</span>
+      </div>
+      <p className="portfolio-project__summary">{project.summary}</p>
+    </Link>
+  );
+}
 
 export default function Home() {
-  const featured = featuredProjects().slice(0, 5);
-  const more = allProjects.filter((project) => !featured.some((item) => item.slug === project.slug));
-
   return (
     <>
       <KineticHero />
 
-      <Reveal as="section" className="elsewhere-strip" glow="light">
-        <p>Elsewhere</p>
-        <h2>I lead governance, security and AI enablement work in enterprise IT. Here, I build the tools myself.</h2>
-        <Link href="/about">More about the day job <span aria-hidden="true">↗</span></Link>
-      </Reveal>
-
-      <Reveal as="section" className="work-overture" id="work" glow="dark">
-        <p>Things I’ve made</p>
-        <h2>
-          Every project starts with a small itch—<em>something that could work better,</em>
-          something I want to understand, or something that simply ought to exist.
-        </h2>
-      </Reveal>
-
-      <div className="project-chapters">
-        {featured.map((project, index) => (
-          <RevealLink
-            key={project.slug}
-            href={`/projects/${project.slug}`}
-            className={`project-chapter project-chapter--${(index % 5) + 1}`}
-            style={{ "--project": project.accent } as React.CSSProperties}
-            glow="light"
-          >
-            <div className="project-chapter__number">{String(index + 1).padStart(2, "0")}</div>
-            <div className="project-chapter__title">
-              <p>{kindLabel[project.kind]} · {project.year}</p>
-              <h2>{project.title}</h2>
-            </div>
-            <div className="project-chapter__visual">
-              {project.cover ? (
-                <Image
-                  src={project.cover}
-                  alt={project.coverAlt ?? ""}
-                  width={1600}
-                  height={1000}
-                  sizes="(min-width: 900px) 68vw, 100vw"
-                  priority={index === 0}
-                />
-              ) : (
-                <span>{project.title.charAt(0)}</span>
-              )}
-            </div>
-            <div className="project-chapter__summary">
-              <p>{project.summary}</p>
-              <span>Open the project ↗</span>
-            </div>
-            <div className="project-chapter__word" aria-hidden="true">{project.kind}</div>
-          </RevealLink>
-        ))}
-      </div>
-
-      <Reveal as="section" className="more-work" glow="light">
-        <div className="more-work__intro">
-          <p>Also in the workshop</p>
-          <h2>More products, sites and experiments.</h2>
-        </div>
-        <div className="more-work__list">
-          {more.map((project, index) => (
-            <RevealLink key={project.slug} href={`/projects/${project.slug}`} delay={index * 45}>
-              <span style={{ backgroundColor: project.accent }} aria-hidden="true" />
-              <strong>{project.title}</strong>
-              <small>{kindLabel[project.kind]} / {project.year}</small>
-              <b aria-hidden="true">↗</b>
-            </RevealLink>
-          ))}
-        </div>
-        <Link href="/projects" className="more-work__all">The complete project index <span>↗</span></Link>
-      </Reveal>
-
-      <Reveal as="section" className="maker-statement" glow="light">
-        <p>Behind 1Zero9</p>
-        <h2>I’m Stephen. I make the idea, the interface and the thing underneath it.</h2>
+      <Reveal as="section" className="portfolio-context">
+        <p className="portfolio-eyebrow">What this work shows</p>
         <div>
+          <h2>From the first question to the thing people can use.</h2>
           <p>
-            I care about the entire path from a half-formed thought to a product
-            someone can actually use. This portfolio is the record of that process.
+            I work across product thinking, UX, visual design and development. These
+            are independently made projects—not concepts—and each case study explains
+            the problem, decisions and build behind the finished work.
           </p>
-          <Link href="/about">A little more about me ↗</Link>
         </div>
+      </Reveal>
+
+      <section className="portfolio-work" id="work">
+        <Reveal as="header" className="portfolio-work__header">
+          <p className="portfolio-eyebrow">Selected work</p>
+          <h2>Three kinds of work.<br />One end-to-end approach.</h2>
+        </Reveal>
+
+        <nav className="portfolio-categories" aria-label="Project categories">
+          {categories.map((category, index) => {
+            const count = allProjects.filter((project) => project.kind === category.kind).length;
+            return (
+              <RevealLink
+                href={`#${category.kind}`}
+                key={category.kind}
+                delay={index * 60}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{category.label}</strong>
+                <p>{category.description}</p>
+                <small>{count} {count === 1 ? "project" : "projects"}</small>
+              </RevealLink>
+            );
+          })}
+        </nav>
+
+        <div className="portfolio-groups">
+          {categories.map((category) => {
+            const projects = allProjects
+              .filter((project) => project.kind === category.kind)
+              .sort((a, b) => (a.order ?? 99) - (b.order ?? 99))
+              .slice(0, 2);
+
+            return (
+              <Reveal as="section" className="portfolio-group" id={category.kind} key={category.kind}>
+                <header className="portfolio-group__header">
+                  <div>
+                    <p className="portfolio-eyebrow">{category.label}</p>
+                    <h2>{category.description}</h2>
+                  </div>
+                  <Link href={`/projects#${category.kind}`}>View all <span aria-hidden="true">↗</span></Link>
+                </header>
+                <div className="portfolio-group__grid">
+                  {projects.map((project, index) => (
+                    <ProjectTile key={project.slug} project={project} priority={category.kind === "website" && index === 0} />
+                  ))}
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      <Reveal as="section" className="portfolio-close">
+        <p className="portfolio-eyebrow">Beyond the side projects</p>
+        <h2>I bring the same curiosity to governance, security and AI enablement in enterprise IT.</h2>
+        <Link href="/about">More about how I work <span aria-hidden="true">↗</span></Link>
       </Reveal>
     </>
   );

@@ -5,7 +5,7 @@ import { createMetadata } from "@/lib/metadata";
 
 export const metadata = createMetadata({
   title: "Work",
-  description: "Apps, websites and experiments imagined, designed and built by Stephen Cranfield.",
+  description: "Websites, progressive web apps and software imagined, designed and built by Stephen Cranfield.",
   path: "/projects",
 });
 
@@ -24,9 +24,9 @@ export default function ProjectsPage() {
   return (
     <div className="work-page">
       <Reveal as="header" className="work-page__hero">
-        <p>Project index / {projects.length} things so far</p>
-        <h1>Made from curiosity.<br /><em>Finished with intent.</em></h1>
-        <span>Move through the list to explore ↓</span>
+        <p>Project index · {projects.length} projects</p>
+        <h1>Work designed,<br /><em>built and shipped.</em></h1>
+        <span>Websites · PWA Apps · Apps</span>
       </Reveal>
       <WorkIndex projects={projects} />
     </div>

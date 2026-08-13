@@ -4,7 +4,7 @@ import { createMetadata } from "@/lib/metadata";
 
 export const metadata = createMetadata({
   title: "Notes",
-  description: "Notes from making products, websites and experiments.",
+  description: "Notes from making products, websites and software.",
   path: "/writing",
 });
 

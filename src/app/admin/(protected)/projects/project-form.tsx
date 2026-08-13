@@ -10,7 +10,7 @@ export type ProjectFormDefaults = {
   date?: string;
   updated?: string;
   tags?: string[];
-  kind?: "app" | "website" | "experiment";
+  kind?: "app" | "pwa" | "website";
   accent?: string;
   status?: string;
   order?: number;
@@ -143,9 +143,9 @@ export function ProjectForm({
             defaultValue={defaults.kind ?? "app"}
             className={inputClass}
           >
-            <option value="app">app</option>
             <option value="website">website</option>
-            <option value="experiment">experiment</option>
+            <option value="pwa">PWA app</option>
+            <option value="app">app</option>
           </select>
         </Field>
 

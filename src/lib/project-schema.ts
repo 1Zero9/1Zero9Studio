@@ -19,7 +19,7 @@ export const projectFrontmatterSchema = z
     date: isoDate,
     updated: isoDate.optional(),
     tags: z.array(kebabTag).default([]),
-    kind: z.enum(["app", "website", "experiment"]).default("app"),
+    kind: z.enum(["app", "pwa", "website"]).default("app"),
     accent: z
       .string()
       .regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex colour")
