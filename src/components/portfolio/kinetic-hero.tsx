@@ -5,13 +5,13 @@ export function KineticHero() {
   return (
     <section className="portfolio-hero">
       <div className="portfolio-hero__copy">
-        <p className="portfolio-eyebrow">Stephen Cranfield · Independent work</p>
+        <p className="portfolio-eyebrow">Stephen Cranfield · Technology leader</p>
         <h1>
-          Websites and apps I <em>design and build.</em>
+          I lead technology—and <em>still build things myself.</em>
         </h1>
         <p className="portfolio-hero__intro">
-          A selection of independent projects made outside my work in enterprise
-          IT—from small websites to installable products and software tools.
+          By day, I work across governance, security and AI enablement in enterprise
+          IT. Outside work, I design and build websites, PWAs and apps from idea to launch.
         </p>
         <div className="portfolio-hero__actions">
           <Link href="#work">Explore the work <span aria-hidden="true">↓</span></Link>
