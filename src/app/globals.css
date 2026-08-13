@@ -691,12 +691,91 @@
 }
 
 @media (max-width: 600px) {
-  .portfolio-hero h1 { font-size: clamp(3.4rem, 17vw, 5.4rem); }
-  .portfolio-context { gap: 2.5rem; }
+  .folio-header,
+  .portfolio-hero,
+  .portfolio-context,
+  .portfolio-work,
+  .portfolio-close,
+  .folio-footer { width: calc(100% - 1.5rem); }
+
+  .folio-header { min-height: 4rem; margin-top: 0.75rem; }
+  .folio-header__brand { padding-inline: 0.9rem; }
+  .folio-header__brand svg { height: 1.7rem; }
+  .folio-header__hello { min-width: 5.75rem; font-size: 0.68rem; }
+
+  .portfolio-hero__copy { padding: 3rem 1.25rem 3.25rem; }
+  .portfolio-hero h1 { max-width: none; margin-top: 1rem; font-size: clamp(2.75rem, 13vw, 3.7rem); line-height: 0.98; letter-spacing: -0.06em; }
+  .portfolio-hero__intro { margin-top: 1.5rem; font-size: 0.94rem; line-height: 1.55; }
+  .portfolio-hero__actions { gap: 1rem 1.75rem; margin-top: 1.75rem; }
+  .portfolio-hero__actions a { gap: 1rem; }
+  .portfolio-hero__identity { min-height: 14rem; padding: 1.1rem; }
+  .portfolio-hero__identity svg { width: 64%; align-self: center; }
+  .portfolio-hero__identity::after { right: -4.5rem; bottom: -4.5rem; }
+
+  .portfolio-context { gap: 0; }
+  .portfolio-context__label { min-height: 6.5rem; padding: 1.1rem 1.25rem; }
+  .portfolio-context__label > span { font-size: 2rem; }
+  .portfolio-context__copy { padding: 2.5rem 1.25rem; }
+  .portfolio-context h2 { font-size: clamp(1.75rem, 8vw, 2.2rem); line-height: 1.1; }
+  .portfolio-context__copy > p { margin-top: 1.25rem; font-size: 0.9rem; }
+  .portfolio-context__facts div { min-height: 6rem; padding: 0.85rem; }
+  .portfolio-context__facts dd { font-size: 1.8rem; }
+
+  .portfolio-work { padding-block: 3.5rem; }
+  .portfolio-work__header { padding-inline: 1.25rem; }
   .portfolio-work__header h2,
-  .work-group__header h2 { font-size: clamp(3rem, 15vw, 5rem); }
-  .portfolio-group__header { gap: 2rem; }
-  .work-group__grid { grid-template-columns: 1fr; gap: 3.5rem; }
+  .work-group__header h2 { font-size: clamp(2.35rem, 11vw, 3.25rem); line-height: 1; }
+  .portfolio-categories { margin-top: 2.5rem; }
+  .portfolio-categories a { min-height: 9.5rem; padding: 1rem 1.25rem; }
+  .portfolio-categories strong { margin-top: 0.85rem; font-size: 1.6rem; }
+  .portfolio-categories p { margin-top: 0.55rem; font-size: 0.8rem; line-height: 1.45; }
+  .portfolio-categories small { bottom: 0.9rem; }
+  .portfolio-groups { margin-top: 4rem; }
+  .portfolio-group { padding-top: 2.75rem; }
+  .portfolio-group + .portfolio-group { margin-top: 4rem; }
+  .portfolio-group__header { gap: 1.5rem; margin-bottom: 2rem; padding-inline: 1.25rem; }
+  .portfolio-group__header h2 { font-size: 1.35rem; line-height: 1.25; }
+  .portfolio-project { padding: 0.8rem; }
+  .portfolio-project__image { aspect-ratio: 4 / 3; }
+  .portfolio-project__meta { margin-top: 1rem; }
+  .portfolio-project__meta h3 { font-size: 1.65rem; }
+  .portfolio-project__summary { margin-top: 0.7rem; font-size: 0.84rem; line-height: 1.5; }
+
+  .portfolio-close { padding: 3rem 1.25rem; }
+  .portfolio-close h2 { font-size: clamp(1.9rem, 9vw, 2.5rem); }
+  .portfolio-close a { margin-top: 2rem; }
+
+  .work-page { padding: 3.5rem 0.75rem 6rem; }
+  .work-page__hero h1 { font-size: clamp(2.9rem, 13vw, 4rem); line-height: 0.95; }
+  .work-page__hero > span { margin-top: 2rem; }
+  .work-groups { margin-top: 4rem; }
+  .work-group + .work-group { margin-top: 5rem; }
+  .work-group__header { gap: 1rem; }
+  .work-group__header h2 { font-size: clamp(2.5rem, 12vw, 3.6rem); }
+  .work-group__grid { grid-template-columns: 1fr; gap: 2.75rem; margin-top: 2rem; }
+
+  .story-hero { padding: 1.5rem 0.75rem 3rem; }
+  .story-hero__intro { gap: 1.5rem; margin-top: 3rem; }
+  .story-hero__intro h1 { font-size: clamp(2.8rem, 14vw, 4.2rem); line-height: 0.92; }
+  .story-hero__image { margin-top: 3rem; }
+  .story-hero__facts { grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 3rem; }
+  .story-body { gap: 2rem; padding: 4rem 0.75rem; }
+  .story-body__content .prose h2 { margin-top: 3rem; font-size: clamp(2.1rem, 10vw, 3.2rem); }
+  .story-gallery { gap: 1.5rem; padding: 4rem 0.75rem; }
+  .story-next { padding: 3rem 0.75rem; }
+
+  .maker-page,
+  .notes-page { padding-inline: 0.75rem; }
+  .maker-page__hero h1,
+  .notes-page h1 { font-size: clamp(2.8rem, 13vw, 4rem); line-height: 0.95; }
+
+  .folio-footer { margin-bottom: 0.75rem; }
+  .folio-footer__mark { min-height: 11rem; padding: 2.5rem; }
+  .folio-footer__mark svg { width: min(65%, 12rem); }
+  .folio-footer__eyebrow { padding: 1rem 1.25rem; }
+  .folio-footer__cta { min-height: 9rem; padding: 2rem 1.25rem; font-size: clamp(2.7rem, 13vw, 3.8rem); }
+  .folio-footer__base { padding: 1.1rem 1.25rem; }
+  .folio-footer__base nav { gap: 1rem; }
 }
 
 @keyframes signal-pulse {
