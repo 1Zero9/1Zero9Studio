@@ -61,8 +61,11 @@ export default function Home() {
       <KineticHero />
 
       <Reveal as="section" className="portfolio-context">
-        <p className="portfolio-eyebrow">What this work shows</p>
-        <div>
+        <div className="portfolio-context__label">
+          <p className="portfolio-eyebrow">What this work shows</p>
+          <span>02</span>
+        </div>
+        <div className="portfolio-context__copy">
           <h2>The work covers product thinking, interface design and development.</h2>
           <p>
             These are independently made projects rather than visual concepts. Each
@@ -70,11 +73,17 @@ export default function Home() {
             product was built.
           </p>
         </div>
+        <dl className="portfolio-context__facts">
+          <div><dt>Projects</dt><dd>{allProjects.length}</dd></div>
+          <div><dt>Websites</dt><dd>{allProjects.filter((project) => project.kind === "website").length}</dd></div>
+          <div><dt>PWA Apps</dt><dd>{allProjects.filter((project) => project.kind === "pwa").length}</dd></div>
+          <div><dt>Apps</dt><dd>{allProjects.filter((project) => project.kind === "app").length}</dd></div>
+        </dl>
       </Reveal>
 
       <section className="portfolio-work" id="work">
         <Reveal as="header" className="portfolio-work__header">
-          <p className="portfolio-eyebrow">Selected work</p>
+          <p className="portfolio-eyebrow">03 / Selected work</p>
           <h2>Websites, PWA apps<br />and software.</h2>
         </Reveal>
 
@@ -104,7 +113,7 @@ export default function Home() {
               .slice(0, 2);
 
             return (
-              <Reveal as="section" className="portfolio-group" id={category.kind} key={category.kind}>
+              <Reveal as="section" className={`portfolio-group portfolio-group--${category.kind}`} id={category.kind} key={category.kind}>
                 <header className="portfolio-group__header">
                   <div>
                     <p className="portfolio-eyebrow">{category.label}</p>
@@ -124,8 +133,8 @@ export default function Home() {
       </section>
 
       <Reveal as="section" className="portfolio-close">
-        <p className="portfolio-eyebrow">Beyond the side projects</p>
-        <h2>By day, I work in governance, security and AI enablement in enterprise IT.</h2>
+        <p className="portfolio-eyebrow">04 / Beyond the side projects</p>
+        <h2>By day, I work in governance, security and AI enablement within enterprise IT.</h2>
         <Link href="/about">More about how I work <span aria-hidden="true">↗</span></Link>
       </Reveal>
     </>

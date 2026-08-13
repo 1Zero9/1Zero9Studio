@@ -5,9 +5,9 @@ export function Footer() {
   return (
     <footer className="folio-footer">
       <div className="folio-footer__mark"><Logo title="" /></div>
-      <p className="folio-footer__eyebrow">One more idea?</p>
+      <p className="folio-footer__eyebrow">Interested in the work?</p>
       <a href="mailto:onezeronine@gmail.com" className="folio-footer__cta">
-        Let’s make it real.<span>↗</span>
+        Say hello.<span>↗</span>
       </a>
       <div className="folio-footer__base">
         <p>Stephen Cranfield · Dublin · {new Date().getFullYear()}</p>

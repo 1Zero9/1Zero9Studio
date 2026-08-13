@@ -20,8 +20,9 @@ export function KineticHero() {
       </div>
 
       <div className="portfolio-hero__identity">
+        <span>01 / Portfolio</span>
         <Logo title="1Zero9 Studio" />
-        <p>Product · interface · code</p>
+        <p>Product thinking<br />Interface design<br />Working software</p>
       </div>
     </section>
   );
