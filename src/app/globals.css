@@ -420,8 +420,8 @@
 .folio-header nav a:hover { background: var(--signal); }
 .folio-header__hello { display: grid; align-self: stretch; min-width: 7rem; place-items: center; justify-self: stretch; background: var(--accent); color: #fff; }
 .folio-header__hello:hover { background: var(--fg); }
-.reveal { transition-property: transform; }
-.reveal.is-hidden { opacity: 1; }
+.reveal { transition-property: transform, clip-path; clip-path: inset(0); }
+.reveal.is-hidden { opacity: 1; transform: translateY(1.5rem); clip-path: inset(0 0 8% 0); }
 
 .portfolio-eyebrow {
   font-family: var(--font-mono);
@@ -469,10 +469,10 @@
   font-size: 0.76rem;
   font-weight: 720;
 }
-.portfolio-hero__identity { position: relative; display: flex; min-height: 100%; flex-direction: column; justify-content: space-between; padding: 1.5rem; overflow: hidden; border-left: 1px solid var(--border); background: var(--accent); color: #fff; }
-.portfolio-hero__identity::after { content: ""; position: absolute; right: -4rem; bottom: -4rem; width: 10rem; aspect-ratio: 1; border-radius: 50%; background: var(--signal); }
+.portfolio-hero__identity { --hero-x: 0px; --hero-y: 0px; --signal-x: 0px; --signal-y: 0px; position: relative; display: flex; min-height: 100%; flex-direction: column; justify-content: space-between; padding: 1.5rem; overflow: hidden; border-left: 1px solid var(--border); background: var(--accent); color: #fff; }
+.portfolio-hero__identity::after { content: ""; position: absolute; right: -4rem; bottom: -4rem; width: 10rem; aspect-ratio: 1; border-radius: 50%; background: var(--signal); translate: var(--signal-x) var(--signal-y); scale: 1; transition: translate 180ms cubic-bezier(.2,.8,.2,1); animation: signal-pulse 6s ease-in-out infinite alternate; }
 .portfolio-hero__identity > span { font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; }
-.portfolio-hero__identity svg { position: relative; z-index: 1; width: 100%; height: auto; color: #fff; }
+.portfolio-hero__identity svg { position: relative; z-index: 1; width: 100%; height: auto; color: #fff; transform: translate(var(--hero-x), var(--hero-y)); transition: transform 180ms cubic-bezier(.2,.8,.2,1); }
 .portfolio-hero__identity p { position: relative; z-index: 1; font-family: var(--font-mono); font-size: 0.57rem; line-height: 1.8; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
 
 .portfolio-context {
@@ -499,15 +499,16 @@
 .portfolio-work__header { padding-inline: clamp(1.5rem, 4vw, 3.5rem); }
 .portfolio-work__header h2 { max-width: 18ch; margin-top: 1.25rem; font-size: clamp(2.8rem, 4.5vw, 4.8rem); line-height: 1; letter-spacing: -0.06em; font-weight: 650; }
 .portfolio-categories { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: clamp(3.5rem, 5vw, 5rem); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.portfolio-categories a { position: relative; min-height: 13rem; padding: 1.25rem 1.5rem; transition: background 180ms ease; }
+.portfolio-categories a { position: relative; min-height: 13rem; padding: 1.25rem 1.5rem; transition: background 220ms ease; }
 .portfolio-categories a + a { border-left: 1px solid var(--border); }
 .portfolio-categories span,
 .portfolio-categories small { font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.portfolio-categories strong { display: block; margin-top: 1.6rem; font-size: clamp(1.6rem, 2.4vw, 2.4rem); letter-spacing: -0.045em; }
+.portfolio-categories strong { display: block; margin-top: 1.6rem; font-size: clamp(1.6rem, 2.4vw, 2.4rem); letter-spacing: -0.045em; transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
 .portfolio-categories p { max-width: 23rem; margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.55; color: var(--muted); }
 .portfolio-categories small { position: absolute; bottom: 1.25rem; }
 .portfolio-categories a:hover { background: var(--signal); color: var(--fg); }
 .portfolio-categories a:hover strong { color: var(--fg); }
+.portfolio-categories a:hover strong { transform: translateX(0.35rem); }
 
 .portfolio-groups { margin-top: clamp(5rem, 8vw, 8rem); }
 .portfolio-group { scroll-margin-top: 2rem; padding-top: clamp(3.5rem, 5vw, 5rem); border-top: 1px solid var(--border); }
@@ -515,7 +516,7 @@
 .portfolio-group__header { display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: end; margin-bottom: 2.5rem; padding-inline: clamp(1.5rem, 4vw, 3.5rem); }
 .portfolio-group__header h2 { max-width: 34rem; margin-top: 0.7rem; font-size: clamp(1.4rem, 2.2vw, 2.15rem); line-height: 1.25; letter-spacing: -0.035em; font-weight: 550; }
 .portfolio-group__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--border); }
-.portfolio-project { display: block; grid-column: span 5; padding: 1.25rem; background: var(--surface); }
+.portfolio-project { display: block; grid-column: span 5; padding: 1.25rem; background: var(--surface); transition: background 240ms ease; }
 .portfolio-project:first-child { grid-column: span 7; }
 .portfolio-group--pwa .portfolio-project:only-child { grid-column: span 12; display: grid; grid-template-columns: 1.45fr 0.55fr; column-gap: 2rem; }
 .portfolio-group--pwa .portfolio-project:only-child .portfolio-project__image { grid-row: 1 / 4; }
@@ -533,7 +534,9 @@
 .portfolio-project__meta { display: flex; justify-content: space-between; gap: 2rem; align-items: flex-start; margin-top: 1.4rem; }
 .portfolio-project__meta p { font-family: var(--font-mono); font-size: 0.57rem; color: var(--muted); }
 .portfolio-project__meta h3 { margin-top: 0.35rem; font-size: clamp(1.5rem, 2.4vw, 2.35rem); line-height: 1.05; letter-spacing: -0.045em; }
-.portfolio-project__meta > span { color: var(--project); font-size: 1.35rem; }
+.portfolio-project__meta > span { color: var(--project); font-size: 1.35rem; transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
+.portfolio-project:hover { background: color-mix(in oklab, var(--project) 7%, var(--surface)); }
+.portfolio-project:hover .portfolio-project__meta > span { transform: translate(0.2rem, -0.2rem); }
 .portfolio-project__summary { max-width: 39rem; margin-top: 1rem; font-size: 0.9rem; line-height: 1.6; color: var(--muted); }
 
 .portfolio-close { width: min(70rem, calc(100% - 2.5rem)); margin: -1px auto 0; padding: clamp(4rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3.5rem); border: 1px solid var(--border); background: var(--fg); color: #fff; }
@@ -601,7 +604,10 @@
   transform: none;
 }
 .folio-footer__mark::after { content: ""; position: absolute; top: -3.5rem; left: -3.5rem; width: 9rem; aspect-ratio: 1; border-radius: 50%; background: var(--signal); }
-.folio-footer__mark svg { position: relative; z-index: 1; width: min(100%, 18rem); }
+.folio-footer__mark svg { position: relative; z-index: 1; width: min(100%, 18rem); transition: transform 600ms cubic-bezier(.2,.8,.2,1); }
+.folio-footer__mark::after { translate: 0 0; scale: 1; transition: translate 500ms cubic-bezier(.2,.8,.2,1), scale 500ms cubic-bezier(.2,.8,.2,1); }
+.folio-footer__mark:hover svg { transform: scale(1.045) rotate(-1.5deg); }
+.folio-footer__mark:hover::after { translate: 1.25rem 1rem; scale: 1.08; }
 .folio-footer__eyebrow { grid-column: 2; grid-row: 1; padding: 1.5rem; border-bottom: 1px solid var(--border); color: var(--muted); }
 .folio-footer__cta {
   display: flex;
@@ -621,6 +627,8 @@
 .folio-footer__cta > span { color: var(--fg); }
 .folio-footer__cta b { color: var(--accent); font-size: 0.5em; font-weight: 500; }
 .folio-footer__cta:hover > span { color: var(--accent); }
+.folio-footer__cta b { transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
+.folio-footer__cta:hover b { transform: translate(0.3rem, -0.3rem); }
 .folio-footer__base {
   position: static;
   display: grid;
@@ -679,4 +687,17 @@
   .work-group__header h2 { font-size: clamp(3rem, 15vw, 5rem); }
   .portfolio-group__header { gap: 2rem; }
   .work-group__grid { grid-template-columns: 1fr; gap: 3.5rem; }
+}
+
+@keyframes signal-pulse {
+  from { scale: 0.94; }
+  to { scale: 1.08; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { clip-path: none; }
+  .reveal.is-hidden { transform: none; }
+  .portfolio-hero__identity::after { animation: none; }
+  .portfolio-hero__identity svg,
+  .portfolio-hero__identity::after { transform: none; translate: 0 0; }
 }
