@@ -12,7 +12,7 @@ export function Footer() {
               <span>1Zero9 Studio</span>
             </h3>
             <p>
-              Product thinking, interface design, and working software by Stephen Cranfield. Based in Dublin, building for the open web.
+              Product thinking, interface design, and working software. Based in Dublin, building for the open web.
             </p>
           </div>
 
@@ -21,7 +21,7 @@ export function Footer() {
               <span className="site-footer__nav-title">Navigation</span>
               <Link href="/projects" className="site-footer__nav-link">Selected Work</Link>
               <Link href="/#labs" className="site-footer__nav-link">Active Labs</Link>
-              <Link href="/about" className="site-footer__nav-link">About Stephen</Link>
+              <Link href="/about" className="site-footer__nav-link">About</Link>
               <Link href="/writing" className="site-footer__nav-link">Notes & Writing</Link>
             </div>
 
@@ -36,7 +36,7 @@ export function Footer() {
         </div>
 
         <div className="site-footer__bottom">
-          <p>© {new Date().getFullYear()} 1Zero9 Studio · Stephen Cranfield · Dublin, Ireland</p>
+          <p>© {new Date().getFullYear()} 1Zero9 Studio · Dublin, Ireland</p>
           <div className="flex items-center gap-4">
             <span className="font-mono text-xs text-muted">Designed & Built at 1Zero9</span>
           </div>
