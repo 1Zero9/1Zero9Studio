@@ -47,10 +47,10 @@ export function labsProjects() {
       project.tags.includes("experiment") ||
       project.kind === "experiment" ||
       project.kind === "tool" ||
+      project.slug === "swgoh" ||
       project.slug === "prompt-builder" ||
       project.slug === "jobjar" ||
-      project.slug === "holiday-concierge" ||
-      project.slug === "territory-war",
+      project.slug === "holiday-concierge",
   );
 }
 

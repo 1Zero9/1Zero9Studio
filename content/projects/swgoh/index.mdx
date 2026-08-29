@@ -1,0 +1,45 @@
+---
+title: "SWGOH Operations & Territory War"
+summary: "A comprehensive tactical guild platform for Star Wars Galaxy of Heroes — real-time Territory War battlefield coordination, squad counter intelligence, and guild roster analytics."
+date: 2026-08-28
+status: in-progress
+wipProgress: "Active Beta · Live Territory War map coordination & counter database"
+kind: app
+accent: "#f59e0b"
+featured: true
+tags:
+  - swgoh
+  - gaming
+  - websockets
+  - tactics
+  - product
+techStack:
+  - Next.js
+  - TypeScript
+  - HTML5 Canvas
+  - WebSockets
+  - Discord API
+highlights:
+  - "Real-time Territory War battlefield map coordination for 50-player guilds"
+  - "Dynamic squad counter intelligence and speed breakpoint analyzer"
+  - "Interactive 60fps canvas map with live zone assignments"
+  - "Discord webhook integration for instant zone commands and alerts"
+draft: false
+---
+
+## The Brief
+
+Star Wars: Galaxy of Heroes (SWGOH) guild Territory Wars are high-stakes, 24-hour competitive events where 50 guild members coordinate defense zones and offense attacks against rival guilds. Guild officers traditionally run these wars out of chaotic spreadsheets and frantic Discord threads.
+
+This platform unifies the entire SWGOH war effort into a single, real-time command console.
+
+## What’s Inside the Platform
+
+- **Interactive Territory War Battlefield** — A real-time, interactive canvas map of all defense sectors (North/South/Fleet zones) showing live banner counts, remaining enemy squads, and current zone targets.
+- **Squad Counter Intelligence** — Instant counter recommendations against meta defensive walls (e.g. Galactic Legends, datacron variants, and off-meta traps), factoring in relic levels and turn meter speeds.
+- **Real-Time Guild Sync** — Lightweight WebSocket synchronization ensuring all 50 guild members and officers see attacks, holds, and zone clears the instant they happen.
+- **Discord Bot Automation** — Automatic match notifications, zone lock alerts, and attack command broadcasting directly to guild Discord channels.
+
+## Engineering Highlights
+
+The challenge was building an interface that handles rapid, concurrent inputs during the opening minutes of a war without lag or stale state. By leveraging HTML5 Canvas rendering alongside WebSocket event dispatching, the map updates smoothly at 60fps across desktop and mobile browsers.
