@@ -4,12 +4,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
-import { z } from "zod";
-import {
-  isoDate,
-  kebabTag,
-  projectFrontmatterSchema,
-} from "./src/lib/project-schema";
+import { projectFrontmatterSchema } from "./src/lib/project-schema";
 
 const mdxOptions: Options = {
   remarkPlugins: [remarkGfm],
@@ -50,39 +45,6 @@ const projects = defineCollection({
   },
 });
 
-const writing = defineCollection({
-  name: "writing",
-  directory: "content/writing",
-  include: "**/*.mdx",
-  schema: z
-    .object({
-      title: z.string().min(1).max(120),
-      summary: z.string().min(1).max(300),
-      date: isoDate,
-      updated: isoDate.optional(),
-      tags: z.array(kebabTag).default([]),
-      status: z.enum(["featured", "published", "archived"]).default("published"),
-      canonical: z.string().url().optional(),
-      cover: z.string().optional(),
-      coverAlt: z.string().optional(),
-      draft: z.boolean().default(false),
-    })
-    .refine((doc) => !doc.cover || Boolean(doc.coverAlt), {
-      message: "coverAlt is required when cover is set",
-    }),
-  transform: async (doc, ctx) => {
-    const mdx = await compileMDX(ctx, doc, mdxOptions);
-    const fileName = doc._meta.fileName.replace(/\.mdx$/, "");
-    return {
-      ...doc,
-      slug: fileName,
-      year: doc.date.slice(0, 4),
-      readingTime: readingTime(doc.content),
-      mdx,
-    };
-  },
-});
-
 export default defineConfig({
-  collections: [projects, writing],
+  collections: [projects],
 });

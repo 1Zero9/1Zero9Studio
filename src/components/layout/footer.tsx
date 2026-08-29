@@ -12,17 +12,17 @@ export function Footer() {
               <span>1Zero9 Studio</span>
             </h3>
             <p>
-              Product thinking, interface design, and working software. Based in Dublin, building for the open web.
+              Product thinking, interface design, and working software. Designed for live platforms, client deliverables, and open-source experiments.
             </p>
           </div>
 
           <div className="site-footer__nav">
             <div className="site-footer__nav-group">
               <span className="site-footer__nav-title">Navigation</span>
-              <Link href="/projects" className="site-footer__nav-link">Selected Work</Link>
-              <Link href="/#labs" className="site-footer__nav-link">Active Labs</Link>
+              <Link href="/projects" className="site-footer__nav-link">Portfolio</Link>
+              <Link href="/labs" className="site-footer__nav-link">Labs & Experiments</Link>
               <Link href="/about" className="site-footer__nav-link">About</Link>
-              <Link href="/writing" className="site-footer__nav-link">Notes & Writing</Link>
+              <Link href="/contact" className="site-footer__nav-link">Contact</Link>
             </div>
 
             <div className="site-footer__nav-group">

@@ -1,62 +1,67 @@
 # 1Zero9 Studio — Adding & Managing Projects
 
-This guide explains how to quickly add and manage projects on **1Zero9 Studio**. There is no database or admin login required—everything is powered by clean, typed Markdown/MDX files in `content/projects/`.
+This guide explains how to add and manage projects on **1Zero9 Studio**. There is no database or admin login required—everything is powered by clean, typed Markdown/MDX files in `content/projects/`.
 
 ---
 
-## 🚀 Quick Start: How to Add a New Project
+## 🏛️ Portfolio vs. Labs: How Projects Are Organized
 
-1. **Create a new folder** under `content/projects/` named after your project's slug (e.g. `content/projects/my-new-app/`).
-2. **Create an `index.mdx`** file inside that folder (or copy `content/projects/_template/index.mdx`).
-3. Fill in the frontmatter metadata:
+1Zero9 Studio automatically separates your work into two distinct areas:
+
+1. **Portfolio (`/projects`)** — Production-grade client platforms, released products, and live websites (e.g. River Valley Rangers, Astra, Runway, Clenica Care). Perfect for CV review and prospective client evaluation.
+2. **Labs (`/labs`)** — Active workbench items, work-in-progress products, AI workflow tools, game engines, and experimental prototypes (e.g. Territory War, Prompt Builder, JobJar).
+
+---
+
+## 🚀 How to Add a Production Portfolio Project
+
+1. Create a folder in `content/projects/<slug>/`
+2. Create `index.mdx` with:
 
 ```mdx
 ---
-title: My New App
-summary: A brief description of what this project does and the problem it solves.
+title: My Live Platform
+summary: Production platform delivering measurable business and user outcomes.
 date: 2026-08-30
-status: live                # "live" | "in-progress" | "featured" | "concept"
-kind: app                   # "website" | "app" | "pwa" | "tool" | "experiment"
-accent: "#10b981"           # Six-digit hex accent colour (e.g. emerald, purple, cyan)
-featured: true              # Set to true to highlight on the homepage
-url: https://mynewapp.com   # (Optional) Live link
-repo: https://github.com/.. # (Optional) GitHub repo
-cover: /images/projects/my-new-app.png # (Optional) Image placed in /public/images/projects/
-coverAlt: Screenshot showing the main dashboard of My New App
-tags:
-  - ai
-  - productivity
-  - nextjs
+status: live                # "live" | "featured"
+kind: website               # "website" | "app" | "pwa"
+accent: "#3855d6"           # Hex brand accent colour
+url: https://myliveplatform.com
+cover: /images/projects/my-live-platform.png
+coverAlt: Screenshot of the live platform interface
 techStack:
   - Next.js
   - TypeScript
   - Tailwind CSS
 highlights:
-  - Real-time conversational interface with sub-100ms response time
-  - Offline-first storage with automatic synchronization
+  - 99+ Lighthouse performance & accessibility scores
+  - Custom onboarding flow with real-time conversion
 draft: false
 ---
 
-## What it is
-Write your case study here using standard Markdown and MDX.
+## The Brief
+Describe the project brief and problem solved.
+
+## The Architecture
+Detail key technical and UX decisions.
 ```
 
 ---
 
-## 🛠️ Adding "In-Progress / Working-On" Projects
+## 🧪 How to Add an Active Lab / In-Progress Project
 
-If you are actively building a project and want to showcase it in the **"Building Now / Labs"** section:
+For projects you are actively building or experimental prototypes:
 
-1. Set `status: in-progress`
-2. Add `wipProgress` with a short milestone update:
+1. Set `status: in-progress` (or `kind: experiment` / `kind: tool`)
+2. Include `wipProgress` with a short milestone update:
 
 ```mdx
 ---
 title: Territory War
-summary: A tactical multiplayer strategy game running on the modern web.
+summary: A tactical multiplayer web strategy game with real-time state.
 date: 2026-08-30
 status: in-progress
-wipProgress: "Phase 2 · Real-time WebSocket matchmaking & sound design"
+wipProgress: "Phase 2 · Real-time matchmaking & canvas renderer"
 kind: app
 accent: "#f59e0b"
 tags:
@@ -66,29 +71,4 @@ tags:
 ---
 ```
 
----
-
-## 🖼️ Adding Screenshots & Images
-
-1. Place your screenshots in `/public/images/projects/your-image.png`.
-2. Reference them in your frontmatter (`cover: /images/projects/your-image.png`) or directly inside the MDX body:
-
-```mdx
-![Dashboard Preview](/images/projects/your-image.png)
-```
-
----
-
-## 🏷️ Project Kinds & Statuses
-
-- **`status`**:
-  - `live`: Active, released product with a live link or finished status.
-  - `in-progress`: Actively being built. Displayed in the "Building Now / Labs" section with live pulse indicator.
-  - `featured`: Pinned to the top of project showcases and homepage.
-  - `concept`: Exploratory prototype or design case study.
-- **`kind`**:
-  - `website`: Client or community website.
-  - `app`: Full-stack web application or software.
-  - `pwa`: Progressive Web App (mobile/desktop installable).
-  - `tool`: Developer tool, workflow utility, or CLI.
-  - `experiment`: Creative coding, AI sandbox, or mini-game.
+This will automatically feature the project in the **"Building Now / Labs"** spotlight on the homepage and in the dedicated **`/labs`** index.

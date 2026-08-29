@@ -11,10 +11,9 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { href: "/projects", label: "Work" },
-    { href: "/#labs", label: "Labs" },
+    { href: "/projects", label: "Portfolio" },
+    { href: "/labs", label: "Labs" },
     { href: "/about", label: "About" },
-    { href: "/writing", label: "Notes" },
   ];
 
   return (
@@ -30,7 +29,7 @@ export function Header() {
             const isActive =
               link.href === "/"
                 ? pathname === "/"
-                : pathname.startsWith(link.href) && link.href !== "/#labs";
+                : pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
@@ -45,14 +44,14 @@ export function Header() {
 
         <div className="site-header__actions">
           <ThemeToggle />
-          <a
-            href="mailto:onezeronine@gmail.com"
+          <Link
+            href="/contact"
             className="btn-contact-header"
-            aria-label="Send email to Stephen Cranfield"
+            aria-label="Contact 1Zero9"
           >
-            <span>Say hello</span>
+            <span>Get in touch</span>
             <span aria-hidden="true">↗</span>
-          </a>
+          </Link>
 
           {/* Mobile Menu Button */}
           <button
@@ -97,12 +96,12 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <a
-            href="mailto:onezeronine@gmail.com"
+          <Link
+            href="/contact"
             className="mt-2 text-center py-2.5 rounded-xl bg-fg text-bg font-semibold text-sm"
           >
-            Say hello ↗
-          </a>
+            Get in touch ↗
+          </Link>
         </div>
       )}
     </header>

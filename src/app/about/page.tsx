@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { Logo } from "@/components/brand/logo";
 import { createMetadata } from "@/lib/metadata";
-import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
   title: "About Stephen Cranfield",
@@ -66,13 +65,17 @@ export default function AboutPage() {
 
           <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-border">
             <Link href="/projects" className="btn-primary">
-              <span>Explore Selected Work</span>
+              <span>Explore Portfolio</span>
               <span aria-hidden="true">→</span>
             </Link>
-            <a href={`mailto:${site.author.email}`} className="btn-secondary">
-              <span>Email Stephen</span>
+            <Link href="/labs" className="btn-secondary">
+              <span>Explore Labs</span>
               <span aria-hidden="true">↗</span>
-            </a>
+            </Link>
+            <Link href="/contact" className="btn-secondary">
+              <span>Get in touch</span>
+              <span aria-hidden="true">↗</span>
+            </Link>
           </div>
         </div>
       </div>

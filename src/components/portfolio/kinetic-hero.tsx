@@ -17,7 +17,7 @@ export function KineticHero({
           <span>
             {latestWipTitle
               ? `Currently building: ${latestWipTitle}`
-              : "1Zero9 Studio · Stephen Cranfield"}
+              : "1Zero9 Studio · Creative Engineering"}
           </span>
         </div>
 
@@ -26,20 +26,20 @@ export function KineticHero({
         </h1>
 
         <p className="hero-lead">
-          By day, I work in enterprise governance, security, and AI enablement. Outside work, 1Zero9 is my creative engineering studio—designing and building websites, PWAs, and full-stack software from first spark to launch.
+          By day, I work across governance, security, and AI enablement in enterprise IT. Outside work, 1Zero9 is my creative engineering workshop—designing and building websites, PWAs, and full-stack software from idea to launch.
         </p>
 
         <div className="hero-actions">
           <Link href="#work" className="btn-primary">
-            <span>Explore Work</span>
+            <span>Explore Portfolio</span>
             <span aria-hidden="true">↓</span>
           </Link>
-          <Link href="#labs" className="btn-secondary">
+          <Link href="/labs" className="btn-secondary">
             <span>Active Labs</span>
             <span className="pulse-dot wip" />
           </Link>
           <Link href="/about" className="btn-secondary">
-            <span>About Me</span>
+            <span>About</span>
             <span aria-hidden="true">↗</span>
           </Link>
         </div>
@@ -52,10 +52,10 @@ export function KineticHero({
             <Logo className="h-8 w-auto text-fg" />
             <div>
               <span className="text-xs font-mono text-signal uppercase tracking-wider block">
-                Signal Active · 1Zero9
+                Signal Active · 1Zero9 Studio
               </span>
               <span className="text-sm font-semibold text-fg">
-                Product Design · Creative Engineering · Working Software
+                Product Architecture · Interface Design · Working Software
               </span>
             </div>
           </div>

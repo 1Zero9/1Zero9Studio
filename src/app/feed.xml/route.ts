@@ -1,5 +1,5 @@
 import { Feed } from "feed";
-import { allWriting } from "@/lib/content";
+import { allProjects } from "@/lib/content";
 import { site } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -22,14 +22,14 @@ export function GET() {
     },
   });
 
-  for (const post of allWriting) {
-    const url = new URL(`/writing/${post.slug}`, site.url).toString();
+  for (const project of allProjects) {
+    const url = new URL(`/projects/${project.slug}`, site.url).toString();
     feed.addItem({
-      title: post.title,
+      title: project.title,
       id: url,
       link: url,
-      description: post.summary,
-      date: new Date(post.date),
+      description: project.summary,
+      date: new Date(project.date),
     });
   }
 

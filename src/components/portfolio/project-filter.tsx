@@ -4,9 +4,15 @@ import { useState } from "react";
 import type { Project } from "@/lib/content";
 import { ProjectCard } from "@/components/portfolio/project-card";
 
-type FilterKey = "all" | "live" | "wip" | "websites" | "apps" | "ai";
+type FilterKey = "all" | "live" | "wip" | "websites" | "apps";
 
-export function ProjectFilter({ projects }: { projects: Project[] }) {
+export function ProjectFilter({
+  projects,
+  showFilterTabs = true,
+}: {
+  projects: Project[];
+  showFilterTabs?: boolean;
+}) {
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const filteredProjects = projects.filter((project) => {
@@ -27,19 +33,13 @@ export function ProjectFilter({ projects }: { projects: Project[] }) {
     if (filter === "apps") {
       return project.kind === "app" || project.kind === "pwa";
     }
-    if (filter === "ai") {
-      return (
-        project.tags?.some((t) => t.toLowerCase().includes("ai")) ||
-        project.kind === "tool"
-      );
-    }
     return true;
   });
 
   const filterButtons: { key: FilterKey; label: string; count: number }[] = [
-    { key: "all", label: "All Projects", count: projects.length },
+    { key: "all" as const, label: "All", count: projects.length },
     {
-      key: "live",
+      key: "live" as const,
       label: "Live Sites",
       count: projects.filter(
         (p) =>
@@ -49,50 +49,43 @@ export function ProjectFilter({ projects }: { projects: Project[] }) {
       ).length,
     },
     {
-      key: "wip",
+      key: "wip" as const,
       label: "Building Now",
       count: projects.filter((p) => p.status === "in-progress").length,
     },
     {
-      key: "websites",
+      key: "websites" as const,
       label: "Websites",
       count: projects.filter((p) => p.kind === "website").length,
     },
     {
-      key: "apps",
+      key: "apps" as const,
       label: "Apps & PWAs",
       count: projects.filter((p) => p.kind === "app" || p.kind === "pwa").length,
     },
-    {
-      key: "ai",
-      label: "AI & Tools",
-      count: projects.filter(
-        (p) =>
-          p.tags?.some((t) => t.toLowerCase().includes("ai")) ||
-          p.kind === "tool",
-      ).length,
-    },
-  ];
+  ].filter((btn) => btn.count > 0 || btn.key === "all");
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="work-filter-bar" role="tablist" aria-label="Project filter">
-        {filterButtons.map((btn) => (
-          <button
-            key={btn.key}
-            type="button"
-            role="tab"
-            aria-selected={filter === btn.key}
-            onClick={() => setFilter(btn.key)}
-            className={`filter-btn ${filter === btn.key ? "active" : ""}`}
-          >
-            <span>{btn.label}</span>
-            <span className="ml-1.5 opacity-60 text-xs font-mono">
-              ({btn.count})
-            </span>
-          </button>
-        ))}
-      </div>
+      {showFilterTabs && filterButtons.length > 1 && (
+        <div className="work-filter-bar" role="tablist" aria-label="Project filter">
+          {filterButtons.map((btn) => (
+            <button
+              key={btn.key}
+              type="button"
+              role="tab"
+              aria-selected={filter === btn.key}
+              onClick={() => setFilter(btn.key)}
+              className={`filter-btn ${filter === btn.key ? "active" : ""}`}
+            >
+              <span>{btn.label}</span>
+              <span className="ml-1.5 opacity-60 text-xs font-mono">
+                ({btn.count})
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="project-grid">
         {filteredProjects.map((project, index) => (

@@ -11,13 +11,21 @@ export function LabsSpotlight({
   return (
     <section className="labs-section" id="labs">
       <div className="section-header">
-        <p className="section-eyebrow">
-          <span className="pulse-dot wip" />
-          02 / Active Labs & In-Progress Work
-        </p>
-        <h2 className="section-title">What I’m building right now</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="section-eyebrow">
+              <span className="pulse-dot wip" />
+              02 / Active Labs & In-Progress Work
+            </p>
+            <h2 className="section-title">What I’m building right now</h2>
+          </div>
+          <Link href="/labs" className="btn-secondary text-sm">
+            <span>Explore All Labs</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
         <p className="section-subtitle">
-          Real-time record of active experiments, tools, and products currently on the workbench.
+          Real-time record of active experiments, tools, and prototypes currently on the workbench.
         </p>
       </div>
 

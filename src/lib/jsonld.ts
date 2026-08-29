@@ -1,11 +1,10 @@
 import type {
-  Article,
   CreativeWork,
   Person,
   WebSite,
   WithContext,
 } from "schema-dts";
-import type { Post, Project } from "@/lib/content";
+import type { Project } from "@/lib/content";
 import { site } from "@/lib/site";
 
 export const personJsonLd: WithContext<Person> = {
@@ -23,20 +22,6 @@ export const webSiteJsonLd: WithContext<WebSite> = {
   url: site.url,
   author: { "@type": "Person", name: site.author.name },
 };
-
-export function articleJsonLd(post: Post): WithContext<Article> {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.summary,
-    datePublished: post.date,
-    ...(post.updated ? { dateModified: post.updated } : {}),
-    url: new URL(`/writing/${post.slug}`, site.url).toString(),
-    author: { "@type": "Person", name: site.author.name },
-    keywords: post.tags.join(", "),
-  };
-}
 
 export function projectJsonLd(project: Project): WithContext<CreativeWork> {
   return {

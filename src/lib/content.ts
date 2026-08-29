@@ -2,10 +2,7 @@
  * The single source of truth for content data.
  * Pure static, type-safe, and zero database overhead.
  */
-import {
-  allProjects as generatedProjects,
-  allWritings as generatedWriting,
-} from "content-collections";
+import { allProjects as generatedProjects } from "content-collections";
 
 const hideDrafts = process.env.NODE_ENV === "production";
 
@@ -14,7 +11,6 @@ export const allProjects = generatedProjects
   .filter((project) => !hideDrafts || !project.draft)
   .filter((project) => project.status !== "archived")
   .sort((a, b) => {
-    // Priority order if specified, else sort by date descending
     if (a.order !== undefined && b.order !== undefined) {
       return a.order - b.order;
     }
@@ -31,12 +27,30 @@ export function inProgressProjects() {
   return allProjects.filter((project) => project.status === "in-progress");
 }
 
-export function liveProjects() {
+export function portfolioProjects() {
+  // Production portfolio: live websites, client platforms, and standalone applications
   return allProjects.filter(
     (project) =>
-      project.status === "live" ||
-      project.status === "featured" ||
-      project.status === "active",
+      project.kind === "website" ||
+      (project.status !== "in-progress" &&
+        !project.tags.includes("experiment") &&
+        project.kind !== "experiment" &&
+        project.kind !== "tool"),
+  );
+}
+
+export function labsProjects() {
+  // Active labs: in-progress work, game experiments, AI workflow prototypes, and utility tools
+  return allProjects.filter(
+    (project) =>
+      project.status === "in-progress" ||
+      project.tags.includes("experiment") ||
+      project.kind === "experiment" ||
+      project.kind === "tool" ||
+      project.slug === "prompt-builder" ||
+      project.slug === "jobjar" ||
+      project.slug === "holiday-concierge" ||
+      project.slug === "territory-war",
   );
 }
 
@@ -45,14 +59,3 @@ export function getProject(slug: string) {
 }
 
 export type Project = (typeof allProjects)[number];
-
-export const allWriting = generatedWriting
-  .filter((post) => !hideDrafts || !post.draft)
-  .filter((post) => post.status !== "archived")
-  .sort((a, b) => b.date.localeCompare(a.date));
-
-export function getPost(slug: string) {
-  return allWriting.find((post) => post.slug === slug);
-}
-
-export type Post = (typeof allWriting)[number];
