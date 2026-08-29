@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { Mdx } from "@/components/mdx/mdx";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Meta } from "@/components/ui/meta";
 import { Prose } from "@/components/ui/prose";
 import { allWriting, getPost } from "@/lib/content";
 import { articleJsonLd } from "@/lib/jsonld";
@@ -44,19 +44,30 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <Container className="py-16">
+    <Container className="py-12 md:py-20 max-w-3xl">
       <JsonLd data={articleJsonLd(post)} />
-      <header className="max-w-3xl">
-        <Meta>
+
+      <Link
+        href="/writing"
+        className="inline-flex items-center gap-2 text-sm text-muted hover:text-fg mb-8 transition-colors"
+      >
+        <span aria-hidden="true">←</span>
+        <span>Back to all notes</span>
+      </Link>
+
+      <header className="mb-10">
+        <span className="font-mono text-xs text-signal uppercase tracking-wider block mb-2">
           {post.date} · {post.readingTime} min read
-        </Meta>
-        <h1 className="mt-4 font-display text-5xl leading-tight tracking-tight sm:text-6xl">
+        </span>
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-fg leading-tight mb-4">
           {post.title}
         </h1>
-        <p className="mt-6 text-lg text-muted">{post.summary}</p>
+        <p className="text-lg sm:text-xl text-muted leading-relaxed">
+          {post.summary}
+        </p>
       </header>
 
-      <div className="mt-12 border-t border-border pt-12">
+      <div className="border-t border-border pt-10">
         <Prose>
           <Mdx code={post.mdx} />
         </Prose>

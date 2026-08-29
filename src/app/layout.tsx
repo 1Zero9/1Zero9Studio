@@ -32,16 +32,19 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="flex min-h-svh flex-col">
+      <body className="relative min-h-svh flex flex-col bg-bg text-fg antialiased selection:bg-accent selection:text-white">
         <JsonLd data={personJsonLd} />
         <JsonLd data={webSiteJsonLd} />
         <ThemeProvider>
-          <SkipLink />
-          <Header />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <div className="ambient-grid" aria-hidden="true" />
+          <div className="site-content flex min-h-svh flex-col">
+            <SkipLink />
+            <Header />
+            <main id="main" className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
         </ThemeProvider>
         <Analytics />
       </body>

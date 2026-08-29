@@ -1,25 +1,43 @@
 /*
- * The only import surface for content collections. If the loader ever
- * needs replacing, this file is the swap point — routes and components
- * stay untouched.
+ * The single source of truth for content data.
+ * Pure static, type-safe, and zero database overhead.
  */
 import {
   allProjects as generatedProjects,
   allWritings as generatedWriting,
 } from "content-collections";
-import { prisma } from "@/lib/db";
 
 const hideDrafts = process.env.NODE_ENV === "production";
 
 export const allProjects = generatedProjects
+  .filter((project) => project.slug !== "_template")
   .filter((project) => !hideDrafts || !project.draft)
   .filter((project) => project.status !== "archived")
-  .sort((a, b) => b.date.localeCompare(a.date));
+  .sort((a, b) => {
+    // Priority order if specified, else sort by date descending
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    }
+    return b.date.localeCompare(a.date);
+  });
 
 export function featuredProjects() {
-  return allProjects
-    .filter((project) => project.status === "featured")
-    .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+  return allProjects.filter(
+    (project) => project.featured || project.status === "featured",
+  );
+}
+
+export function inProgressProjects() {
+  return allProjects.filter((project) => project.status === "in-progress");
+}
+
+export function liveProjects() {
+  return allProjects.filter(
+    (project) =>
+      project.status === "live" ||
+      project.status === "featured" ||
+      project.status === "active",
+  );
 }
 
 export function getProject(slug: string) {
@@ -27,42 +45,6 @@ export function getProject(slug: string) {
 }
 
 export type Project = (typeof allProjects)[number];
-
-// Admin-managed screenshots/links per project, stored in Postgres and keyed
-// by MDX slug. Kept separate from getProject() so build-time-only call sites
-// (generateMetadata, opengraph-image) never touch the database.
-export function getProjectMedia(slug: string) {
-  return prisma.projectMedia.findMany({
-    where: { projectSlug: slug },
-    orderBy: { order: "asc" },
-  });
-}
-
-export function getProjectLinks(slug: string) {
-  return prisma.projectLink.findMany({
-    where: { projectSlug: slug },
-    orderBy: { order: "asc" },
-  });
-}
-
-export function getProjectOutcomes(slug: string) {
-  return prisma.projectOutcome.findMany({
-    where: { projectSlug: slug },
-    orderBy: { order: "asc" },
-  });
-}
-
-export function getPublishedTestimonials() {
-  return prisma.testimonial.findMany({
-    where: { published: true },
-    orderBy: { order: "asc" },
-  });
-}
-
-export async function getSiteCopy(key: string) {
-  const row = await prisma.siteCopy.findUnique({ where: { key } });
-  return row?.value.trim() || null;
-}
 
 export const allWriting = generatedWriting
   .filter((post) => !hideDrafts || !post.draft)

@@ -4,38 +4,54 @@ import { createMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
-  title: "Working together",
-  description: "A short note on working with Stephen Cranfield.",
+  title: "Collaborating with 1Zero9",
+  description: "How Stephen Cranfield collaborates on web software, apps, and digital products.",
   path: "/services",
 });
 
 export default function ServicesPage() {
   return (
-    <Container className="maker-page">
-      <header className="maker-page__hero">
-        <p>Working together</p>
-        <h1>Good collaborations start with an <span>interesting problem.</span></h1>
+    <Container className="py-12 md:py-20 max-w-4xl">
+      <header className="mb-12">
+        <p className="font-mono text-xs text-signal uppercase tracking-wider mb-3">
+          Studio / Collaborating
+        </p>
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-fg leading-tight">
+          Good collaborations start with an <span className="text-signal">interesting problem.</span>
+        </h1>
       </header>
-      <div className="maker-page__grid">
-        <aside><p>No fixed packages</p><p>Direct collaboration</p><p>Idea to launch</p></aside>
-        <div className="maker-page__copy">
-          <p className="maker-page__lead">
-            This is a portfolio, not a catalogue of services. But I do work with
-            people when the idea and the fit are right.
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <aside className="flex flex-col gap-3">
+          <div className="p-5 rounded-2xl bg-surface border border-border flex flex-col gap-2 font-mono text-xs text-muted">
+            <span className="text-fg font-semibold">Direct Collaboration</span>
+            <span className="text-muted">No Agency Overhead</span>
+            <span className="text-muted">Idea to Production</span>
+          </div>
+        </aside>
+
+        <div className="md:col-span-2 flex flex-col gap-6 text-base sm:text-lg text-muted leading-relaxed">
+          <p className="text-fg font-medium text-lg sm:text-xl leading-snug">
+            1Zero9 is a private workshop, not a template farm. I partner with founders, teams, and community organizations when the problem and fit align.
           </p>
+
           <p>
-            That might mean shaping and building a product, creating a website
-            that does more than sit online, or exploring a useful application of
-            AI. I work directly across the idea, interface and implementation.
+            That often means crafting an audience-first website that loads instantly and serves real users, architecting an AI-assisted product workflow with guardrails, or building a standalone Progressive Web App.
           </p>
+
           <p>
-            The best way to understand how I work is through the projects. The
-            best way to start a conversation is simply to tell me what you’re
-            thinking about.
+            I work directly across product vision, UI/UX design, and production engineering. The best way to evaluate fit is to check the projects—and simply drop an email to discuss what you’re planning.
           </p>
-          <div className="maker-page__links">
-            <Link href="/projects">See the work ↗</Link>
-            <a href={`mailto:${site.author.email}`}>Start a conversation ↗</a>
+
+          <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-border">
+            <Link href="/projects" className="btn-primary">
+              <span>View Selected Work</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+            <a href={`mailto:${site.author.email}`} className="btn-secondary">
+              <span>Start a Conversation</span>
+              <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </div>
       </div>

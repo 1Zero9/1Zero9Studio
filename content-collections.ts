@@ -56,13 +56,13 @@ const writing = defineCollection({
   include: "**/*.mdx",
   schema: z
     .object({
-      title: z.string().min(1).max(80),
-      summary: z.string().min(1).max(200),
+      title: z.string().min(1).max(120),
+      summary: z.string().min(1).max(300),
       date: isoDate,
       updated: isoDate.optional(),
       tags: z.array(kebabTag).default([]),
       status: z.enum(["featured", "published", "archived"]).default("published"),
-      canonical: z.url().optional(),
+      canonical: z.string().url().optional(),
       cover: z.string().optional(),
       coverAlt: z.string().optional(),
       draft: z.boolean().default(false),

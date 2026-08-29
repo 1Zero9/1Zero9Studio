@@ -1,34 +1,26 @@
-import { WorkIndex, type WorkPreview } from "@/components/portfolio/work-index";
-import { Reveal } from "@/components/motion/reveal";
+import { ProjectFilter } from "@/components/portfolio/project-filter";
 import { allProjects } from "@/lib/content";
 import { createMetadata } from "@/lib/metadata";
 
 export const metadata = createMetadata({
-  title: "Work",
-  description: "Websites, progressive web apps and software imagined, designed and built by Stephen Cranfield.",
+  title: "Work & Projects",
+  description:
+    "Websites, progressive web apps, tools, and software designed and built by Stephen Cranfield at 1Zero9 Studio.",
   path: "/projects",
 });
 
 export default function ProjectsPage() {
-  const projects: WorkPreview[] = allProjects.map((project) => ({
-    slug: project.slug,
-    title: project.title,
-    summary: project.summary,
-    kind: project.kind,
-    year: project.year,
-    accent: project.accent,
-    cover: project.cover,
-    coverAlt: project.coverAlt,
-  }));
-
   return (
-    <div className="work-page">
-      <Reveal as="header" className="work-page__hero">
-        <p>Project index · {projects.length} projects</p>
-        <h1>A record of things<br /><em>I’ve made.</em></h1>
-        <span>Websites · PWA Apps · Apps</span>
-      </Reveal>
-      <WorkIndex projects={projects} />
+    <div className="work-section">
+      <header className="section-header">
+        <p className="section-eyebrow">Index · {allProjects.length} Projects</p>
+        <h1 className="section-title">All Projects & Software</h1>
+        <p className="section-subtitle">
+          From full-scale community websites and client products to AI workflow tools and experimental software.
+        </p>
+      </header>
+
+      <ProjectFilter projects={allProjects} />
     </div>
   );
 }

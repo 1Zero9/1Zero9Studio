@@ -1,51 +1,70 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
 import { Logo } from "@/components/brand/logo";
+import { WaveformVisualizer } from "@/components/brand/waveform-visualizer";
 
-export function KineticHero() {
-  const identity = useRef<HTMLDivElement>(null);
-
-  function move(event: React.PointerEvent<HTMLDivElement>) {
-    if (!identity.current) return;
-    const bounds = identity.current.getBoundingClientRect();
-    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-    identity.current.style.setProperty("--hero-x", `${(x * 12).toFixed(1)}px`);
-    identity.current.style.setProperty("--hero-y", `${(y * 10).toFixed(1)}px`);
-    identity.current.style.setProperty("--signal-x", `${(x * -18).toFixed(1)}px`);
-    identity.current.style.setProperty("--signal-y", `${(y * -14).toFixed(1)}px`);
-  }
-
-  function reset() {
-    identity.current?.style.setProperty("--hero-x", "0px");
-    identity.current?.style.setProperty("--hero-y", "0px");
-    identity.current?.style.setProperty("--signal-x", "0px");
-    identity.current?.style.setProperty("--signal-y", "0px");
-  }
-
+export function KineticHero({
+  latestWipTitle,
+}: {
+  latestWipTitle?: string;
+}) {
   return (
-    <section className="portfolio-hero">
-      <div className="portfolio-hero__copy">
-        <p className="portfolio-eyebrow">Stephen Cranfield · Technology leader</p>
-        <h1>
-          I lead technology—and <em>still build things myself.</em>
+    <section className="hero-section">
+      <div className="flex flex-col items-start gap-4">
+        <div className="hero-status-pill">
+          <span className="pulse-dot" />
+          <span>
+            {latestWipTitle
+              ? `Currently building: ${latestWipTitle}`
+              : "1Zero9 Studio · Stephen Cranfield"}
+          </span>
+        </div>
+
+        <h1 className="hero-headline">
+          Leading technology—<em>still building hands-on.</em>
         </h1>
-        <p className="portfolio-hero__intro">
-          By day, I work across governance, security and AI enablement in enterprise
-          IT. Outside work, I design and build websites, PWAs and apps from idea to launch.
+
+        <p className="hero-lead">
+          By day, I work in enterprise governance, security, and AI enablement. Outside work, 1Zero9 is my creative engineering studio—designing and building websites, PWAs, and full-stack software from first spark to launch.
         </p>
-        <div className="portfolio-hero__actions">
-          <Link href="#work">Explore the work <span aria-hidden="true">↓</span></Link>
-          <Link href="/about">About me <span aria-hidden="true">↗</span></Link>
+
+        <div className="hero-actions">
+          <Link href="#work" className="btn-primary">
+            <span>Explore Work</span>
+            <span aria-hidden="true">↓</span>
+          </Link>
+          <Link href="#labs" className="btn-secondary">
+            <span>Active Labs</span>
+            <span className="pulse-dot wip" />
+          </Link>
+          <Link href="/about" className="btn-secondary">
+            <span>About Me</span>
+            <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </div>
 
-      <div ref={identity} onPointerMove={move} onPointerLeave={reset} className="portfolio-hero__identity">
-        <span>01 / Portfolio</span>
-        <Logo title="1Zero9 Studio" />
-        <p>Product thinking<br />Interface design<br />Working software</p>
+      {/* Brand Waveform Showcase Card */}
+      <div className="brand-waveform-card">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-3">
+            <Logo className="h-8 w-auto text-fg" />
+            <div>
+              <span className="text-xs font-mono text-signal uppercase tracking-wider block">
+                Signal Active · 1Zero9
+              </span>
+              <span className="text-sm font-semibold text-fg">
+                Product Design · Creative Engineering · Working Software
+              </span>
+            </div>
+          </div>
+          <span className="text-xs font-mono text-muted hidden sm:inline-block">
+            Hover to modulate frequency
+          </span>
+        </div>
+
+        <WaveformVisualizer bars={52} active={true} />
       </div>
     </section>
   );
