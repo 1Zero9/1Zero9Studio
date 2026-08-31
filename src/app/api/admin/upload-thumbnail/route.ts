@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { updateProjectThumbnail } from "@/lib/admin-content";
+import { updateProjectThumbnail, getBlobToken } from "@/lib/admin-content";
 import { put } from "@vercel/blob";
 import fs from "fs/promises";
 import path from "path";
@@ -12,24 +12,6 @@ const PUBLIC_PROJECTS_IMG_DIR = path.join(
   "images",
   "projects"
 );
-
-function getBlobToken(): string | undefined {
-  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
-  if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
-
-  for (const [key, value] of Object.entries(process.env)) {
-    if (
-      value &&
-      (key.endsWith("_READ_WRITE_TOKEN") ||
-        key.includes("BLOB_READ_WRITE_TOKEN") ||
-        key.includes("BLOB_TOKEN") ||
-        key.toLowerCase().includes("studio_blob"))
-    ) {
-      return value;
-    }
-  }
-  return undefined;
-}
 
 export async function POST(req: NextRequest) {
   const isAuthed = await verifyAdminRequest(req);

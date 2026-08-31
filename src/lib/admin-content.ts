@@ -42,7 +42,9 @@ export function stringifyMdxFile(frontmatter: Record<string, unknown>, content: 
   return `---\n${yamlString}\n---\n\n${content.trim()}\n`;
 }
 
-function getBlobToken(): string | undefined {
+import fsSync from "fs";
+
+export function getBlobToken(): string | undefined {
   if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
   if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
 
@@ -57,6 +59,22 @@ function getBlobToken(): string | undefined {
       return value;
     }
   }
+
+  // Fallback: Read directly from .env.local on disk if dev server hasn't restarted
+  try {
+    const envPath = path.join(process.cwd(), ".env.local");
+    if (fsSync.existsSync(envPath)) {
+      const content = fsSync.readFileSync(envPath, "utf-8");
+      const match = content.match(/BLOB_READ_WRITE_TOKEN=["']?([^"'\r\n]+)["']?/);
+      if (match && match[1]) {
+        process.env.BLOB_READ_WRITE_TOKEN = match[1];
+        return match[1];
+      }
+    }
+  } catch {
+    // Ignore in environments without filesystem access
+  }
+
   return undefined;
 }
 
