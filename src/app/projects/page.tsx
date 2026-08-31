@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { ProjectFilter } from "@/components/portfolio/project-filter";
-import { portfolioProjects } from "@/lib/content";
+import { getLivePortfolioProjects } from "@/lib/content";
 import { createMetadata } from "@/lib/metadata";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = createMetadata({
   title: "Portfolio — Production Work & Platforms",
@@ -10,8 +12,8 @@ export const metadata = createMetadata({
   path: "/projects",
 });
 
-export default function ProjectsPage() {
-  const projects = portfolioProjects();
+export default async function ProjectsPage() {
+  const projects = await getLivePortfolioProjects();
 
   return (
     <div className="work-section">

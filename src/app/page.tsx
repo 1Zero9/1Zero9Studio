@@ -3,17 +3,19 @@ import Image from "next/image";
 import { KineticHero } from "@/components/portfolio/kinetic-hero";
 import { StudioBadge } from "@/components/portfolio/studio-badge";
 import {
-  homeSpotlightProject,
-  portfolioProjects,
-  labsProjects,
-  inProgressProjects,
+  getLiveHomeSpotlightProject,
+  getLivePortfolioProjects,
+  getLiveLabsProjects,
+  getLiveInProgressProjects,
 } from "@/lib/content";
 
-export default function Home() {
-  const spotlight = homeSpotlightProject();
-  const prodProjects = portfolioProjects();
-  const labs = labsProjects();
-  const wipProjects = inProgressProjects();
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const spotlight = await getLiveHomeSpotlightProject();
+  const prodProjects = await getLivePortfolioProjects();
+  const labs = await getLiveLabsProjects();
+  const wipProjects = await getLiveInProgressProjects();
   const latestWip = wipProjects[0];
 
   return (

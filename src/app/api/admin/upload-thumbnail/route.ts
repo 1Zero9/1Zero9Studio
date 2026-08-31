@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/admin-auth";
 import { updateProjectThumbnail } from "@/lib/admin-content";
 import { put } from "@vercel/blob";
@@ -16,7 +17,6 @@ function getBlobToken(): string | undefined {
   if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
   if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
 
-  // Search environment variables for any blob store token
   for (const [key, value] of Object.entries(process.env)) {
     if (
       value &&
@@ -118,6 +118,12 @@ export async function POST(req: NextRequest) {
       // Update project metadata
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
 
+      // Invalidate edge cache so homepage, portfolio, labs, and case studies update instantly
+      revalidatePath("/", "layout");
+      revalidatePath("/projects");
+      revalidatePath("/labs");
+      revalidatePath(`/projects/${slug}`);
+
       return NextResponse.json({
         success: true,
         coverUrl,
@@ -137,6 +143,12 @@ export async function POST(req: NextRequest) {
       }
 
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
+
+      revalidatePath("/", "layout");
+      revalidatePath("/projects");
+      revalidatePath("/labs");
+      revalidatePath(`/projects/${slug}`);
+
       return NextResponse.json({
         success: true,
         coverUrl,

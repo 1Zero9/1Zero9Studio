@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/admin-auth";
 import {
   getAllAdminProjects,
@@ -41,36 +42,31 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { slug, frontmatter, content } = body;
 
-    if (!slug || typeof slug !== "string") {
-      return NextResponse.json({ error: "Valid slug is required" }, { status: 400 });
+    if (!slug) {
+      return NextResponse.json({ error: "Slug is required" }, { status: 400 });
     }
 
     const cleanSlug = slug
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/[^a-z0-9-_]/g, "-")
       .replace(/-+/g, "-");
 
     const defaultFrontmatter = {
       title: frontmatter?.title || cleanSlug,
-      summary: frontmatter?.summary || "Project summary and overview.",
-      date: frontmatter?.date || new Date().toISOString().slice(0, 10),
-      status: frontmatter?.status || "in-progress",
-      section: frontmatter?.section || (frontmatter?.status === "in-progress" ? "labs" : "portfolio"),
+      summary: frontmatter?.summary || "Project summary description",
+      date: frontmatter?.date || new Date().toISOString().split("T")[0],
       kind: frontmatter?.kind || "app",
-      accent: frontmatter?.accent || "#3b82f6",
+      status: frontmatter?.status || "live",
+      section: frontmatter?.section || "portfolio",
+      accent: frontmatter?.accent || "#3B82F6",
+      tags: frontmatter?.tags || ["Engineering", "Web App"],
+      techStack: frontmatter?.techStack || ["Next.js", "TypeScript"],
       featured: frontmatter?.featured ?? false,
       featuredOnHome: frontmatter?.featuredOnHome ?? false,
       draft: frontmatter?.draft ?? false,
-      tags: frontmatter?.tags || ["web"],
-      techStack: frontmatter?.techStack || ["Next.js", "TypeScript", "Tailwind CSS"],
-      highlights: frontmatter?.highlights || [],
-      links: frontmatter?.links || [],
-      url: frontmatter?.url || "",
-      repo: frontmatter?.repo || "",
-      cover: frontmatter?.cover || "",
-      coverAlt: frontmatter?.coverAlt || "",
-      wipProgress: frontmatter?.wipProgress || "",
+      readingTime: frontmatter?.readingTime || 3,
+      ...frontmatter,
     };
 
     // Remove empty cover if coverAlt is missing to satisfy zod
@@ -85,6 +81,12 @@ export async function POST(req: NextRequest) {
     if (defaultFrontmatter.featuredOnHome) {
       await setHomepageSpotlightProject(cleanSlug);
     }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/projects");
+    revalidatePath("/labs");
+    revalidatePath(`/projects/${cleanSlug}`);
+
     return NextResponse.json({ project: saved, success: true });
   } catch (err: unknown) {
     return NextResponse.json(
@@ -114,6 +116,10 @@ export async function PUT(req: NextRequest) {
     // 1. Dedicated action to set homepage spotlight
     if (action === "set-homepage-spotlight") {
       await setHomepageSpotlightProject(slug);
+      revalidatePath("/", "layout");
+      revalidatePath("/projects");
+      revalidatePath("/labs");
+      revalidatePath(`/projects/${slug}`);
       return NextResponse.json({ success: true, message: `Homepage spotlight set to ${slug}` });
     }
 
@@ -140,6 +146,12 @@ export async function PUT(req: NextRequest) {
     }
 
     const saved = await saveAdminProject(slug, mergedFrontmatter, content);
+
+    revalidatePath("/", "layout");
+    revalidatePath("/projects");
+    revalidatePath("/labs");
+    revalidatePath(`/projects/${slug}`);
+
     return NextResponse.json({ project: saved, success: true });
   } catch (err: unknown) {
     return NextResponse.json(
@@ -173,6 +185,11 @@ export async function DELETE(req: NextRequest) {
       // In read-only serverless environment, mark project hidden in overrides
       await saveAdminProject(slug, { section: "hidden", draft: true });
     }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/projects");
+    revalidatePath("/labs");
+    revalidatePath(`/projects/${slug}`);
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

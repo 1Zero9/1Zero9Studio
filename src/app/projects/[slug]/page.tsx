@@ -5,9 +5,11 @@ import { notFound } from "next/navigation";
 import { Mdx } from "@/components/mdx/mdx";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Prose } from "@/components/ui/prose";
-import { allProjects, getProject } from "@/lib/content";
+import { allProjects, getLiveProject, getLiveProjects } from "@/lib/content";
 import { projectJsonLd } from "@/lib/jsonld";
 import { createMetadata } from "@/lib/metadata";
+
+export const dynamic = "force-dynamic";
 
 type Params = { slug: string };
 
@@ -21,7 +23,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getLiveProject(slug);
   if (!project) return {};
   return createMetadata({
     title: project.title,
@@ -44,11 +46,12 @@ export default async function ProjectPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getLiveProject(slug);
   if (!project) notFound();
 
-  const index = allProjects.findIndex((item) => item.slug === slug);
-  const nextProject = allProjects[(index + 1) % allProjects.length];
+  const liveList = await getLiveProjects();
+  const index = liveList.findIndex((item) => item.slug === slug);
+  const nextProject = liveList[(index + 1) % liveList.length];
 
   const isLive =
     project.status === "live" ||
@@ -148,7 +151,7 @@ export default async function ProjectPage({
           )}
           <div className="case-study__meta-item">
             <dt>Reading Time</dt>
-            <dd>{project.readingTime} min read</dd>
+            <dd>{project.readingTime || 3} min read</dd>
           </div>
         </dl>
 
@@ -183,7 +186,11 @@ export default async function ProjectPage({
       {/* MDX Body Content */}
       <section className="mb-16">
         <Prose>
-          <Mdx code={project.mdx} />
+          {project.mdx ? (
+            <Mdx code={project.mdx} />
+          ) : (
+            <div className="whitespace-pre-wrap">{project.content || project.summary}</div>
+          )}
         </Prose>
       </section>
 

@@ -1,6 +1,8 @@
 import { ProjectFilter } from "@/components/portfolio/project-filter";
-import { labsProjects } from "@/lib/content";
+import { getLiveLabsProjects } from "@/lib/content";
 import { createMetadata } from "@/lib/metadata";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = createMetadata({
   title: "Labs & Experiments",
@@ -9,8 +11,8 @@ export const metadata = createMetadata({
   path: "/labs",
 });
 
-export default function LabsPage() {
-  const projects = labsProjects();
+export default async function LabsPage() {
+  const projects = await getLiveLabsProjects();
 
   return (
     <div className="work-section">
