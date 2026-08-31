@@ -46,22 +46,19 @@ export function KineticHero({
       </div>
 
       {/* Brand Waveform Showcase Card */}
-      <div className="brand-waveform-card">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border shadow-card flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Logo className="h-8 w-auto text-fg" />
+            <Logo className="h-6 w-auto text-fg" />
             <div>
               <span className="text-xs font-mono text-signal uppercase tracking-wider block">
                 Signal Active · 1Zero9 Studio
               </span>
-              <span className="text-sm font-semibold text-fg">
+              <span className="text-xs sm:text-sm font-semibold text-fg">
                 Product Architecture · Interface Design · Working Software
               </span>
             </div>
           </div>
-          <span className="text-xs font-mono text-signal/80 hidden sm:inline-block">
-            Hover & drag to modulate · Click to pulse
-          </span>
         </div>
 
         <WaveformVisualizer active={true} />

@@ -12,6 +12,7 @@ export interface AdminProject {
     summary: string;
     date: string;
     section?: "portfolio" | "labs" | "hidden";
+    featuredOnHome?: boolean;
   };
   content: string;
   hasThumbnail: boolean;
@@ -142,4 +143,18 @@ export async function updateProjectThumbnail(
   };
 
   return await saveAdminProject(slug, updatedFrontmatter, project.content);
+}
+
+export async function setHomepageSpotlightProject(targetSlug: string): Promise<void> {
+  const projects = await getAllAdminProjects();
+  for (const p of projects) {
+    const isTarget = p.slug === targetSlug;
+    if (Boolean(p.frontmatter.featuredOnHome) !== isTarget) {
+      const updatedFrontmatter = {
+        ...p.frontmatter,
+        featuredOnHome: isTarget,
+      };
+      await saveAdminProject(p.slug, updatedFrontmatter, p.content);
+    }
+  }
 }

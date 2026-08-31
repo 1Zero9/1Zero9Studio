@@ -17,6 +17,7 @@ interface AdminProject {
     kind?: "website" | "app" | "pwa" | "tool" | "experiment";
     accent?: string;
     featured?: boolean;
+    featuredOnHome?: boolean;
     draft?: boolean;
     tags?: string[];
     techStack?: string[];
@@ -226,6 +227,27 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Quick Homepage Spotlight Assignment
+  async function setHomepageSpotlight(slug: string) {
+    try {
+      const res = await fetch("/api/admin/projects", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug,
+          action: "set-homepage-spotlight",
+        }),
+      });
+
+      if (res.ok) {
+        showToast(`Homepage spotlight set to "${slug}"`);
+        await loadProjects();
+      }
+    } catch {
+      showToast("Failed to set homepage spotlight", "error");
+    }
+  }
+
   // Open Vetting Modal for a discovered candidate
   function openVettingModalForDiscovered(item: DiscoveredProject) {
     setEditingSlug(null);
@@ -239,6 +261,7 @@ export default function AdminDashboardPage() {
       kind: item.suggestedKind,
       accent: item.suggestedSection === "labs" ? "#f59e0b" : "#3855d6",
       featured: false,
+      featuredOnHome: false,
       draft: false,
       tags: item.topics.join(", "),
       techStack: item.techStack.join(", "),
@@ -266,6 +289,7 @@ export default function AdminDashboardPage() {
       kind: project.frontmatter.kind || "app",
       accent: project.frontmatter.accent || "#3855d6",
       featured: Boolean(project.frontmatter.featured),
+      featuredOnHome: Boolean(project.frontmatter.featuredOnHome),
       draft: Boolean(project.frontmatter.draft),
       tags: (project.frontmatter.tags || []).join(", "),
       techStack: (project.frontmatter.techStack || []).join(", "),
@@ -303,6 +327,7 @@ export default function AdminDashboardPage() {
         kind: formData.kind,
         accent: formData.accent,
         featured: formData.featured,
+        featuredOnHome: formData.featuredOnHome,
         draft: formData.draft,
         tags: tagsArray,
         techStack: techStackArray,
@@ -343,6 +368,7 @@ export default function AdminDashboardPage() {
           body: JSON.stringify({
             slug: formData.slug,
             frontmatter: frontmatterPayload,
+            content: formData.content,
           }),
         });
 
@@ -719,6 +745,35 @@ export default function AdminDashboardPage() {
       {/* TAB 2: MANAGED PROJECTS & SECTIONS */}
       {activeTab === "projects" && (
         <div>
+          {/* Homepage Spotlight Project Selector */}
+          <div className="p-4 bg-surface border border-signal/30 rounded-2xl shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">⭐</span>
+              <div>
+                <span className="text-xs font-mono text-signal uppercase tracking-wider font-bold block">
+                  Homepage Spotlight Project
+                </span>
+                <span className="text-xs text-muted">
+                  Choose which single project is highlighted on the home screen.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select
+                value={projects.find((p) => p.frontmatter.featuredOnHome)?.slug || projects[0]?.slug || ""}
+                onChange={(e) => setHomepageSpotlight(e.target.value)}
+                className="px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg focus:outline-none focus:border-accent"
+              >
+                {projects.map((p) => (
+                  <option key={p.slug} value={p.slug}>
+                    {p.frontmatter.title} ({p.frontmatter.section || "portfolio"})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           {/* Filter Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex flex-wrap items-center gap-2">
@@ -863,6 +918,21 @@ export default function AdminDashboardPage() {
                       />
                       <span>{isLive ? "ON (Live)" : "OFF (Draft)"}</span>
                     </button>
+
+                    {/* Home Spotlight Quick Toggle */}
+                    {project.frontmatter.featuredOnHome ? (
+                      <span className="px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-signal/15 text-fg border border-signal/40 flex items-center gap-1 shadow-sm">
+                        ⭐ On Home
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setHomepageSpotlight(project.slug)}
+                        className="px-2.5 py-1.5 rounded-xl text-xs font-medium text-muted hover:text-fg bg-bg-subtle hover:bg-surface border border-border hover:border-signal/40 transition-colors"
+                        title="Feature this project as the single spotlight on the homepage"
+                      >
+                        ⭐ Set on Home
+                      </button>
+                    )}
 
                     {/* Section Selector */}
                     <div className="flex items-center bg-bg-subtle border border-border rounded-xl p-0.5 text-xs">
@@ -1106,6 +1176,19 @@ export default function AdminDashboardPage() {
                     <option value="featured">Featured</option>
                     <option value="archived">Archived</option>
                   </select>
+                </div>
+
+                <div className="sm:col-span-3 flex items-center gap-2 pt-2 border-t border-border">
+                  <input
+                    type="checkbox"
+                    id="featuredOnHome"
+                    checked={formData.featuredOnHome}
+                    onChange={(e) => setFormData({ ...formData, featuredOnHome: e.target.checked })}
+                    className="size-4 text-signal rounded accent-signal cursor-pointer"
+                  />
+                  <label htmlFor="featuredOnHome" className="text-xs font-semibold text-fg cursor-pointer">
+                    ⭐ Feature as Homepage Spotlight (showcase this project on the home screen)
+                  </label>
                 </div>
               </div>
 

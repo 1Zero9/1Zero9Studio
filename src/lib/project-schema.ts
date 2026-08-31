@@ -41,6 +41,7 @@ export const projectFrontmatterSchema = z
       .default("live"),
     section: z.enum(["portfolio", "labs", "hidden"]).optional(),
     featured: z.boolean().default(false),
+    featuredOnHome: z.boolean().default(false).optional(),
     wipProgress: z.string().optional(), // e.g. "Phase 2 · Active Beta"
     wipNote: z.string().optional(),
     highlights: z.array(z.string()).default([]),

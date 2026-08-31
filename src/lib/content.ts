@@ -24,6 +24,19 @@ export function featuredProjects() {
   );
 }
 
+export function homeSpotlightProject() {
+  // 1. Check for explicit homepage spotlight
+  const explicit = allProjects.find((project) => project.featuredOnHome);
+  if (explicit) return explicit;
+
+  // 2. Check for featured project
+  const featured = allProjects.find((project) => project.featured || project.status === "featured");
+  if (featured) return featured;
+
+  // 3. Fallback to newest portfolio project
+  return portfolioProjects()[0] || allProjects[0];
+}
+
 export function inProgressProjects() {
   return allProjects.filter((project) => project.status === "in-progress");
 }

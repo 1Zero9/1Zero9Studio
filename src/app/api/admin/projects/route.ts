@@ -4,6 +4,7 @@ import {
   getAllAdminProjects,
   getAdminProjectBySlug,
   saveAdminProject,
+  setHomepageSpotlightProject,
 } from "@/lib/admin-content";
 import fs from "fs/promises";
 import path from "path";
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
       kind: frontmatter?.kind || "app",
       accent: frontmatter?.accent || "#3b82f6",
       featured: frontmatter?.featured ?? false,
+      featuredOnHome: frontmatter?.featuredOnHome ?? false,
       draft: frontmatter?.draft ?? false,
       tags: frontmatter?.tags || ["web"],
       techStack: frontmatter?.techStack || ["Next.js", "TypeScript", "Tailwind CSS"],
@@ -77,6 +79,9 @@ export async function POST(req: NextRequest) {
     }
 
     const saved = await saveAdminProject(cleanSlug, defaultFrontmatter, content);
+    if (defaultFrontmatter.featuredOnHome) {
+      await setHomepageSpotlightProject(cleanSlug);
+    }
     return NextResponse.json({ project: saved, success: true });
   } catch (err: any) {
     return NextResponse.json(
@@ -94,10 +99,16 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { slug, frontmatter, content } = body;
+    const { slug, frontmatter, content, action } = body;
 
     if (!slug) {
       return NextResponse.json({ error: "Slug is required" }, { status: 400 });
+    }
+
+    // 1. Dedicated action to set homepage spotlight
+    if (action === "set-homepage-spotlight") {
+      await setHomepageSpotlightProject(slug);
+      return NextResponse.json({ success: true, message: `Homepage spotlight set to ${slug}` });
     }
 
     const existing = await getAdminProjectBySlug(slug);
@@ -109,6 +120,10 @@ export async function PUT(req: NextRequest) {
       ...existing.frontmatter,
       ...frontmatter,
     };
+
+    if (mergedFrontmatter.featuredOnHome) {
+      await setHomepageSpotlightProject(slug);
+    }
 
     // Handle coverAlt requirement if cover is set
     if (mergedFrontmatter.cover && !mergedFrontmatter.coverAlt) {
