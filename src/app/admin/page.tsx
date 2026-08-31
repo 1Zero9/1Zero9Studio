@@ -103,6 +103,7 @@ export default function AdminDashboardPage() {
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [libraryImages, setLibraryImages] = useState<LibraryImageItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
+  const [syncingBlob, setSyncingBlob] = useState(false);
   const [librarySearch, setLibrarySearch] = useState("");
   const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
   const [libraryTargetSlug, setLibraryTargetSlug] = useState<string | null>(null);
@@ -576,6 +577,23 @@ export default function AdminDashboardPage() {
     }
 
     setLibraryModalOpen(false);
+  }
+
+  // Push all local and project assets to Vercel Blob CDN
+  async function handleSyncAllToBlob() {
+    setSyncingBlob(true);
+    try {
+      const res = await fetch("/api/admin/sync-blob", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Sync failed");
+      showToast(json.message || "All assets synced to Vercel Blob CDN!");
+      await openMediaLibrary(libraryTargetContext, libraryTargetSlug || undefined);
+      await loadProjects();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to sync to Vercel Blob", "error");
+    } finally {
+      setSyncingBlob(false);
+    }
   }
 
   // Filter projects
@@ -1636,7 +1654,7 @@ export default function AdminDashboardPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-surface border border-border rounded-3xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
             {/* Modal Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between">
+            <div className="p-6 border-b border-border flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-fg flex items-center gap-2">
                   <span>🖼️</span>
@@ -1646,12 +1664,26 @@ export default function AdminDashboardPage() {
                   Select any previously uploaded Vercel Blob, local asset, or project cover to apply immediately.
                 </p>
               </div>
-              <button
-                onClick={() => setLibraryModalOpen(false)}
-                className="text-muted hover:text-fg font-bold text-xl p-2 rounded-xl hover:bg-bg-subtle transition-colors"
-              >
-                ✕
-              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSyncAllToBlob}
+                  disabled={syncingBlob}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                  title="Push all local images and covers to Vercel CDN storage"
+                >
+                  <span>☁️</span>
+                  <span>{syncingBlob ? "Pushing to CDN..." : "Push All to Vercel CDN"}</span>
+                </button>
+
+                <button
+                  onClick={() => setLibraryModalOpen(false)}
+                  className="text-muted hover:text-fg font-bold text-xl p-2 rounded-xl hover:bg-bg-subtle transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Filter / Search Bar */}
