@@ -183,7 +183,7 @@ export default function AdminLoginPage() {
                 type="password"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Enter passcode (default: 109studio)"
+                placeholder="Enter admin passcode"
                 required
                 autoFocus
                 className="w-full px-4 py-3 bg-bg-subtle border border-border rounded-xl text-fg placeholder:text-faint focus:outline-none focus:border-accent text-sm font-mono"

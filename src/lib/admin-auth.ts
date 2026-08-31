@@ -7,8 +7,8 @@ const DEFAULT_PASSCODE = "109studio";
 
 function getSecretKey(): string {
   return (
-    process.env.AUTH_SECRET ||
     process.env.ADMIN_PASSCODE ||
+    process.env.AUTH_SECRET ||
     "1zero9-secret-session-key-2026"
   );
 }
@@ -87,12 +87,16 @@ export function verifyMagicLinkToken(token: string): { valid: boolean; email?: s
 
 export function isValidPasscode(input: string): boolean {
   if (!input) return false;
-  const secret = getSecretKey();
-  return (
-    input.trim() === secret.trim() ||
-    input.trim() === DEFAULT_PASSCODE ||
-    input.trim() === process.env.ADMIN_PASSCODE
-  );
+  const trimmed = input.trim();
+  const validKeys = [
+    process.env.ADMIN_PASSCODE,
+    process.env.AUTH_SECRET,
+    DEFAULT_PASSCODE,
+  ]
+    .filter(Boolean)
+    .map((k) => (k as string).trim());
+
+  return validKeys.includes(trimmed);
 }
 
 export async function isAuthenticated(): Promise<boolean> {
@@ -100,10 +104,16 @@ export async function isAuthenticated(): Promise<boolean> {
   const session = cookieStore.get(COOKIE_NAME);
   if (!session?.value) return false;
 
-  const secret = getSecretKey();
+  const validTokens = [
+    process.env.ADMIN_PASSCODE,
+    process.env.AUTH_SECRET,
+    DEFAULT_PASSCODE,
+  ]
+    .filter(Boolean)
+    .map((k) => Buffer.from((k as string).trim()).toString("base64"));
+
   return (
-    session.value === Buffer.from(secret).toString("base64") ||
-    session.value === Buffer.from(DEFAULT_PASSCODE).toString("base64") ||
+    validTokens.includes(session.value) ||
     session.value.startsWith("magic:")
   );
 }
