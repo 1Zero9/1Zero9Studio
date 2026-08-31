@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { updateProjectThumbnail, getBlobToken } from "@/lib/admin-content";
-import { put } from "@vercel/blob";
+import { updateProjectThumbnail, getBlobToken, safePutBlob } from "@/lib/admin-content";
 import fs from "fs/promises";
 import path from "path";
 
@@ -25,7 +24,7 @@ export async function POST(req: NextRequest) {
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       const file = formData.get("file") as File | null;
-      const slug = formData.get("slug") as string | null;
+      const slug = (formData.get("slug") as string) || "project";
       const alt = formData.get("alt") as string | null;
 
       if (!slug) {
@@ -57,8 +56,7 @@ export async function POST(req: NextRequest) {
       // 1. Try Vercel Blob if token is found
       if (blobToken) {
         try {
-          const blob = await put(`projects/${fileName}`, file, {
-            access: "public",
+          const blob = await safePutBlob(`projects/${fileName}`, file, {
             addRandomSuffix: false,
             allowOverwrite: true,
             token: blobToken,

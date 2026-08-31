@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { getAllAdminProjects, updateProjectThumbnail, getBlobToken } from "@/lib/admin-content";
-import { put } from "@vercel/blob";
+import { getAllAdminProjects, updateProjectThumbnail, getBlobToken, safePutBlob } from "@/lib/admin-content";
 import fs from "fs/promises";
 import path from "path";
 
@@ -50,9 +49,8 @@ export async function POST(req: NextRequest) {
       const ext = path.extname(file);
       const baseName = path.basename(file, ext);
 
-      // Upload to Vercel Blob
-      const blob = await put(`projects/${file}`, fileBuffer, {
-        access: "public",
+      // Upload to Vercel Blob using safePutBlob
+      const blob = await safePutBlob(`projects/${file}`, fileBuffer, {
         addRandomSuffix: false,
         allowOverwrite: true,
         token: blobToken,
@@ -88,8 +86,7 @@ export async function POST(req: NextRequest) {
           const buffer = Buffer.from(matches[2], "base64");
           const fileName = `${p.slug}-${Date.now()}.${ext}`;
 
-          const blob = await put(`projects/${fileName}`, buffer, {
-            access: "public",
+          const blob = await safePutBlob(`projects/${fileName}`, buffer, {
             addRandomSuffix: false,
             allowOverwrite: true,
             token: blobToken,

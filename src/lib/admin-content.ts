@@ -116,6 +116,46 @@ async function fetchBlobOverrides(): Promise<Record<string, { frontmatter: Recor
   return obj;
 }
 
+// Safe wrapper that tries public access first, and automatically falls back to private access if store is private
+export async function safePutBlob(
+  pathname: string,
+  data: string | Buffer | ArrayBuffer | Blob,
+  options?: {
+    token?: string;
+    addRandomSuffix?: boolean;
+    allowOverwrite?: boolean;
+    contentType?: string;
+  }
+) {
+  const token = options?.token || getBlobToken();
+  const baseOptions = {
+    addRandomSuffix: options?.addRandomSuffix ?? false,
+    allowOverwrite: options?.allowOverwrite ?? true,
+    contentType: options?.contentType,
+    token,
+  };
+
+  try {
+    return await put(pathname, data, {
+      ...baseOptions,
+      access: "public",
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (
+      msg.includes("Cannot use public access on a private store") ||
+      msg.includes("private store") ||
+      msg.includes("configured with private access")
+    ) {
+      return await put(pathname, data, {
+        ...baseOptions,
+        access: "private",
+      });
+    }
+    throw err;
+  }
+}
+
 // Helper to persist blob overrides
 async function saveBlobOverrides(overrides: Record<string, { frontmatter: Record<string, unknown>; content?: string }>): Promise<void> {
   // Always update memory cache
@@ -126,8 +166,7 @@ async function saveBlobOverrides(overrides: Record<string, { frontmatter: Record
   const blobToken = getBlobToken();
   if (blobToken) {
     try {
-      await put(OVERRIDES_BLOB_PATH, JSON.stringify(overrides, null, 2), {
-        access: "public",
+      await safePutBlob(OVERRIDES_BLOB_PATH, JSON.stringify(overrides, null, 2), {
         addRandomSuffix: false,
         allowOverwrite: true,
         token: blobToken,
