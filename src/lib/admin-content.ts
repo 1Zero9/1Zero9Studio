@@ -42,9 +42,28 @@ export function stringifyMdxFile(frontmatter: Record<string, unknown>, content: 
   return `---\n${yamlString}\n---\n\n${content.trim()}\n`;
 }
 
-// Helper to fetch blob overrides if BLOB_READ_WRITE_TOKEN is configured
+function getBlobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
+
+  for (const [key, value] of Object.entries(process.env)) {
+    if (
+      value &&
+      (key.endsWith("_READ_WRITE_TOKEN") ||
+        key.includes("BLOB_READ_WRITE_TOKEN") ||
+        key.includes("BLOB_TOKEN") ||
+        key.toLowerCase().includes("studio_blob"))
+    ) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+// Helper to fetch blob overrides if BLOB token is configured
 async function fetchBlobOverrides(): Promise<Record<string, { frontmatter: Record<string, unknown>; content?: string }>> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  const blobToken = getBlobToken();
+  if (!blobToken) {
     const obj: Record<string, { frontmatter: Record<string, unknown>; content?: string }> = {};
     for (const [k, v] of memoryOverrides.entries()) {
       obj[k] = v;
@@ -53,7 +72,7 @@ async function fetchBlobOverrides(): Promise<Record<string, { frontmatter: Recor
   }
 
   try {
-    const { blobs } = await list({ prefix: OVERRIDES_BLOB_PATH });
+    const { blobs } = await list({ prefix: OVERRIDES_BLOB_PATH, token: blobToken });
     const overrideBlob = blobs.find((b) => b.pathname === OVERRIDES_BLOB_PATH);
     if (overrideBlob?.url) {
       const res = await fetch(overrideBlob.url, { cache: "no-store" });
@@ -79,11 +98,13 @@ async function saveBlobOverrides(overrides: Record<string, { frontmatter: Record
     memoryOverrides.set(k, v);
   }
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  const blobToken = getBlobToken();
+  if (blobToken) {
     try {
       await put(OVERRIDES_BLOB_PATH, JSON.stringify(overrides, null, 2), {
         access: "public",
         addRandomSuffix: false,
+        token: blobToken,
       });
     } catch (err) {
       console.error("Failed to save overrides to Vercel Blob:", err);

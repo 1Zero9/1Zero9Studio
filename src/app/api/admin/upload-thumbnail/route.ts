@@ -12,6 +12,25 @@ const PUBLIC_PROJECTS_IMG_DIR = path.join(
   "projects"
 );
 
+function getBlobToken(): string | undefined {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
+
+  // Search environment variables for any blob store token
+  for (const [key, value] of Object.entries(process.env)) {
+    if (
+      value &&
+      (key.endsWith("_READ_WRITE_TOKEN") ||
+        key.includes("BLOB_READ_WRITE_TOKEN") ||
+        key.includes("BLOB_TOKEN") ||
+        key.toLowerCase().includes("studio_blob"))
+    ) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
 export async function POST(req: NextRequest) {
   const isAuthed = await verifyAdminRequest(req);
   if (!isAuthed) {
@@ -51,46 +70,52 @@ export async function POST(req: NextRequest) {
       const fileName = `${slug}-${timestamp}${ext}`;
       let coverUrl = "";
       let storageType = "local-filesystem";
+      const blobToken = getBlobToken();
 
-      // 1. Upload to Vercel Blob if BLOB_READ_WRITE_TOKEN is configured
-      if (process.env.BLOB_READ_WRITE_TOKEN) {
+      // 1. Try Vercel Blob if token is found
+      if (blobToken) {
         try {
           const blob = await put(`projects/${fileName}`, file, {
             access: "public",
             addRandomSuffix: false,
+            token: blobToken,
           });
           coverUrl = blob.url;
           storageType = "vercel-blob";
         } catch (blobErr: unknown) {
-          console.error("Vercel blob upload error:", blobErr);
-          if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-            throw new Error(`Vercel Blob upload failed: ${(blobErr as Error).message}`);
-          }
-          // Local fallback for dev
+          console.error("Vercel blob put error, falling back to data URL:", blobErr);
+          const arrayBuffer = await file.arrayBuffer();
+          const base64 = Buffer.from(arrayBuffer).toString("base64");
+          const mimeType = file.type || "image/png";
+          coverUrl = `data:${mimeType};base64,${base64}`;
+          storageType = "inline-data";
+        }
+      } else if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+        // 2. Local development fallback
+        try {
           await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
           const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
           const arrayBuffer = await file.arrayBuffer();
           await fs.writeFile(filePath, Buffer.from(arrayBuffer));
           coverUrl = `/images/projects/${fileName}`;
+          storageType = "local-filesystem";
+        } catch {
+          const arrayBuffer = await file.arrayBuffer();
+          const base64 = Buffer.from(arrayBuffer).toString("base64");
+          const mimeType = file.type || "image/png";
+          coverUrl = `data:${mimeType};base64,${base64}`;
+          storageType = "inline-data";
         }
       } else {
-        // Check if in serverless environment without token
-        if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-          throw new Error(
-            "Vercel Blob token (BLOB_READ_WRITE_TOKEN) is not configured in Vercel environment variables. In Vercel, go to Storage -> 1-zero9-studio-blob and ensure it is connected to your project."
-          );
-        }
-
-        // 2. Otherwise write directly to public/images/projects on local filesystem
-        await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
-        const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
-
+        // 3. Serverless fallback without blob token -> high quality inline data URL
         const arrayBuffer = await file.arrayBuffer();
-        await fs.writeFile(filePath, Buffer.from(arrayBuffer));
-        coverUrl = `/images/projects/${fileName}`;
+        const base64 = Buffer.from(arrayBuffer).toString("base64");
+        const mimeType = file.type || "image/png";
+        coverUrl = `data:${mimeType};base64,${base64}`;
+        storageType = "inline-data";
       }
 
-      // Update project metadata (with automatic read-only disk resilience)
+      // Update project metadata
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
 
       return NextResponse.json({
