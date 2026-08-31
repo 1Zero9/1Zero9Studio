@@ -3,7 +3,6 @@ import { Resend } from "resend";
 import {
   generateMagicLinkToken,
   isAllowedAdminEmail,
-  getAllowedAdminEmails,
 } from "@/lib/admin-auth";
 
 export async function POST(req: NextRequest) {
@@ -82,9 +81,14 @@ export async function POST(req: NextRequest) {
       magicLinkUrl: process.env.NODE_ENV !== "production" ? magicLinkUrl : undefined,
       message: `Magic link sent to ${cleanEmail}. Please check your inbox.`,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to generate magic link" },
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Failed to generate magic link",
+      },
       { status: 500 }
     );
   }

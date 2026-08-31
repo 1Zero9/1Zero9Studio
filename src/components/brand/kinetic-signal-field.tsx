@@ -139,7 +139,6 @@ export function KineticSignalField({ className = "" }: { className?: string }) {
         const opacity = isDark ? 0.25 - l * 0.06 : 0.18 - l * 0.04;
 
         ctx.beginPath();
-        const startX = 0;
         const endX = width;
         const steps = Math.floor(width / 8);
 

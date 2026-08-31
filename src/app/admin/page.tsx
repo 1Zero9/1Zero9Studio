@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -54,6 +54,29 @@ interface DiscoveredProject {
   managedSlug?: string;
 }
 
+interface ProjectFormData {
+  title: string;
+  slug: string;
+  summary: string;
+  date: string;
+  section: "portfolio" | "labs" | "hidden";
+  status: "live" | "in-progress" | "featured" | "archived";
+  kind: "website" | "app" | "pwa" | "tool" | "experiment";
+  accent: string;
+  featured: boolean;
+  featuredOnHome: boolean;
+  draft: boolean;
+  tags: string;
+  techStack: string;
+  highlights: string;
+  content: string;
+  wipProgress: string;
+  url: string;
+  repo: string;
+  cover: string;
+  coverAlt: string;
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -70,7 +93,7 @@ export default function AdminDashboardPage() {
   // Vetting / Edit modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<ProjectFormData>({
     title: "",
     slug: "",
     summary: "",
@@ -103,6 +126,34 @@ export default function AdminDashboardPage() {
     setTimeout(() => setNotification(null), 4000);
   }
 
+  const loadProjects = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/projects");
+      if (res.ok) {
+        const data = await res.json();
+        setProjects(data.projects || []);
+      }
+    } catch (err) {
+      console.error("Failed to load projects", err);
+    }
+  }, []);
+
+  const scanProjects = useCallback(async (user: string = githubUser) => {
+    setScanning(true);
+    try {
+      const res = await fetch(`/api/admin/discover?username=${encodeURIComponent(user)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDiscovered(data.all || []);
+      }
+    } catch (err) {
+      console.error("Failed to scan projects", err);
+      showToast("Could not scan GitHub projects", "error");
+    } finally {
+      setScanning(false);
+    }
+  }, [githubUser]);
+
   // Check auth and initial load
   useEffect(() => {
     async function init() {
@@ -123,35 +174,7 @@ export default function AdminDashboardPage() {
       }
     }
     init();
-  }, [router]);
-
-  async function loadProjects() {
-    try {
-      const res = await fetch("/api/admin/projects");
-      if (res.ok) {
-        const data = await res.json();
-        setProjects(data.projects || []);
-      }
-    } catch (err) {
-      console.error("Failed to load projects", err);
-    }
-  }
-
-  async function scanProjects(user: string = githubUser) {
-    setScanning(true);
-    try {
-      const res = await fetch(`/api/admin/discover?username=${encodeURIComponent(user)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setDiscovered(data.all || []);
-      }
-    } catch (err) {
-      console.error("Failed to scan projects", err);
-      showToast("Could not scan GitHub projects", "error");
-    } finally {
-      setScanning(false);
-    }
-  }
+  }, [router, loadProjects, scanProjects]);
 
   async function handleLogout() {
     await fetch("/api/admin/auth", { method: "DELETE" });
@@ -262,7 +285,7 @@ export default function AdminDashboardPage() {
       summary: item.summary,
       date: new Date().toISOString().slice(0, 10),
       section: item.suggestedSection,
-      status: item.suggestedStatus,
+      status: item.suggestedStatus === "in-progress" ? "in-progress" : "live",
       kind: item.suggestedKind,
       accent: item.suggestedSection === "labs" ? "#f59e0b" : "#3855d6",
       featured: false,
@@ -289,8 +312,8 @@ export default function AdminDashboardPage() {
       slug: project.slug,
       summary: project.frontmatter.summary || "",
       date: project.frontmatter.date || new Date().toISOString().slice(0, 10),
-      section: project.frontmatter.section || (project.frontmatter.kind === "website" ? "portfolio" : "labs"),
-      status: project.frontmatter.status || "live",
+      section: (project.frontmatter.section as "portfolio" | "labs" | "hidden") || (project.frontmatter.kind === "website" ? "portfolio" : "labs"),
+      status: (project.frontmatter.status as "live" | "in-progress" | "featured" | "archived") || "live",
       kind: project.frontmatter.kind || "app",
       accent: project.frontmatter.accent || "#3855d6",
       featured: Boolean(project.frontmatter.featured),
@@ -323,7 +346,7 @@ export default function AdminDashboardPage() {
         ? formData.highlights.split("\n").map((h: string) => h.trim()).filter(Boolean)
         : [];
 
-      const frontmatterPayload: any = {
+      const frontmatterPayload: Record<string, unknown> = {
         title: formData.title,
         summary: formData.summary,
         date: formData.date,
@@ -387,8 +410,8 @@ export default function AdminDashboardPage() {
 
       setModalOpen(false);
       await loadProjects();
-    } catch (err: any) {
-      showToast(err.message || "Failed to save project", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to save project", "error");
     }
   }
 
@@ -425,8 +448,8 @@ export default function AdminDashboardPage() {
       const storageMsg = json.storageType === "vercel-blob" ? " (saved to Vercel Blob)" : "";
       showToast(`Thumbnail uploaded for ${targetSlug}!${storageMsg}`);
       await loadProjects();
-    } catch (err: any) {
-      showToast(err.message || "Failed to upload thumbnail", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to upload thumbnail", "error");
     } finally {
       setUploadingImage(null);
       setSelectedProjectForUpload(null);
@@ -458,7 +481,7 @@ export default function AdminDashboardPage() {
         throw new Error(json.error || "Upload failed");
       }
 
-      setFormData((prev: any) => ({
+      setFormData((prev: ProjectFormData) => ({
         ...prev,
         cover: json.coverUrl,
         coverAlt: prev.coverAlt || `${prev.title || targetSlug} preview`,
@@ -467,8 +490,8 @@ export default function AdminDashboardPage() {
       const storageMsg = json.storageType === "vercel-blob" ? " to Vercel Blob" : "";
       showToast(`Image uploaded${storageMsg}!`);
       await loadProjects();
-    } catch (err: any) {
-      showToast(err.message || "Failed to upload", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to upload", "error");
     } finally {
       setUploadingImage(null);
       if (modalFileInputRef.current) modalFileInputRef.current.value = "";
@@ -1220,7 +1243,7 @@ export default function AdminDashboardPage() {
                   </label>
                   <select
                     value={formData.section}
-                    onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, section: e.target.value as "portfolio" | "labs" | "hidden" })}
                     className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-sm text-fg font-semibold focus:outline-none focus:border-accent"
                   >
                     <option value="portfolio">Portfolio (/projects)</option>
@@ -1249,7 +1272,7 @@ export default function AdminDashboardPage() {
                   </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as "live" | "in-progress" | "featured" | "archived" })}
                     className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-sm text-fg focus:outline-none focus:border-accent"
                   >
                     <option value="live">Live</option>
@@ -1392,7 +1415,7 @@ export default function AdminDashboardPage() {
                   <label className="block text-xs font-mono uppercase text-muted mb-1">Kind</label>
                   <select
                     value={formData.kind}
-                    onChange={(e) => setFormData({ ...formData, kind: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, kind: e.target.value as "website" | "app" | "pwa" | "tool" | "experiment" })}
                     className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-sm text-fg focus:outline-none focus:border-accent"
                   >
                     <option value="website">Website</option>

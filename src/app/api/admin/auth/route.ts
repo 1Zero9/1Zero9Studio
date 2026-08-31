@@ -36,9 +36,12 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to authenticate" },
+      {
+        error:
+          err instanceof Error ? err.message : "Failed to authenticate",
+      },
       { status: 500 }
     );
   }

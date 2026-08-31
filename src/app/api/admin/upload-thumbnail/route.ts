@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
           });
           coverUrl = blob.url;
           storageType = "vercel-blob";
-        } catch (blobErr: any) {
+        } catch (blobErr: unknown) {
           console.error("Vercel blob upload error, falling back to local storage:", blobErr);
           // Fall back to local
           await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
@@ -107,9 +107,14 @@ export async function POST(req: NextRequest) {
         project,
       });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to upload thumbnail" },
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Failed to upload thumbnail",
+      },
       { status: 500 }
     );
   }

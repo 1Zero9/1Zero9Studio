@@ -80,8 +80,11 @@ export function verifyMagicLinkToken(token: string): { valid: boolean; email?: s
     }
 
     return { valid: true, email: payload.email };
-  } catch (err: any) {
-    return { valid: false, error: err.message || "Token verification failed" };
+  } catch (err: unknown) {
+    return {
+      valid: false,
+      error: err instanceof Error ? err.message : "Token verification failed",
+    };
   }
 }
 

@@ -23,6 +23,18 @@ interface DiscoveredProject {
   managedSlug?: string;
 }
 
+interface GitHubRepoItem {
+  id: number;
+  name: string;
+  html_url: string;
+  description?: string | null;
+  homepage?: string | null;
+  topics?: string[];
+  language?: string | null;
+  updated_at: string;
+  pushed_at: string;
+}
+
 function cleanTitleFromName(name: string): string {
   return name
     .replace(/[-_]+/g, " ")
@@ -79,7 +91,7 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    let rawRepos: any[] = [];
+    let rawRepos: GitHubRepoItem[] = [];
     if (res.ok) {
       rawRepos = await res.json();
     } else {
@@ -89,7 +101,6 @@ export async function GET(req: NextRequest) {
     const discovered: DiscoveredProject[] = [];
 
     for (const repo of rawRepos) {
-      // Ignore archived or template repos if desired
       const slug = generateSlug(repo.name);
       const repoUrl = repo.html_url;
       const isAlreadyManaged =
@@ -174,9 +185,14 @@ export async function GET(req: NextRequest) {
       alreadyManaged: discovered.filter((d) => d.isAlreadyManaged),
       all: discovered,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to discover projects" },
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Failed to discover projects",
+      },
       { status: 500 }
     );
   }

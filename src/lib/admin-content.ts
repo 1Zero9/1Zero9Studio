@@ -18,7 +18,7 @@ export interface AdminProject {
   hasThumbnail: boolean;
 }
 
-export function parseMdxFile(raw: string): { frontmatter: Record<string, any>; content: string } {
+export function parseMdxFile(raw: string): { frontmatter: Record<string, unknown>; content: string } {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) {
     return { frontmatter: {}, content: raw };
@@ -32,7 +32,7 @@ export function parseMdxFile(raw: string): { frontmatter: Record<string, any>; c
   }
 }
 
-export function stringifyMdxFile(frontmatter: Record<string, any>, content: string): string {
+export function stringifyMdxFile(frontmatter: Record<string, unknown>, content: string): string {
   const yamlString = yaml.stringify(frontmatter).trim();
   return `---\n${yamlString}\n---\n\n${content.trim()}\n`;
 }
@@ -57,7 +57,7 @@ export async function getAllAdminProjects(): Promise<AdminProject[]> {
 
         projects.push({
           slug,
-          frontmatter: frontmatter as any,
+          frontmatter: frontmatter as unknown as AdminProject["frontmatter"],
           content,
           hasThumbnail,
         });
@@ -86,7 +86,7 @@ export async function getAdminProjectBySlug(slug: string): Promise<AdminProject 
     const { frontmatter, content } = parseMdxFile(raw);
     return {
       slug,
-      frontmatter: frontmatter as any,
+      frontmatter: frontmatter as unknown as AdminProject["frontmatter"],
       content,
       hasThumbnail: Boolean(frontmatter.cover),
     };
@@ -97,7 +97,7 @@ export async function getAdminProjectBySlug(slug: string): Promise<AdminProject 
 
 export async function saveAdminProject(
   slug: string,
-  frontmatter: Record<string, any>,
+  frontmatter: Record<string, unknown>,
   content?: string
 ): Promise<AdminProject> {
   const dirPath = path.join(PROJECTS_DIR, slug);
@@ -112,7 +112,7 @@ export async function saveAdminProject(
     const parsed = parseMdxFile(raw);
     existingContent = parsed.content;
   } catch {
-    existingContent = `## Overview\n\n${frontmatter.summary || ""}\n\n## Highlights\n\n- Built with modern web architecture\n- Designed for performance and clean user experience\n`;
+    existingContent = `## Overview\n\n${(frontmatter.summary as string) || ""}\n\n## Highlights\n\n- Built with modern web architecture\n- Designed for performance and clean user experience\n`;
   }
 
   const finalContent = content !== undefined ? content : existingContent;
@@ -122,7 +122,7 @@ export async function saveAdminProject(
 
   return {
     slug,
-    frontmatter: frontmatter as any,
+    frontmatter: frontmatter as unknown as AdminProject["frontmatter"],
     content: finalContent,
     hasThumbnail: Boolean(frontmatter.cover),
   };
@@ -142,7 +142,7 @@ export async function updateProjectThumbnail(
     coverAlt: coverAlt || project.frontmatter.coverAlt || `${project.frontmatter.title} preview screenshot`,
   };
 
-  return await saveAdminProject(slug, updatedFrontmatter, project.content);
+  return await saveAdminProject(slug, updatedFrontmatter as unknown as Record<string, unknown>, project.content);
 }
 
 export async function setHomepageSpotlightProject(targetSlug: string): Promise<void> {
@@ -154,7 +154,7 @@ export async function setHomepageSpotlightProject(targetSlug: string): Promise<v
         ...p.frontmatter,
         featuredOnHome: isTarget,
       };
-      await saveAdminProject(p.slug, updatedFrontmatter, p.content);
+      await saveAdminProject(p.slug, updatedFrontmatter as unknown as Record<string, unknown>, p.content);
     }
   }
 }

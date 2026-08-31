@@ -1,36 +1,57 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 
 function VerifyContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying");
-  const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter();
+  const [status, setStatus] = useState<"verifying" | "success" | "error">(() =>
+    token ? "verifying" : "error"
+  );
+  const [errorMessage, setErrorMessage] = useState<string>(() =>
+    token ? "" : "No login token was provided in the link."
+  );
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setErrorMessage("No login token was provided in the link.");
-      return;
-    }
+    if (!token) return;
 
-    async function verify() {
+    let ignore = false;
+
+    async function performVerification() {
       try {
-        // Direct to verification endpoint
-        window.location.href = `/api/admin/auth/verify?token=${encodeURIComponent(token!)}`;
-      } catch (err: any) {
-        setStatus("error");
-        setErrorMessage(err.message || "Failed to verify login link");
+        const res = await fetch(
+          `/api/admin/auth/verify?token=${encodeURIComponent(token!)}`,
+          { redirect: "manual" }
+        );
+
+        if (res.ok || res.type === "opaqueredirect" || res.status === 307 || res.status === 302) {
+          window.location.href = "/admin";
+        } else {
+          const data = await res.json().catch(() => ({}));
+          if (!ignore) {
+            setStatus("error");
+            setErrorMessage(data.error || "Failed to verify magic link");
+          }
+        }
+      } catch (err: unknown) {
+        if (!ignore) {
+          setStatus("error");
+          setErrorMessage(
+            err instanceof Error ? err.message : "Verification failed"
+          );
+        }
       }
     }
 
-    verify();
-  }, [token, router]);
+    performVerification();
+
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -65,11 +86,13 @@ function VerifyContent() {
 
 export default function AdminVerifyPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <span className="size-4 rounded-full bg-signal animate-ping" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <span className="size-4 rounded-full bg-signal animate-ping" />
+        </div>
+      }
+    >
       <VerifyContent />
     </Suspense>
   );

@@ -38,8 +38,8 @@ export default function AdminLoginPage() {
       if (data.magicLinkUrl) {
         setDevMagicLink(data.magicLinkUrl);
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to send magic link");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send magic link");
     } finally {
       setLoading(false);
     }
@@ -66,8 +66,8 @@ export default function AdminLoginPage() {
 
       router.push("/admin");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Failed to log in");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to log in");
     } finally {
       setLoading(false);
     }

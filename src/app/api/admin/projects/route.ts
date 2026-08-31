@@ -20,9 +20,12 @@ export async function GET(req: NextRequest) {
   try {
     const projects = await getAllAdminProjects();
     return NextResponse.json({ projects });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to fetch projects" },
+      {
+        error:
+          err instanceof Error ? err.message : "Failed to fetch projects",
+      },
       { status: 500 }
     );
   }
@@ -72,8 +75,8 @@ export async function POST(req: NextRequest) {
 
     // Remove empty cover if coverAlt is missing to satisfy zod
     if (!defaultFrontmatter.cover) {
-      delete defaultFrontmatter.cover;
-      delete defaultFrontmatter.coverAlt;
+      delete (defaultFrontmatter as Record<string, unknown>).cover;
+      delete (defaultFrontmatter as Record<string, unknown>).coverAlt;
     } else if (!defaultFrontmatter.coverAlt) {
       defaultFrontmatter.coverAlt = `${defaultFrontmatter.title} screenshot`;
     }
@@ -83,9 +86,12 @@ export async function POST(req: NextRequest) {
       await setHomepageSpotlightProject(cleanSlug);
     }
     return NextResponse.json({ project: saved, success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to create project" },
+      {
+        error:
+          err instanceof Error ? err.message : "Failed to create project",
+      },
       { status: 500 }
     );
   }
@@ -135,9 +141,12 @@ export async function PUT(req: NextRequest) {
 
     const saved = await saveAdminProject(slug, mergedFrontmatter, content);
     return NextResponse.json({ project: saved, success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to update project" },
+      {
+        error:
+          err instanceof Error ? err.message : "Failed to update project",
+      },
       { status: 500 }
     );
   }
@@ -161,9 +170,12 @@ export async function DELETE(req: NextRequest) {
     await fs.rm(projectDir, { recursive: true, force: true });
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to delete project" },
+      {
+        error:
+          err instanceof Error ? err.message : "Failed to delete project",
+      },
       { status: 500 }
     );
   }
