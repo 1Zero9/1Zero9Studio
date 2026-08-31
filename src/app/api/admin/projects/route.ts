@@ -167,7 +167,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     const projectDir = path.join(PROJECTS_DIR, slug);
-    await fs.rm(projectDir, { recursive: true, force: true });
+    try {
+      await fs.rm(projectDir, { recursive: true, force: true });
+    } catch {
+      // In read-only serverless environment, mark project hidden in overrides
+      await saveAdminProject(slug, { section: "hidden", draft: true });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

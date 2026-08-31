@@ -62,8 +62,11 @@ export async function POST(req: NextRequest) {
           coverUrl = blob.url;
           storageType = "vercel-blob";
         } catch (blobErr: unknown) {
-          console.error("Vercel blob upload error, falling back to local storage:", blobErr);
-          // Fall back to local
+          console.error("Vercel blob upload error:", blobErr);
+          if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+            throw new Error(`Vercel Blob upload failed: ${(blobErr as Error).message}`);
+          }
+          // Local fallback for dev
           await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
           const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
           const arrayBuffer = await file.arrayBuffer();
@@ -71,6 +74,13 @@ export async function POST(req: NextRequest) {
           coverUrl = `/images/projects/${fileName}`;
         }
       } else {
+        // Check if in serverless environment without token
+        if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+          throw new Error(
+            "Vercel Blob token (BLOB_READ_WRITE_TOKEN) is not configured in Vercel environment variables. In Vercel, go to Storage -> 1-zero9-studio-blob and ensure it is connected to your project."
+          );
+        }
+
         // 2. Otherwise write directly to public/images/projects on local filesystem
         await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
         const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
@@ -80,6 +90,7 @@ export async function POST(req: NextRequest) {
         coverUrl = `/images/projects/${fileName}`;
       }
 
+      // Update project metadata (with automatic read-only disk resilience)
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
 
       return NextResponse.json({

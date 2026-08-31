@@ -1,9 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
 import yaml from "yaml";
+import { put, list } from "@vercel/blob";
 import { ProjectFrontmatter } from "./project-schema";
 
 const PROJECTS_DIR = path.join(process.cwd(), "content", "projects");
+const OVERRIDES_BLOB_PATH = "data/project-overrides.json";
 
 export interface AdminProject {
   slug: string;
@@ -18,6 +20,9 @@ export interface AdminProject {
   hasThumbnail: boolean;
 }
 
+// In-memory fallback cache for serverless environments when disk is read-only
+const memoryOverrides = new Map<string, { frontmatter: Record<string, unknown>; content?: string }>();
+
 export function parseMdxFile(raw: string): { frontmatter: Record<string, unknown>; content: string } {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) {
@@ -26,7 +31,7 @@ export function parseMdxFile(raw: string): { frontmatter: Record<string, unknown
   const [, yamlBlock, content] = match;
   try {
     const parsed = yaml.parse(yamlBlock || "");
-    return { frontmatter: parsed || {}, content: (content || "").trim() };
+    return { frontmatter: (parsed as Record<string, unknown>) || {}, content: (content || "").trim() };
   } catch {
     return { frontmatter: {}, content: raw };
   }
@@ -37,11 +42,61 @@ export function stringifyMdxFile(frontmatter: Record<string, unknown>, content: 
   return `---\n${yamlString}\n---\n\n${content.trim()}\n`;
 }
 
+// Helper to fetch blob overrides if BLOB_READ_WRITE_TOKEN is configured
+async function fetchBlobOverrides(): Promise<Record<string, { frontmatter: Record<string, unknown>; content?: string }>> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    const obj: Record<string, { frontmatter: Record<string, unknown>; content?: string }> = {};
+    for (const [k, v] of memoryOverrides.entries()) {
+      obj[k] = v;
+    }
+    return obj;
+  }
+
+  try {
+    const { blobs } = await list({ prefix: OVERRIDES_BLOB_PATH });
+    const overrideBlob = blobs.find((b) => b.pathname === OVERRIDES_BLOB_PATH);
+    if (overrideBlob?.url) {
+      const res = await fetch(overrideBlob.url, { cache: "no-store" });
+      if (res.ok) {
+        return (await res.json()) || {};
+      }
+    }
+  } catch (err) {
+    console.warn("Could not load blob overrides:", err);
+  }
+
+  const obj: Record<string, { frontmatter: Record<string, unknown>; content?: string }> = {};
+  for (const [k, v] of memoryOverrides.entries()) {
+    obj[k] = v;
+  }
+  return obj;
+}
+
+// Helper to persist blob overrides
+async function saveBlobOverrides(overrides: Record<string, { frontmatter: Record<string, unknown>; content?: string }>): Promise<void> {
+  // Always update memory cache
+  for (const [k, v] of Object.entries(overrides)) {
+    memoryOverrides.set(k, v);
+  }
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      await put(OVERRIDES_BLOB_PATH, JSON.stringify(overrides, null, 2), {
+        access: "public",
+        addRandomSuffix: false,
+      });
+    } catch (err) {
+      console.error("Failed to save overrides to Vercel Blob:", err);
+    }
+  }
+}
+
 export async function getAllAdminProjects(): Promise<AdminProject[]> {
   try {
     const entries = await fs.readdir(PROJECTS_DIR, { withFileTypes: true });
     const projectDirs = entries.filter((e) => e.isDirectory() && e.name !== "_template");
 
+    const overrides = await fetchBlobOverrides();
     const projects: AdminProject[] = [];
 
     for (const dir of projectDirs) {
@@ -49,20 +104,39 @@ export async function getAllAdminProjects(): Promise<AdminProject[]> {
       const mdxPath = path.join(PROJECTS_DIR, slug, "index.mdx");
       try {
         const raw = await fs.readFile(mdxPath, "utf-8");
-        const { frontmatter, content } = parseMdxFile(raw);
+        const parsed = parseMdxFile(raw);
 
-        // Check if thumbnail exists or is configured
-        const cover = frontmatter.cover as string | undefined;
+        // Merge disk data with any serverless blob overrides
+        const override = overrides[slug];
+        const finalFrontmatter = {
+          ...parsed.frontmatter,
+          ...(override?.frontmatter || {}),
+        };
+        const finalContent = override?.content !== undefined ? override.content : parsed.content;
+
+        const cover = finalFrontmatter.cover as string | undefined;
         const hasThumbnail = Boolean(cover);
 
         projects.push({
           slug,
-          frontmatter: frontmatter as unknown as AdminProject["frontmatter"],
-          content,
+          frontmatter: finalFrontmatter as unknown as AdminProject["frontmatter"],
+          content: finalContent,
           hasThumbnail,
         });
       } catch (err) {
         console.error(`Error reading project ${slug}:`, err);
+      }
+    }
+
+    // Check for any newly added custom projects that only exist in overrides
+    for (const [slug, override] of Object.entries(overrides)) {
+      if (!projects.some((p) => p.slug === slug)) {
+        projects.push({
+          slug,
+          frontmatter: override.frontmatter as unknown as AdminProject["frontmatter"],
+          content: override.content || "",
+          hasThumbnail: Boolean(override.frontmatter.cover),
+        });
       }
     }
 
@@ -81,14 +155,37 @@ export async function getAllAdminProjects(): Promise<AdminProject[]> {
 
 export async function getAdminProjectBySlug(slug: string): Promise<AdminProject | null> {
   try {
-    const mdxPath = path.join(PROJECTS_DIR, slug, "index.mdx");
-    const raw = await fs.readFile(mdxPath, "utf-8");
-    const { frontmatter, content } = parseMdxFile(raw);
+    const overrides = await fetchBlobOverrides();
+    const override = overrides[slug];
+
+    let diskFrontmatter: Record<string, unknown> = {};
+    let diskContent = "";
+
+    try {
+      const mdxPath = path.join(PROJECTS_DIR, slug, "index.mdx");
+      const raw = await fs.readFile(mdxPath, "utf-8");
+      const parsed = parseMdxFile(raw);
+      diskFrontmatter = parsed.frontmatter;
+      diskContent = parsed.content;
+    } catch {
+      // If not on disk, may be in overrides
+    }
+
+    if (!diskContent && !override) {
+      return null;
+    }
+
+    const finalFrontmatter = {
+      ...diskFrontmatter,
+      ...(override?.frontmatter || {}),
+    };
+    const finalContent = override?.content !== undefined ? override.content : diskContent;
+
     return {
       slug,
-      frontmatter: frontmatter as unknown as AdminProject["frontmatter"],
-      content,
-      hasThumbnail: Boolean(frontmatter.cover),
+      frontmatter: finalFrontmatter as unknown as AdminProject["frontmatter"],
+      content: finalContent,
+      hasThumbnail: Boolean(finalFrontmatter.cover),
     };
   } catch {
     return null;
@@ -101,11 +198,8 @@ export async function saveAdminProject(
   content?: string
 ): Promise<AdminProject> {
   const dirPath = path.join(PROJECTS_DIR, slug);
-  await fs.mkdir(dirPath, { recursive: true });
-
   const mdxPath = path.join(dirPath, "index.mdx");
 
-  // If content is not provided, try to preserve existing content or use default
   let existingContent = "";
   try {
     const raw = await fs.readFile(mdxPath, "utf-8");
@@ -118,7 +212,22 @@ export async function saveAdminProject(
   const finalContent = content !== undefined ? content : existingContent;
   const mdxString = stringifyMdxFile(frontmatter, finalContent);
 
-  await fs.writeFile(mdxPath, mdxString, "utf-8");
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+    await fs.writeFile(mdxPath, mdxString, "utf-8");
+  } catch (diskErr: unknown) {
+    console.warn(
+      `Filesystem is read-only (${(diskErr as Error).message || "EROFS"}). Persisting to cloud storage overrides.`
+    );
+  }
+
+  // Persist to Blob overrides (so changes persist on Vercel serverless deployments)
+  const overrides = await fetchBlobOverrides();
+  overrides[slug] = {
+    frontmatter,
+    content: finalContent,
+  };
+  await saveBlobOverrides(overrides);
 
   return {
     slug,
