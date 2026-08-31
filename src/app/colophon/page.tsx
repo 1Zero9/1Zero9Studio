@@ -25,7 +25,7 @@ export default function ColophonPage() {
           <div className="p-5 rounded-2xl bg-surface border border-border flex flex-col gap-2 font-mono text-xs text-muted">
             <div>
               <span className="text-faint block">Design & Code</span>
-              <span className="text-fg font-semibold">Stephen Cranfield</span>
+              <span className="text-fg font-semibold">1Zero9 Studio</span>
             </div>
             <div>
               <span className="text-faint block">Framework</span>

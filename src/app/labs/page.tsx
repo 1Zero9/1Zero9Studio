@@ -5,7 +5,7 @@ import { createMetadata } from "@/lib/metadata";
 export const metadata = createMetadata({
   title: "Labs & Experiments",
   description:
-    "Active workbench, in-progress products, AI workflows, and software experiments designed and built by Stephen Cranfield at 1Zero9 Studio.",
+    "Active workbench, in-progress products, AI workflows, and software experiments designed and built by 1Zero9 Studio.",
   path: "/labs",
 });
 

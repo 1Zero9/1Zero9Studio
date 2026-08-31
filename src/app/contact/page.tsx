@@ -5,8 +5,8 @@ import { createMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
-  title: "Contact Stephen Cranfield",
-  description: "Get in touch with Stephen Cranfield at 1Zero9 Studio.",
+  title: "Contact 1Zero9 Studio",
+  description: "Get in touch with 1Zero9 Studio.",
   path: "/contact",
 });
 

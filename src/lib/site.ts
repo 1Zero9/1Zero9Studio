@@ -1,10 +1,10 @@
 export const site = {
   name: "1Zero9",
   description:
-    "The engineering and product portfolio of Stephen Cranfield — websites, PWAs, software, and active labs experiments designed and built from idea to launch.",
+    "The engineering and product portfolio of 1Zero9 Studio — websites, PWAs, software, and active labs experiments designed and built from idea to launch.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.1zero9.com",
   author: {
-    name: "Stephen Cranfield",
+    name: "1Zero9 Studio",
     email: "onezeronine@gmail.com",
   },
   nav: [

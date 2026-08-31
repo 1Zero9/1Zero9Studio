@@ -134,7 +134,7 @@ export default async function ProjectPage({
         <dl className="case-study__meta-bar">
           <div className="case-study__meta-item">
             <dt>Maker & Role</dt>
-            <dd>Stephen Cranfield · Idea, Design & Build</dd>
+            <dd>1Zero9 Studio · Idea, Design & Build</dd>
           </div>
           <div className="case-study__meta-item">
             <dt>Focus & Tags</dt>

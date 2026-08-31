@@ -59,12 +59,12 @@ export function KineticHero({
               </span>
             </div>
           </div>
-          <span className="text-xs font-mono text-muted hidden sm:inline-block">
-            Hover to modulate frequency
+          <span className="text-xs font-mono text-signal/80 hidden sm:inline-block">
+            Hover & drag to modulate · Click to pulse
           </span>
         </div>
 
-        <WaveformVisualizer bars={52} active={true} />
+        <WaveformVisualizer active={true} />
       </div>
     </section>
   );

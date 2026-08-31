@@ -5,7 +5,7 @@ import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
   title: "Collaborating with 1Zero9",
-  description: "How Stephen Cranfield collaborates on web software, apps, and digital products.",
+  description: "How 1Zero9 Studio collaborates on web software, apps, and digital products.",
   path: "/services",
 });
 

@@ -6,7 +6,7 @@ import { createMetadata } from "@/lib/metadata";
 export const metadata = createMetadata({
   title: "Portfolio — Production Work & Platforms",
   description:
-    "Production-grade websites, progressive web apps, and software engineered by Stephen Cranfield at 1Zero9 Studio.",
+    "Production-grade websites, progressive web apps, and software engineered by 1Zero9 Studio.",
   path: "/projects",
 });
 
