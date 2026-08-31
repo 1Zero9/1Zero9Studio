@@ -2147,7 +2147,7 @@ export default function AdminDashboardPage() {
                       className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-mono text-fg placeholder:text-faint focus:outline-none focus:border-accent"
                     />
                     <p className="text-[10px] text-muted mt-1">
-                      If the repository is private and GITHUB_TOKEN is not in your .env.local, paste a token with <code className="text-fg">repo</code> scope.
+                      If the repository is private and GITHUB_TOKEN / GH_TOKEN / GITHUB_CONTENT_TOKEN is not configured in your environment, paste a token with <code className="text-fg">repo</code> scope.
                     </p>
                   </div>
                 </details>

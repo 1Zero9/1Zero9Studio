@@ -69,6 +69,44 @@ export async function getLiveProjects(): Promise<Project[]> {
           url: ap.frontmatter.url || existing.url,
           repo: ap.frontmatter.repo || existing.repo,
         } as Project);
+      } else {
+        // Brand-new project created purely through the admin panel (manual
+        // add or GitHub import) that hasn't been committed to the MDX
+        // collection yet. Without this branch these projects were silently
+        // dropped from every listing page (home/projects/labs) even though
+        // they were saved successfully.
+        const fm = ap.frontmatter;
+        const rawCover = fm.cover;
+        mergedMap.set(ap.slug, {
+          slug: ap.slug,
+          title: fm.title || ap.slug,
+          summary: fm.summary || "",
+          date: fm.date || new Date().toISOString().split("T")[0],
+          year: (fm.date || "").slice(0, 4) || String(new Date().getFullYear()),
+          updated: fm.updated,
+          tags: fm.tags || [],
+          techStack: fm.techStack || [],
+          kind: fm.kind || "app",
+          accent: fm.accent || "#3855d6",
+          status: fm.status || "live",
+          section: fm.section,
+          featured: Boolean(fm.featured),
+          featuredOnHome: Boolean(fm.featuredOnHome),
+          wipProgress: fm.wipProgress,
+          wipNote: fm.wipNote,
+          highlights: fm.highlights || [],
+          links: fm.links || [],
+          gallery: fm.gallery || [],
+          cover: resolveCoverUrl(rawCover),
+          coverAlt: fm.coverAlt,
+          url: fm.url,
+          repo: fm.repo,
+          draft: Boolean(fm.draft),
+          order: fm.order,
+          readingTime: 3,
+          content: ap.content,
+          mdx: undefined,
+        } as unknown as Project);
       }
     }
 

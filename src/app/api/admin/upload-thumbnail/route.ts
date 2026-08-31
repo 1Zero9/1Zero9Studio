@@ -64,40 +64,44 @@ export async function POST(req: NextRequest) {
           coverUrl = blob.url;
           storageType = "vercel-blob";
         } catch (blobErr: unknown) {
-          console.error("Vercel blob put error, falling back to data URL:", blobErr);
-          const arrayBuffer = await file.arrayBuffer();
-          const base64 = Buffer.from(arrayBuffer).toString("base64");
-          const mimeType = file.type || "image/png";
-          coverUrl = `data:${mimeType};base64,${base64}`;
-          storageType = "inline-data";
+          console.error("Vercel blob put error:", blobErr);
+          const message = blobErr instanceof Error ? blobErr.message : "Unknown error";
+          return NextResponse.json(
+            { error: `Failed to upload to Vercel Blob storage: ${message}` },
+            { status: 502 }
+          );
         }
       } else if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
-        // 2. Local development fallback
-        try {
-          await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
-          const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
-          const arrayBuffer = await file.arrayBuffer();
-          await fs.writeFile(filePath, Buffer.from(arrayBuffer));
-          coverUrl = `/images/projects/${fileName}`;
-          storageType = "local-filesystem";
-        } catch {
-          const arrayBuffer = await file.arrayBuffer();
-          const base64 = Buffer.from(arrayBuffer).toString("base64");
-          const mimeType = file.type || "image/png";
-          coverUrl = `data:${mimeType};base64,${base64}`;
-          storageType = "inline-data";
-        }
-      } else {
-        // 3. Serverless fallback without blob token -> high quality inline data URL
+        // 2. Local development fallback (no Blob token configured yet)
+        await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
+        const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
         const arrayBuffer = await file.arrayBuffer();
-        const base64 = Buffer.from(arrayBuffer).toString("base64");
-        const mimeType = file.type || "image/png";
-        coverUrl = `data:${mimeType};base64,${base64}`;
-        storageType = "inline-data";
+        await fs.writeFile(filePath, Buffer.from(arrayBuffer));
+        coverUrl = `/images/projects/${fileName}`;
+        storageType = "local-filesystem";
+      } else {
+        // 3. Serverless environment (Vercel) without a Blob token: the
+        // filesystem is read-only and there's nowhere durable to store the
+        // file. Previously this silently fell back to a base64 data: URL,
+        // which next/image cannot render — so thumbnails appeared broken
+        // with no explanation. Fail loudly instead.
+        return NextResponse.json(
+          {
+            error:
+              "Vercel Blob storage isn't configured for this deployment (BLOB_READ_WRITE_TOKEN is missing). Add it to your Vercel project's Production environment variables, then redeploy, before uploading images.",
+          },
+          { status: 400 }
+        );
       }
 
       // Update project metadata
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
+      if (!project) {
+        return NextResponse.json(
+          { error: `Project "${slug}" was not found, so the thumbnail couldn't be attached.` },
+          { status: 404 }
+        );
+      }
 
       // Invalidate edge cache so homepage, portfolio, labs, and case studies update instantly
       revalidatePath("/", "layout");
@@ -124,6 +128,12 @@ export async function POST(req: NextRequest) {
       }
 
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
+      if (!project) {
+        return NextResponse.json(
+          { error: `Project "${slug}" was not found, so the thumbnail couldn't be attached.` },
+          { status: 404 }
+        );
+      }
 
       revalidatePath("/", "layout");
       revalidatePath("/projects");

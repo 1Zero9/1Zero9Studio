@@ -41,12 +41,14 @@ interface GitHubRepoItem {
 function getGithubToken(): string | undefined {
   if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
   if (process.env.GH_TOKEN) return process.env.GH_TOKEN;
+  if (process.env.GITHUB_CONTENT_TOKEN) return process.env.GITHUB_CONTENT_TOKEN;
   try {
     const envPath = path.join(process.cwd(), ".env.local");
     if (fs.existsSync(envPath)) {
       const content = fs.readFileSync(envPath, "utf-8");
       const match = content.match(/GITHUB_TOKEN=["']?([^"'\r\n]+)["']?/i) ||
-                    content.match(/GH_TOKEN=["']?([^"'\r\n]+)["']?/i);
+                    content.match(/GH_TOKEN=["']?([^"'\r\n]+)["']?/i) ||
+                    content.match(/GITHUB_CONTENT_TOKEN=["']?([^"'\r\n]+)["']?/i);
       if (match && match[1]) return match[1].trim();
     }
   } catch {

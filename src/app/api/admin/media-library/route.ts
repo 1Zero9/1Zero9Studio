@@ -145,13 +145,21 @@ export async function POST(req: NextRequest) {
         token: blobToken,
       });
       url = blob.url;
-    } else {
-      // Local fallback
+    } else if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+      // Local development fallback (no Blob token configured yet)
       await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
       const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
       const arrayBuffer = await file.arrayBuffer();
       await fs.writeFile(filePath, Buffer.from(arrayBuffer));
       url = `/images/projects/${fileName}`;
+    } else {
+      return NextResponse.json(
+        {
+          error:
+            "Vercel Blob storage isn't configured for this deployment (BLOB_READ_WRITE_TOKEN is missing). Add it to your Vercel project's Production environment variables, then redeploy, before uploading images.",
+        },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({
