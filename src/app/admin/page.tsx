@@ -104,9 +104,12 @@ export default function AdminDashboardPage() {
   const [libraryImages, setLibraryImages] = useState<LibraryImageItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [syncingBlob, setSyncingBlob] = useState(false);
+  const [uploadingToLibrary, setUploadingToLibrary] = useState(false);
+  const [libraryFilterTab, setLibraryFilterTab] = useState<"all" | "blob" | "local">("all");
   const [librarySearch, setLibrarySearch] = useState("");
   const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
   const [libraryTargetSlug, setLibraryTargetSlug] = useState<string | null>(null);
+  const libraryFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Vetting / Edit modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -594,6 +597,59 @@ export default function AdminDashboardPage() {
     } finally {
       setSyncingBlob(false);
     }
+  }
+
+  // Direct upload inside library
+  async function handleLibraryFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingToLibrary(true);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+
+      const res = await fetch("/api/admin/media-library", {
+        method: "POST",
+        body: data,
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Upload failed");
+
+      showToast(`Uploaded "${json.name}" to library!`);
+      await openMediaLibrary(libraryTargetContext, libraryTargetSlug || undefined);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to upload image", "error");
+    } finally {
+      setUploadingToLibrary(false);
+      if (libraryFileInputRef.current) libraryFileInputRef.current.value = "";
+    }
+  }
+
+  // Delete image from library
+  async function handleDeleteLibraryImage(url: string) {
+    if (!confirm("Are you sure you want to delete this image from your cloud storage?")) return;
+
+    try {
+      const res = await fetch("/api/admin/media-library", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to delete");
+      showToast("Image deleted from cloud storage");
+      await openMediaLibrary(libraryTargetContext, libraryTargetSlug || undefined);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to delete image", "error");
+    }
+  }
+
+  // Copy Image URL to clipboard
+  function handleCopyImageUrl(url: string) {
+    navigator.clipboard.writeText(url);
+    showToast("Copied image URL to clipboard!");
   }
 
   // Filter projects
@@ -1652,20 +1708,38 @@ export default function AdminDashboardPage() {
       {/* MODAL 2: MEDIA LIBRARY PICKER */}
       {libraryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-surface border border-border rounded-3xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
+          <input
+            type="file"
+            ref={libraryFileInputRef}
+            onChange={handleLibraryFileUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <div className="bg-surface border border-border rounded-3xl w-full max-w-5xl max-h-[88vh] overflow-hidden flex flex-col shadow-2xl">
             {/* Modal Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between gap-4">
+            <div className="p-6 border-b border-border flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-fg flex items-center gap-2">
                   <span>🖼️</span>
                   <span>Media & Thumbnail Library</span>
                 </h2>
                 <p className="text-xs text-muted mt-0.5">
-                  Select any previously uploaded Vercel Blob, local asset, or project cover to apply immediately.
+                  Select any asset to set as thumbnail, upload new media, or sync all local assets to Vercel CDN.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => libraryFileInputRef.current?.click()}
+                  disabled={uploadingToLibrary}
+                  className="px-3 py-1.5 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm"
+                  title="Upload a new image from your device into the library"
+                >
+                  <span>📷</span>
+                  <span>{uploadingToLibrary ? "Uploading..." : "Upload New Image"}</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={handleSyncAllToBlob}
@@ -1686,21 +1760,55 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Filter / Search Bar */}
-            <div className="p-4 bg-bg-subtle border-b border-border flex items-center justify-between gap-3">
-              <div className="relative flex-1">
+            {/* Filter & Category Bar */}
+            <div className="p-4 bg-bg-subtle border-b border-border flex flex-wrap items-center justify-between gap-3">
+              {/* Category tabs */}
+              <div className="flex items-center bg-surface border border-border rounded-xl p-1 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setLibraryFilterTab("all")}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    libraryFilterTab === "all"
+                      ? "bg-fg text-bg shadow-sm"
+                      : "text-muted hover:text-fg"
+                  }`}
+                >
+                  All ({libraryImages.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLibraryFilterTab("blob")}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    libraryFilterTab === "blob"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-muted hover:text-fg"
+                  }`}
+                >
+                  ☁️ Cloud CDN ({libraryImages.filter((i) => i.type === "vercel-blob" || i.url.includes("blob.vercel-storage.com")).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLibraryFilterTab("local")}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    libraryFilterTab === "local"
+                      ? "bg-fg text-bg shadow-sm"
+                      : "text-muted hover:text-fg"
+                  }`}
+                >
+                  📁 Local Files ({libraryImages.filter((i) => i.type === "local" || !i.url.includes("blob.vercel-storage.com")).length})
+                </button>
+              </div>
+
+              {/* Search input */}
+              <div className="relative w-full sm:w-64">
                 <input
                   type="text"
                   placeholder="Search library images..."
                   value={librarySearch}
                   onChange={(e) => setLibrarySearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-surface border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent"
+                  className="w-full pl-9 pr-4 py-1.5 bg-surface border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent"
                 />
-                <span className="absolute left-3 top-2.5 text-xs text-muted">🔍</span>
-              </div>
-
-              <div className="text-xs font-mono text-muted shrink-0">
-                {libraryImages.length} {libraryImages.length === 1 ? "Image" : "Images"} Found
+                <span className="absolute left-3 top-2 text-xs text-muted">🔍</span>
               </div>
             </div>
 
@@ -1709,28 +1817,43 @@ export default function AdminDashboardPage() {
               {loadingLibrary ? (
                 <div className="py-16 text-center text-sm font-mono text-muted flex flex-col items-center gap-3">
                   <div className="size-6 border-2 border-fg/20 border-t-fg rounded-full animate-spin" />
-                  <span>Loading image library from Vercel Blob and local storage...</span>
+                  <span>Loading image library...</span>
                 </div>
               ) : libraryImages.length === 0 ? (
                 <div className="py-16 text-center text-sm text-muted">
-                  No images found in library. Upload a new file from your device.
+                  No images found. Click &quot;Upload New Image&quot; to add one.
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {libraryImages
-                    .filter((img) =>
-                      librarySearch.trim()
-                        ? img.name.toLowerCase().includes(librarySearch.toLowerCase()) ||
-                          img.url.toLowerCase().includes(librarySearch.toLowerCase()) ||
-                          (img.sourceProject && img.sourceProject.toLowerCase().includes(librarySearch.toLowerCase()))
-                        : true
-                    )
+                    .filter((img) => {
+                      const isBlob = img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com");
+                      if (libraryFilterTab === "blob" && !isBlob) return false;
+                      if (libraryFilterTab === "local" && isBlob) return false;
+
+                      if (!librarySearch.trim()) return true;
+                      const q = librarySearch.toLowerCase();
+                      return (
+                        img.name.toLowerCase().includes(q) ||
+                        img.url.toLowerCase().includes(q) ||
+                        (img.sourceProject && img.sourceProject.toLowerCase().includes(q))
+                      );
+                    })
                     .map((img) => {
                       const isBlob = img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com");
+                      const isActive =
+                        formData.cover === img.url ||
+                        (libraryTargetSlug &&
+                          projects.find((p) => p.slug === libraryTargetSlug)?.frontmatter.cover === img.url);
+
                       return (
                         <div
                           key={img.url}
-                          className="group relative rounded-2xl border border-border bg-bg-subtle overflow-hidden hover:border-accent transition-all flex flex-col justify-between shadow-sm"
+                          className={`group relative rounded-2xl border transition-all flex flex-col justify-between shadow-sm overflow-hidden ${
+                            isActive
+                              ? "border-accent ring-2 ring-accent/30 bg-accent/5"
+                              : "border-border bg-bg-subtle hover:border-accent/50"
+                          }`}
                         >
                           {/* Image preview */}
                           <div className="relative aspect-16/10 bg-surface flex items-center justify-center overflow-hidden">
@@ -1739,42 +1862,84 @@ export default function AdminDashboardPage() {
                               alt={img.name}
                               fill
                               sizes="(max-width: 768px) 50vw, 25vw"
-                              className="object-cover group-hover:scale-105 transition-transform"
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
-                            <div className="absolute top-2 right-2">
+
+                            {/* Storage badge */}
+                            <div className="absolute top-2 right-2 flex items-center gap-1">
                               <span
                                 className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full border shadow-sm ${
                                   isBlob
                                     ? "bg-blue-600 text-white border-blue-400 font-semibold"
-                                    : "bg-surface/90 text-fg border-border"
+                                    : "bg-surface/90 text-fg border-border font-medium"
                                 }`}
                               >
-                                {isBlob ? "☁️ Vercel CDN" : "📁 Local Asset"}
+                                {isBlob ? "☁️ Cloud CDN" : "📁 Local"}
                               </span>
                             </div>
+
+                            {/* Active badge */}
+                            {isActive && (
+                              <div className="absolute top-2 left-2">
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-live-green text-white shadow-sm flex items-center gap-1">
+                                  <span>✓</span>
+                                  <span>Active</span>
+                                </span>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Image info & select button */}
-                          <div className="p-3 flex flex-col justify-between flex-1 gap-2">
+                          {/* Image info & action toolbar */}
+                          <div className="p-3 flex flex-col justify-between flex-1 gap-2.5">
                             <div>
                               <p className="text-xs font-bold text-fg truncate" title={img.name}>
                                 {img.name}
                               </p>
                               {img.sourceProject && (
                                 <p className="text-[10px] text-muted truncate">
-                                  Used in {img.sourceProject}
+                                  Linked to {img.sourceProject}
                                 </p>
                               )}
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => handleSelectLibraryImage(img)}
-                              className="w-full py-1.5 px-2 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
-                            >
-                              <span>✓</span>
-                              <span>Select Image</span>
-                            </button>
+                            <div className="space-y-1.5">
+                              {/* Primary Select Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleSelectLibraryImage(img)}
+                                className={`w-full py-1.5 px-2 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1 ${
+                                  isActive
+                                    ? "bg-live-green text-white"
+                                    : "bg-fg text-bg hover:opacity-90"
+                                }`}
+                              >
+                                <span>{isActive ? "✓ Selected" : "✓ Select Image"}</span>
+                              </button>
+
+                              {/* Action Row: Copy URL & Delete */}
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyImageUrl(img.url)}
+                                  className="flex-1 py-1 px-2 bg-surface hover:bg-surface-hover border border-border rounded-lg text-[10px] font-mono text-muted hover:text-fg transition-colors flex items-center justify-center gap-1"
+                                  title="Copy image URL to clipboard"
+                                >
+                                  <span>📋</span>
+                                  <span>Copy URL</span>
+                                </button>
+
+                                {isBlob && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteLibraryImage(img.url)}
+                                    className="py-1 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-[10px] transition-colors"
+                                    title="Delete this image from cloud storage"
+                                  >
+                                    🗑️
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );
@@ -1784,9 +1949,9 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-bg-subtle border-t border-border flex items-center justify-between">
+            <div className="p-4 bg-bg-subtle border-t border-border flex flex-wrap items-center justify-between gap-3">
               <span className="text-xs font-mono text-muted">
-                Tip: Click &quot;Select Image&quot; to assign it to this project immediately.
+                Tip: Click &quot;Select Image&quot; to assign it to this project immediately, or &quot;Upload New Image&quot; to add any file.
               </span>
               <button
                 type="button"

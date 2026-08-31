@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { getAllAdminProjects, getBlobToken } from "@/lib/admin-content";
+import { getAllAdminProjects, getBlobToken, safePutBlob } from "@/lib/admin-content";
 import { resolveCoverUrl } from "@/lib/content";
-import { list } from "@vercel/blob";
+import { list, del } from "@vercel/blob";
 import fs from "fs/promises";
 import path from "path";
 
@@ -110,6 +110,88 @@ export async function GET(req: NextRequest) {
           err instanceof Error
             ? err.message
             : "Failed to load media library",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Upload a new image directly into the Media Library
+export async function POST(req: NextRequest) {
+  const isAuthed = await verifyAdminRequest(req);
+  if (!isAuthed) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    const originalName = file.name || "upload.png";
+    const ext = path.extname(originalName).toLowerCase() || ".png";
+    const baseName = path.basename(originalName, ext).replace(/[^a-z0-9-_]/gi, "-");
+    const fileName = `${baseName}-${Date.now()}${ext}`;
+
+    const blobToken = getBlobToken();
+    let url = "";
+
+    if (blobToken) {
+      const blob = await safePutBlob(`projects/${fileName}`, file, {
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        token: blobToken,
+      });
+      url = blob.url;
+    } else {
+      // Local fallback
+      await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
+      const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
+      const arrayBuffer = await file.arrayBuffer();
+      await fs.writeFile(filePath, Buffer.from(arrayBuffer));
+      url = `/images/projects/${fileName}`;
+    }
+
+    return NextResponse.json({
+      success: true,
+      url,
+      name: fileName,
+    });
+  } catch (err: unknown) {
+    return NextResponse.json(
+      {
+        error: err instanceof Error ? err.message : "Upload failed",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete an image from Vercel Blob
+export async function DELETE(req: NextRequest) {
+  const isAuthed = await verifyAdminRequest(req);
+  if (!isAuthed) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { url } = await req.json();
+    if (!url) {
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    }
+
+    const blobToken = getBlobToken();
+    if (blobToken && url.includes("blob.vercel-storage.com")) {
+      await del(url, { token: blobToken });
+    }
+
+    return NextResponse.json({ success: true, message: "Image deleted" });
+  } catch (err: unknown) {
+    return NextResponse.json(
+      {
+        error: err instanceof Error ? err.message : "Failed to delete image",
       },
       { status: 500 }
     );
