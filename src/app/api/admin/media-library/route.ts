@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
       const projects = await getAllAdminProjects();
       for (const p of projects) {
         const cover = p.frontmatter.cover;
-        if (cover) {
+        if (cover && !cover.includes("PoqnC70kcQQT3cUt") && !cover.startsWith("data:")) {
           const resolvedCover = resolveCoverUrl(cover) || cover;
           if (!imagesMap.has(resolvedCover)) {
             imagesMap.set(resolvedCover, {
