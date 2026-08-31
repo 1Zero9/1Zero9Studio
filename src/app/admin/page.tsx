@@ -242,6 +242,8 @@ export default function AdminDashboardPage() {
       draft: false,
       tags: item.topics.join(", "),
       techStack: item.techStack.join(", "),
+      highlights: "",
+      content: `## The Brief\n\n${item.summary}\n\n## The Architecture\n\n- Engineered with ${item.techStack.join(" and ")}.\n- Designed for speed, accessibility, and clean interface ergonomics.\n`,
       wipProgress: item.suggestedStatus === "in-progress" ? "Phase 1 · Active development" : "",
       url: item.liveUrl || "",
       repo: item.repoUrl || "",
@@ -267,6 +269,8 @@ export default function AdminDashboardPage() {
       draft: Boolean(project.frontmatter.draft),
       tags: (project.frontmatter.tags || []).join(", "),
       techStack: (project.frontmatter.techStack || []).join(", "),
+      highlights: (project.frontmatter.highlights || []).join("\n"),
+      content: project.content || "",
       wipProgress: project.frontmatter.wipProgress || "",
       url: project.frontmatter.url || "",
       repo: project.frontmatter.repo || "",
@@ -286,6 +290,9 @@ export default function AdminDashboardPage() {
       const techStackArray = formData.techStack
         ? formData.techStack.split(",").map((t: string) => t.trim()).filter(Boolean)
         : [];
+      const highlightsArray = formData.highlights
+        ? formData.highlights.split("\n").map((h: string) => h.trim()).filter(Boolean)
+        : [];
 
       const frontmatterPayload: any = {
         title: formData.title,
@@ -299,6 +306,7 @@ export default function AdminDashboardPage() {
         draft: formData.draft,
         tags: tagsArray,
         techStack: techStackArray,
+        highlights: highlightsArray,
         wipProgress: formData.wipProgress || undefined,
         url: formData.url || undefined,
         repo: formData.repo || undefined,
@@ -317,6 +325,7 @@ export default function AdminDashboardPage() {
           body: JSON.stringify({
             slug: editingSlug,
             frontmatter: frontmatterPayload,
+            content: formData.content,
           }),
         });
 
@@ -1234,6 +1243,39 @@ export default function AdminDashboardPage() {
                   />
                 </div>
               )}
+
+              {/* Project Highlights (bullets) */}
+              <div>
+                <label className="block text-xs font-mono uppercase text-muted mb-1">
+                  Key Highlights / Bullet Points (one per line)
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.highlights}
+                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
+                  placeholder="High-contrast magazine aesthetic tailored for music collectors&#10;Dynamic release catalog indexing rare pressings&#10;Fast search with instant genre and decade filtering"
+                  className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent font-mono"
+                />
+              </div>
+
+              {/* MDX Case Study Body Content */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-mono uppercase text-muted">
+                    Case Study Story & Body (Markdown / MDX)
+                  </label>
+                  <span className="text-[10px] font-mono text-muted">
+                    Supports ## headings, bullet points & code
+                  </span>
+                </div>
+                <textarea
+                  rows={7}
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="## The Brief&#10;&#10;Describe the challenge and problem solved...&#10;&#10;## The Architecture&#10;&#10;- Key engineering decisions...&#10;- Performance & accessibility..."
+                  className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent font-mono leading-relaxed"
+                />
+              </div>
 
               {/* Cover thumbnail path */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
