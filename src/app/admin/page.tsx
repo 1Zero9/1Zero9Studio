@@ -109,6 +109,11 @@ export default function AdminDashboardPage() {
   const [librarySearch, setLibrarySearch] = useState("");
   const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
   const [libraryTargetSlug, setLibraryTargetSlug] = useState<string | null>(null);
+  // Direct Repo Import state
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importUrlInput, setImportUrlInput] = useState("");
+  const [importGithubToken, setImportGithubToken] = useState("");
+  const [importingRepo, setImportingRepo] = useState(false);
   const libraryFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Vetting / Edit modal state
@@ -652,6 +657,64 @@ export default function AdminDashboardPage() {
     showToast("Copied image URL to clipboard!");
   }
 
+  // Import directly by GitHub repository URL
+  async function handleImportByUrl(rawUrl?: string) {
+    const url = (rawUrl || importUrlInput).trim();
+    if (!url) {
+      showToast("Please enter a GitHub repository URL or name", "error");
+      return;
+    }
+
+    setImportingRepo(true);
+    try {
+      const res = await fetch("/api/admin/discover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          token: importGithubToken.trim() || undefined,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Import failed");
+
+      const p: DiscoveredProject = json.project;
+      setFormData({
+        title: p.title,
+        slug: p.slug,
+        summary: p.summary,
+        date: new Date().toISOString().slice(0, 10),
+        section: p.suggestedSection,
+        status: p.suggestedStatus,
+        kind: p.suggestedKind,
+        accent: "#3855d6",
+        featured: false,
+        featuredOnHome: false,
+        draft: false,
+        tags: p.topics.length > 0 ? p.topics.join(", ") : "Platform, Management",
+        techStack: p.techStack.length > 0 ? p.techStack.join(", ") : "Next.js, TypeScript, React",
+        highlights: `${p.title} administrative management platform\nRole-based secure member directory\nOptimized responsive workflow interface`,
+        content: `## The Brief\n\n${p.summary}\n\n## The Architecture\n\n- **Management Workflow** — Built to streamline administrative operations and team logistics.\n- **Performance** — Client-side caching and responsive interface across mobile and desktop.\n- **Repository** — [View on GitHub](${p.repoUrl})\n`,
+        wipProgress: "",
+        url: p.liveUrl || "",
+        repo: p.repoUrl,
+        cover: "",
+        coverAlt: `${p.title} preview screenshot`,
+      });
+
+      setEditingSlug(null);
+      setImportModalOpen(false);
+      setImportUrlInput("");
+      setModalOpen(true);
+      showToast(`Imported ${p.title}! You can now review, add cover, and save.`);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to import repository", "error");
+    } finally {
+      setImportingRepo(false);
+    }
+  }
+
   // Filter projects
   const filteredProjects = projects.filter((p) => {
     // Section filtering
@@ -775,37 +838,49 @@ export default function AdminDashboardPage() {
           )}
         </button>
 
-        <button
-          onClick={() => {
-            setEditingSlug(null);
-            setFormData({
-              title: "",
-              slug: "",
-              summary: "",
-              date: new Date().toISOString().slice(0, 10),
-              section: "portfolio",
-              status: "live",
-              kind: "website",
-              accent: "#3855d6",
-              featured: false,
-              featuredOnHome: false,
-              draft: false,
-              tags: "web, design",
-              techStack: "Next.js, TypeScript, Tailwind CSS",
-              highlights: "",
-              content: "",
-              wipProgress: "",
-              url: "",
-              repo: "",
-              cover: "",
-              coverAlt: "",
-            });
-            setModalOpen(true);
-          }}
-          className="ml-auto flex items-center gap-1.5 px-4 py-2 bg-fg text-bg font-semibold rounded-lg text-xs hover:opacity-90 transition-opacity"
-        >
-          <span>+ Add Custom Project</span>
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setImportModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface hover:bg-surface-hover border border-border text-fg font-semibold rounded-lg text-xs transition-colors shadow-sm"
+          >
+            <span>🔗</span>
+            <span>+ Import by GitHub URL</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEditingSlug(null);
+              setFormData({
+                title: "",
+                slug: "",
+                summary: "",
+                date: new Date().toISOString().slice(0, 10),
+                section: "portfolio",
+                status: "live",
+                kind: "website",
+                accent: "#3855d6",
+                featured: false,
+                featuredOnHome: false,
+                draft: false,
+                tags: "web, design",
+                techStack: "Next.js, TypeScript, Tailwind CSS",
+                highlights: "",
+                content: "",
+                wipProgress: "",
+                url: "",
+                repo: "",
+                cover: "",
+                coverAlt: "",
+              });
+              setModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-fg text-bg font-semibold rounded-lg text-xs hover:opacity-90 transition-opacity"
+          >
+            <span>+ New Project</span>
+          </button>
+        </div>
       </div>
 
       {/* TAB 1: MANAGED PROJECTS & THUMBNAILS (UNIFIED) */}
@@ -1246,12 +1321,12 @@ export default function AdminDashboardPage() {
 
       {/* TAB 2: DISCOVERED WORKBENCH INBOX */}
       {activeTab === "inbox" && (
-        <div>
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold text-fg">Automatic Inclusion & Vetting Inbox</h2>
               <p className="text-sm text-muted">
-                Repositories scanned from GitHub ({githubUser}). Review and approve which ones to add to the site.
+                Repositories scanned from GitHub ({githubUser}) or imported directly by URL. Review and approve which ones to publish.
               </p>
             </div>
 
@@ -1269,6 +1344,40 @@ export default function AdminDashboardPage() {
                 className="px-3 py-1.5 bg-surface-hover border border-border rounded-lg text-xs font-semibold text-fg hover:bg-surface transition-colors"
               >
                 {scanning ? "Scanning..." : "Rescan"}
+              </button>
+            </div>
+          </div>
+
+          {/* Direct Import Banner */}
+          <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl mt-0.5">🔗</span>
+              <div>
+                <h3 className="text-sm font-bold text-fg">Add Any GitHub Repository by URL</h3>
+                <p className="text-xs text-muted">
+                  Have a specific repo that wasn&apos;t automatically listed (e.g. private or org repo)? Paste it here to import instantly.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <input
+                type="text"
+                placeholder="https://github.com/1Zero9/rvr-2014-teamadmin"
+                value={importUrlInput}
+                onChange={(e) => setImportUrlInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleImportByUrl();
+                }}
+                className="w-full md:w-80 px-3.5 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-mono text-fg placeholder:text-faint focus:outline-none focus:border-accent"
+              />
+              <button
+                type="button"
+                onClick={() => handleImportByUrl()}
+                disabled={importingRepo || !importUrlInput.trim()}
+                className="px-4 py-2 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 disabled:opacity-50 transition-opacity shrink-0 flex items-center gap-1.5 shadow-sm"
+              >
+                <span>{importingRepo ? "Fetching..." : "Import & Vet"}</span>
               </button>
             </div>
           </div>
@@ -1959,6 +2068,108 @@ export default function AdminDashboardPage() {
                 className="px-4 py-1.5 text-xs font-semibold text-fg bg-surface hover:bg-surface-hover border border-border rounded-xl transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: IMPORT GITHUB REPOSITORY */}
+      {importModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface border border-border rounded-3xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🔗</span>
+                <div>
+                  <h3 className="text-base font-bold text-fg">Import GitHub Repository</h3>
+                  <p className="text-xs text-muted">Paste any public or private GitHub repository URL to import it.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setImportModalOpen(false)}
+                className="text-muted hover:text-fg font-bold text-lg p-1.5 rounded-lg hover:bg-bg-subtle transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-fg mb-1.5">
+                  GitHub Repository URL or Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://github.com/1Zero9/rvr-2014-teamadmin"
+                  value={importUrlInput}
+                  onChange={(e) => setImportUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleImportByUrl();
+                  }}
+                  className="w-full px-3.5 py-2.5 bg-bg-subtle border border-border rounded-xl text-xs font-mono text-fg placeholder:text-faint focus:outline-none focus:border-accent"
+                  autoFocus
+                />
+                <p className="text-[11px] text-muted mt-1.5">
+                  Supported formats: <code className="text-fg bg-surface px-1 py-0.5 rounded border border-border">https://github.com/owner/repo</code> or <code className="text-fg bg-surface px-1 py-0.5 rounded border border-border">owner/repo</code>
+                </p>
+              </div>
+
+              {/* Quick chips */}
+              <div>
+                <span className="text-[11px] font-semibold text-muted block mb-1.5">Quick Examples:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setImportUrlInput("https://github.com/1Zero9/rvr-2014-teamadmin")}
+                    className="text-[11px] font-mono px-2 py-1 bg-surface hover:bg-surface-hover border border-border rounded-lg text-fg transition-colors"
+                  >
+                    1Zero9/rvr-2014-teamadmin
+                  </button>
+                </div>
+              </div>
+
+              {/* Optional PAT */}
+              <div className="pt-2 border-t border-border">
+                <details className="text-xs group">
+                  <summary className="cursor-pointer font-semibold text-muted hover:text-fg select-none flex items-center gap-1">
+                    <span>⚙️ Private Repo Access Token (Optional)</span>
+                  </summary>
+                  <div className="mt-2.5">
+                    <input
+                      type="password"
+                      placeholder="ghp_... or github_pat_..."
+                      value={importGithubToken}
+                      onChange={(e) => setImportGithubToken(e.target.value)}
+                      className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-mono text-fg placeholder:text-faint focus:outline-none focus:border-accent"
+                    />
+                    <p className="text-[10px] text-muted mt-1">
+                      If the repository is private and GITHUB_TOKEN is not in your .env.local, paste a token with <code className="text-fg">repo</code> scope.
+                    </p>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-bg-subtle border-t border-border flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setImportModalOpen(false)}
+                className="px-4 py-2 bg-surface hover:bg-surface-hover border border-border text-fg font-semibold rounded-xl text-xs transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleImportByUrl()}
+                disabled={importingRepo || !importUrlInput.trim()}
+                className="px-4 py-2 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center gap-1.5 shadow-sm"
+              >
+                <span>{importingRepo ? "Importing..." : "Import & Open Editor"}</span>
               </button>
             </div>
           </div>
