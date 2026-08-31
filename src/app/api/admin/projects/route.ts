@@ -12,6 +12,8 @@ import path from "path";
 
 const PROJECTS_DIR = path.join(process.cwd(), "content", "projects");
 
+import { resolveCoverUrl } from "@/lib/content";
+
 export async function GET(req: NextRequest) {
   const isAuthed = await verifyAdminRequest(req);
   if (!isAuthed) {
@@ -20,7 +22,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const projects = await getAllAdminProjects();
-    return NextResponse.json({ projects });
+    const mappedProjects = projects.map((p) => ({
+      ...p,
+      frontmatter: {
+        ...p.frontmatter,
+        cover: resolveCoverUrl(p.frontmatter.cover),
+      },
+    }));
+    return NextResponse.json({ projects: mappedProjects });
   } catch (err: unknown) {
     return NextResponse.json(
       {

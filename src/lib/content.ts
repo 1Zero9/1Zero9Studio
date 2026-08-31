@@ -7,6 +7,18 @@ import { getAllAdminProjects, getAdminProjectBySlug } from "./admin-content";
 
 const hideDrafts = process.env.NODE_ENV === "production";
 
+export function resolveCoverUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  // If it's a private vercel blob URL (not public.blob.vercel-storage.com)
+  if (
+    url.includes(".blob.vercel-storage.com") &&
+    !url.includes(".public.blob.vercel-storage.com")
+  ) {
+    return `/api/blob/image?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
+
 // Synchronous base projects fallback
 export const allProjects = generatedProjects
   .filter((project) => project.slug !== "_template")
@@ -29,16 +41,20 @@ export async function getLiveProjects(): Promise<Project[]> {
     const mergedMap = new Map<string, Project>();
 
     for (const p of generatedProjects) {
-      mergedMap.set(p.slug, { ...p });
+      mergedMap.set(p.slug, {
+        ...p,
+        cover: resolveCoverUrl(p.cover),
+      });
     }
 
     for (const ap of adminProjects) {
       const existing = mergedMap.get(ap.slug);
       if (existing) {
+        const rawCover = ap.frontmatter.cover || existing.cover;
         mergedMap.set(ap.slug, {
           ...existing,
           ...ap.frontmatter,
-          cover: ap.frontmatter.cover || existing.cover,
+          cover: resolveCoverUrl(rawCover),
           coverAlt: ap.frontmatter.coverAlt || existing.coverAlt,
           featuredOnHome: Boolean(ap.frontmatter.featuredOnHome),
           draft: Boolean(ap.frontmatter.draft),

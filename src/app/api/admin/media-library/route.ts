@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/lib/admin-auth";
 import { getAllAdminProjects, getBlobToken } from "@/lib/admin-content";
+import { resolveCoverUrl } from "@/lib/content";
 import { list } from "@vercel/blob";
 import fs from "fs/promises";
 import path from "path";
@@ -41,8 +42,9 @@ export async function GET(req: NextRequest) {
             blob.pathname.match(/\.(png|jpg|jpeg|webp|svg|gif|avif)$/i) ||
             blob.pathname.startsWith("projects/")
           ) {
-            imagesMap.set(blob.url, {
-              url: blob.url,
+            const resolvedUrl = resolveCoverUrl(blob.url) || blob.url;
+            imagesMap.set(resolvedUrl, {
+              url: resolvedUrl,
               name: path.basename(blob.pathname),
               type: "vercel-blob",
               size: blob.size,
@@ -79,13 +81,16 @@ export async function GET(req: NextRequest) {
       const projects = await getAllAdminProjects();
       for (const p of projects) {
         const cover = p.frontmatter.cover;
-        if (cover && !imagesMap.has(cover)) {
-          imagesMap.set(cover, {
-            url: cover,
-            name: `${p.frontmatter.title || p.slug} Cover`,
-            type: cover.includes("blob.vercel-storage.com") ? "vercel-blob" : "project-cover",
-            sourceProject: p.frontmatter.title || p.slug,
-          });
+        if (cover) {
+          const resolvedCover = resolveCoverUrl(cover) || cover;
+          if (!imagesMap.has(resolvedCover)) {
+            imagesMap.set(resolvedCover, {
+              url: resolvedCover,
+              name: `${p.frontmatter.title || p.slug} Cover`,
+              type: cover.includes("blob.vercel-storage.com") ? "vercel-blob" : "project-cover",
+              sourceProject: p.frontmatter.title || p.slug,
+            });
+          }
         }
       }
     } catch (projErr) {
