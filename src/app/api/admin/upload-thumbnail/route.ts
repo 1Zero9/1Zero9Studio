@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
           const blob = await put(`projects/${fileName}`, file, {
             access: "public",
             addRandomSuffix: false,
+            allowOverwrite: true,
             token: blobToken,
           });
           coverUrl = blob.url;

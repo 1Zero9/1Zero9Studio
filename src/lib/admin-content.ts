@@ -72,12 +72,19 @@ async function fetchBlobOverrides(): Promise<Record<string, { frontmatter: Recor
   }
 
   try {
-    const { blobs } = await list({ prefix: OVERRIDES_BLOB_PATH, token: blobToken });
-    const overrideBlob = blobs.find((b) => b.pathname === OVERRIDES_BLOB_PATH);
+    const { blobs } = await list({ prefix: "data/", token: blobToken });
+    const overrideBlob =
+      blobs.find((b) => b.pathname.endsWith("project-overrides.json") || b.pathname.includes("overrides")) ||
+      blobs[0];
+
     if (overrideBlob?.url) {
       const res = await fetch(overrideBlob.url, { cache: "no-store" });
       if (res.ok) {
-        return (await res.json()) || {};
+        const data = (await res.json()) || {};
+        for (const [k, v] of Object.entries(data)) {
+          memoryOverrides.set(k, v as { frontmatter: Record<string, unknown>; content?: string });
+        }
+        return data;
       }
     }
   } catch (err) {
@@ -104,6 +111,7 @@ async function saveBlobOverrides(overrides: Record<string, { frontmatter: Record
       await put(OVERRIDES_BLOB_PATH, JSON.stringify(overrides, null, 2), {
         access: "public",
         addRandomSuffix: false,
+        allowOverwrite: true,
         token: blobToken,
       });
     } catch (err) {
