@@ -42,30 +42,41 @@ export async function POST(req: NextRequest) {
 
       if (!allowedExts.includes(ext)) {
         return NextResponse.json(
-          { error: `Unsupported file type (${ext}). Please upload a PNG, JPG, WebP, or SVG.` },
+          { error: `Unsupported file type (${ext}). Please upload a PNG, JPG, WebP, SVG, or GIF.` },
           { status: 400 }
         );
       }
 
-      const fileName = `${slug}${ext}`;
+      const timestamp = Date.now();
+      const fileName = `${slug}-${timestamp}${ext}`;
       let coverUrl = "";
+      let storageType = "local-filesystem";
 
-      // 1. Use Vercel Blob if token is present (cloud storage)
+      // 1. Upload to Vercel Blob if BLOB_READ_WRITE_TOKEN is configured
       if (process.env.BLOB_READ_WRITE_TOKEN) {
-        const blob = await put(`projects/${fileName}`, file, {
-          access: "public",
-          addRandomSuffix: false,
-        });
-        coverUrl = blob.url;
+        try {
+          const blob = await put(`projects/${fileName}`, file, {
+            access: "public",
+            addRandomSuffix: false,
+          });
+          coverUrl = blob.url;
+          storageType = "vercel-blob";
+        } catch (blobErr: any) {
+          console.error("Vercel blob upload error, falling back to local storage:", blobErr);
+          // Fall back to local
+          await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
+          const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
+          const arrayBuffer = await file.arrayBuffer();
+          await fs.writeFile(filePath, Buffer.from(arrayBuffer));
+          coverUrl = `/images/projects/${fileName}`;
+        }
       } else {
         // 2. Otherwise write directly to public/images/projects on local filesystem
         await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
         const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
 
         const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        await fs.writeFile(filePath, buffer);
+        await fs.writeFile(filePath, Buffer.from(arrayBuffer));
         coverUrl = `/images/projects/${fileName}`;
       }
 
@@ -74,11 +85,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         coverUrl,
-        storageType: process.env.BLOB_READ_WRITE_TOKEN ? "vercel-blob" : "local-filesystem",
+        storageType,
         project,
       });
     } else {
-      // JSON body for URL-based thumbnail update
+      // JSON body for direct URL-based thumbnail update
       const body = await req.json();
       const { slug, coverUrl, alt } = body;
 

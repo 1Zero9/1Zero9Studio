@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -57,7 +57,8 @@ interface DiscoveredProject {
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"inbox" | "projects" | "thumbnails" | "create">("inbox");
+  const [activeTab, setActiveTab] = useState<"projects" | "inbox">("projects");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [discovered, setDiscovered] = useState<DiscoveredProject[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -79,9 +80,12 @@ export default function AdminDashboardPage() {
     kind: "website",
     accent: "#3855d6",
     featured: false,
+    featuredOnHome: false,
     draft: false,
     tags: "",
     techStack: "",
+    highlights: "",
+    content: "",
     wipProgress: "",
     url: "",
     repo: "",
@@ -91,6 +95,7 @@ export default function AdminDashboardPage() {
 
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const modalFileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<string | null>(null);
 
   function showToast(message: string, type: "success" | "error" = "success") {
@@ -382,194 +387,201 @@ export default function AdminDashboardPage() {
 
       setModalOpen(false);
       await loadProjects();
-      await scanProjects();
     } catch (err: any) {
       showToast(err.message || "Failed to save project", "error");
     }
   }
 
-  // Thumbnail upload handling
-  async function handleFileUpload(file: File, slug: string) {
-    setUploadingImage(slug);
+  // Trigger file upload for project
+  function triggerUploadForProject(slug: string) {
+    setSelectedProjectForUpload(slug);
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProjectForUpload) return;
+
+    setUploadingImage(selectedProjectForUpload);
+    const targetSlug = selectedProjectForUpload;
+
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("slug", slug);
+      const data = new FormData();
+      data.append("file", file);
+      data.append("slug", targetSlug);
+      data.append("alt", `${targetSlug} thumbnail`);
 
       const res = await fetch("/api/admin/upload-thumbnail", {
         method: "POST",
-        body: form,
+        body: data,
       });
 
-      const data = await res.json();
+      const json = await res.json();
+
       if (!res.ok) {
-        throw new Error(data.error || "Failed to upload image");
+        throw new Error(json.error || "Failed to upload thumbnail");
       }
 
-      showToast(`Thumbnail uploaded for ${slug}!`);
+      const storageMsg = json.storageType === "vercel-blob" ? " (saved to Vercel Blob)" : "";
+      showToast(`Thumbnail uploaded for ${targetSlug}!${storageMsg}`);
       await loadProjects();
     } catch (err: any) {
-      showToast(err.message || "Upload failed", "error");
+      showToast(err.message || "Failed to upload thumbnail", "error");
     } finally {
       setUploadingImage(null);
+      setSelectedProjectForUpload(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
-  function triggerUploadForProject(slug: string) {
-    setSelectedProjectForUpload(slug);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-      fileInputRef.current.click();
+  // Upload thumbnail directly within modal
+  async function handleModalFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const targetSlug = formData.slug || editingSlug || "preview";
+    setUploadingImage("modal");
+
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("slug", targetSlug);
+      data.append("alt", formData.coverAlt || `${formData.title || targetSlug} screenshot`);
+
+      const res = await fetch("/api/admin/upload-thumbnail", {
+        method: "POST",
+        body: data,
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Upload failed");
+      }
+
+      setFormData((prev: any) => ({
+        ...prev,
+        cover: json.coverUrl,
+        coverAlt: prev.coverAlt || `${prev.title || targetSlug} preview`,
+      }));
+
+      const storageMsg = json.storageType === "vercel-blob" ? " to Vercel Blob" : "";
+      showToast(`Image uploaded${storageMsg}!`);
+      await loadProjects();
+    } catch (err: any) {
+      showToast(err.message || "Failed to upload", "error");
+    } finally {
+      setUploadingImage(null);
+      if (modalFileInputRef.current) modalFileInputRef.current.value = "";
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
-        <span className="size-4 rounded-full bg-signal animate-ping" />
-        <p className="text-sm font-mono text-muted">Loading Workbench Admin...</p>
-      </div>
-    );
-  }
-
-  const pendingDiscovered = discovered.filter((d) => !d.isAlreadyManaged);
-
+  // Filter projects
   const filteredProjects = projects.filter((p) => {
-    const matchesSearch =
-      p.frontmatter.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.frontmatter.summary?.toLowerCase().includes(searchQuery.toLowerCase());
+    // Section filtering
+    const section = p.frontmatter.section || (p.frontmatter.kind === "website" ? "portfolio" : "labs");
+    if (sectionFilter === "portfolio" && section !== "portfolio") return false;
+    if (sectionFilter === "labs" && section !== "labs") return false;
+    if (sectionFilter === "drafts" && !p.frontmatter.draft && section !== "hidden") return false;
 
-    if (!matchesSearch) return false;
-
-    if (sectionFilter === "portfolio") {
-      return p.frontmatter.section === "portfolio" || (!p.frontmatter.section && p.frontmatter.kind === "website");
-    }
-    if (sectionFilter === "labs") {
-      return p.frontmatter.section === "labs" || (!p.frontmatter.section && p.frontmatter.status === "in-progress");
-    }
-    if (sectionFilter === "drafts") {
-      return p.frontmatter.draft === true || p.frontmatter.section === "hidden";
+    // Search query filtering
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchTitle = p.frontmatter.title?.toLowerCase().includes(q);
+      const matchSlug = p.slug.toLowerCase().includes(q);
+      const matchTech = (p.frontmatter.techStack || []).some((t) => t.toLowerCase().includes(q));
+      const matchTags = (p.frontmatter.tags || []).some((t) => t.toLowerCase().includes(q));
+      return matchTitle || matchSlug || matchTech || matchTags;
     }
 
     return true;
   });
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Hidden file input for thumbnail uploading */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/png, image/jpeg, image/webp, image/svg+xml"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file && selectedProjectForUpload) {
-            handleFileUpload(file, selectedProjectForUpload);
-          }
-        }}
-      />
+  const pendingDiscovered = discovered.filter((d) => !d.isAlreadyManaged);
 
+  if (loading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <span className="size-5 rounded-full bg-signal animate-ping" />
+          <p className="text-xs font-mono text-muted">Loading Workbench Admin...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Toast Notification */}
       {notification && (
         <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl border text-sm font-medium shadow-2xl transition-all duration-300 ${
+          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 animate-slide-up ${
             notification.type === "error"
-              ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
-              : "bg-signal/15 border-signal/40 text-fg"
+              ? "bg-red-600 text-white"
+              : "bg-fg text-bg border border-border"
           }`}
         >
-          {notification.message}
+          <span>{notification.type === "error" ? "⚠️" : "✓"}</span>
+          <span>{notification.message}</span>
         </div>
       )}
 
-      {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-border">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="size-2.5 rounded-full bg-signal animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-widest text-muted">
-              1Zero9 Studio Control
-            </span>
+      {/* Hidden file input for table uploads */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileInputChange}
+        accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
+        className="hidden"
+      />
+
+      {/* Top Header Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-border">
+        <div className="flex items-center gap-3">
+          <span className="size-3 rounded-full bg-signal animate-pulse" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-fg">
+              Workbench Admin
+            </h1>
+            <p className="text-xs text-muted">
+              Project management, section routing & live thumbnail studio
+            </p>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-fg">
-            Project Workbench & Admin
-          </h1>
-          <p className="text-sm text-muted mt-1">
-            Vetting pipeline, section routing, visibility controls & thumbnail studio
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3">
           <Link
             href="/"
             target="_blank"
-            className="btn-secondary text-xs"
+            className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted hover:text-fg hover:border-border-hover transition-colors flex items-center gap-1.5"
           >
             <span>Live Site</span>
-            <span aria-hidden="true">↗</span>
+            <span>↗</span>
           </Link>
-
-          <button
-            onClick={() => scanProjects(githubUser)}
-            disabled={scanning}
-            className="btn-secondary text-xs"
-          >
-            <span>{scanning ? "Scanning GitHub..." : "Scan Repos"}</span>
-            <span className="font-mono text-xs">⚡</span>
-          </button>
-
           <button
             onClick={handleLogout}
-            className="px-3 py-2 text-xs font-medium text-muted hover:text-red-500 rounded-lg border border-border hover:border-red-500/40 transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-surface-hover hover:bg-surface border border-border text-xs font-semibold text-fg transition-colors"
           >
-            Logout
+            Sign Out
           </button>
         </div>
       </div>
 
-      {/* Quick Status Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="p-4 rounded-xl bg-surface border border-border shadow-card">
-          <p className="text-xs font-mono text-muted uppercase">Pending Vetting</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold text-wip-amber">{pendingDiscovered.length}</span>
-            <span className="text-xs text-muted">new repos</span>
-          </div>
-        </div>
+      {/* Primary Tab Navigation */}
+      <div className="flex flex-wrap items-center gap-2 p-1 bg-bg-subtle border border-border rounded-xl mb-8">
+        <button
+          onClick={() => setActiveTab("projects")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "projects"
+              ? "bg-surface text-fg font-semibold shadow-sm border border-border"
+              : "text-muted hover:text-fg"
+          }`}
+        >
+          <span>🗂️ Managed Projects & Thumbnails</span>
+          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-bg-subtle text-fg border border-border font-bold">
+            {projects.length}
+          </span>
+        </button>
 
-        <div className="p-4 rounded-xl bg-surface border border-border shadow-card">
-          <p className="text-xs font-mono text-muted uppercase">Total on Site</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold text-fg">{projects.length}</span>
-            <span className="text-xs text-muted">projects</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-surface border border-border shadow-card">
-          <p className="text-xs font-mono text-muted uppercase">Portfolio (/projects)</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold text-accent">
-              {projects.filter((p) => p.frontmatter.section === "portfolio" || (!p.frontmatter.section && p.frontmatter.kind === "website")).length}
-            </span>
-            <span className="text-xs text-muted">live showcase</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-surface border border-border shadow-card">
-          <p className="text-xs font-mono text-muted uppercase">Active Labs (/labs)</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold text-signal">
-              {projects.filter((p) => p.frontmatter.section === "labs" || (!p.frontmatter.section && p.frontmatter.status === "in-progress")).length}
-            </span>
-            <span className="text-xs text-muted">workbench</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-bg-subtle border border-border rounded-xl mb-8">
         <button
           onClick={() => setActiveTab("inbox")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
@@ -580,33 +592,10 @@ export default function AdminDashboardPage() {
         >
           <span>📥 Discovered Inbox</span>
           {pendingDiscovered.length > 0 && (
-            <span className="px-2 py-0.5 text-xs font-mono rounded-full bg-wip-amber/20 text-wip-amber font-bold border border-wip-amber/30">
+            <span className="px-2 py-0.5 text-xs font-mono rounded-full bg-wip-amber/20 text-wip-amber font-bold border border-wip-amber/30 animate-pulse">
               {pendingDiscovered.length}
             </span>
           )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("projects")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-            activeTab === "projects"
-              ? "bg-surface text-fg font-semibold shadow-sm border border-border"
-              : "text-muted hover:text-fg"
-          }`}
-        >
-          <span>🗂️ Managed Projects & Sections</span>
-          <span className="text-xs font-mono opacity-60">({projects.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("thumbnails")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-            activeTab === "thumbnails"
-              ? "bg-surface text-fg font-semibold shadow-sm border border-border"
-              : "text-muted hover:text-fg"
-          }`}
-        >
-          <span>🖼️ Thumbnail Studio</span>
         </button>
 
         <button
@@ -622,9 +611,12 @@ export default function AdminDashboardPage() {
               kind: "website",
               accent: "#3855d6",
               featured: false,
+              featuredOnHome: false,
               draft: false,
               tags: "web, design",
               techStack: "Next.js, TypeScript, Tailwind CSS",
+              highlights: "",
+              content: "",
               wipProgress: "",
               url: "",
               repo: "",
@@ -639,14 +631,432 @@ export default function AdminDashboardPage() {
         </button>
       </div>
 
-      {/* TAB 1: DISCOVERED WORKBENCH INBOX */}
+      {/* TAB 1: MANAGED PROJECTS & THUMBNAILS (UNIFIED) */}
+      {activeTab === "projects" && (
+        <div className="space-y-6">
+          {/* Homepage Spotlight Selector Banner */}
+          <div className="p-4 sm:p-5 bg-surface border border-signal/30 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⭐</span>
+              <div>
+                <span className="text-xs font-mono text-signal uppercase tracking-wider font-bold block">
+                  Homepage Spotlight Project
+                </span>
+                <span className="text-xs text-muted">
+                  Choose which single project is showcased on the home screen hero spotlight card.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <select
+                value={projects.find((p) => p.frontmatter.featuredOnHome)?.slug || projects[0]?.slug || ""}
+                onChange={(e) => setHomepageSpotlight(e.target.value)}
+                className="px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg focus:outline-none focus:border-accent font-mono"
+              >
+                {projects.map((p) => (
+                  <option key={p.slug} value={p.slug}>
+                    {p.frontmatter.title} ({p.frontmatter.section || "portfolio"})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Controls & Filter Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-surface border border-border rounded-2xl">
+            {/* Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setSectionFilter("all")}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sectionFilter === "all"
+                    ? "bg-fg text-bg border-fg"
+                    : "bg-bg-subtle text-muted border-border hover:border-border-hover"
+                }`}
+              >
+                All ({projects.length})
+              </button>
+              <button
+                onClick={() => setSectionFilter("portfolio")}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sectionFilter === "portfolio"
+                    ? "bg-fg text-bg border-fg"
+                    : "bg-bg-subtle text-muted border-border hover:border-border-hover"
+                }`}
+              >
+                Portfolio Only
+              </button>
+              <button
+                onClick={() => setSectionFilter("labs")}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sectionFilter === "labs"
+                    ? "bg-fg text-bg border-fg"
+                    : "bg-bg-subtle text-muted border-border hover:border-border-hover"
+                }`}
+              >
+                Labs Only
+              </button>
+              <button
+                onClick={() => setSectionFilter("drafts")}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sectionFilter === "drafts"
+                    ? "bg-fg text-bg border-fg"
+                    : "bg-bg-subtle text-muted border-border hover:border-border-hover"
+                }`}
+              >
+                Drafts / Hidden
+              </button>
+            </div>
+
+            {/* View Mode & Search */}
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              {/* View mode toggle */}
+              <div className="flex bg-bg-subtle border border-border rounded-xl p-0.5 text-xs font-semibold">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                    viewMode === "list"
+                      ? "bg-surface text-fg shadow-sm border border-border"
+                      : "text-muted hover:text-fg"
+                  }`}
+                  title="Detailed list with controls"
+                >
+                  <span>📋 List Controls</span>
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                    viewMode === "grid"
+                      ? "bg-surface text-fg shadow-sm border border-border"
+                      : "text-muted hover:text-fg"
+                  }`}
+                  title="Visual studio cards with large thumbnail uploaders"
+                >
+                  <span>🖼️ Studio Grid</span>
+                </button>
+              </div>
+
+              {/* Search */}
+              <div className="w-full sm:w-56">
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-bg-subtle border border-border rounded-xl text-xs text-fg placeholder:text-faint focus:outline-none focus:border-accent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* VIEW MODE 1: DETAILED LIST WITH INLINE THUMBNAIL UPLOAD */}
+          {viewMode === "list" ? (
+            <div className="space-y-4">
+              {filteredProjects.map((project) => {
+                const isLive = !project.frontmatter.draft;
+                const currentSection =
+                  project.frontmatter.section ||
+                  (project.frontmatter.kind === "website" ? "portfolio" : "labs");
+                const isBlob = Boolean(project.frontmatter.cover?.includes("blob.vercel-storage.com"));
+
+                return (
+                  <div
+                    key={project.slug}
+                    className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-5 bg-surface border border-border rounded-2xl shadow-card hover:border-border-hover transition-all"
+                  >
+                    {/* Left: Thumbnail & Project Meta */}
+                    <div className="flex items-start sm:items-center gap-4 flex-1">
+                      {/* Interactive Thumbnail Box with 1-Click Upload */}
+                      <div
+                        onClick={() => triggerUploadForProject(project.slug)}
+                        className="relative group size-20 sm:size-24 rounded-xl overflow-hidden bg-bg-subtle border border-border shrink-0 cursor-pointer shadow-sm"
+                        title="Click to replace/upload thumbnail"
+                      >
+                        {project.frontmatter.cover ? (
+                          <Image
+                            src={project.frontmatter.cover}
+                            alt={project.frontmatter.coverAlt || project.frontmatter.title}
+                            fill
+                            sizes="96px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="size-full flex flex-col items-center justify-center gap-1 text-muted text-xs p-2 text-center">
+                            <span className="text-base">📷</span>
+                            <span className="text-[10px] font-mono leading-none">Add Image</span>
+                          </div>
+                        )}
+
+                        {/* Hover Overlay with Upload Icon */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity text-[10px] font-semibold text-center p-1">
+                          <span>📷</span>
+                          <span>Change</span>
+                        </div>
+
+                        {uploadingImage === project.slug && (
+                          <div className="absolute inset-0 bg-black/75 flex items-center justify-center">
+                            <span className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info & Badges */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="text-base font-bold text-fg truncate">
+                            {project.frontmatter.title}
+                          </h3>
+                          <span className="text-xs font-mono text-muted">
+                            ({project.slug})
+                          </span>
+
+                          {/* Storage Pill */}
+                          {project.frontmatter.cover && (
+                            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                              isBlob
+                                ? "bg-blue-500/10 text-blue-500 border-blue-500/30 font-semibold"
+                                : "bg-bg-subtle text-muted border-border"
+                            }`}>
+                              {isBlob ? "☁️ Vercel Blob" : "📁 Local Image"}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-muted line-clamp-2 mb-2 max-w-2xl">
+                          {project.frontmatter.summary}
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          <span className="badge-kind">{project.frontmatter.kind || "app"}</span>
+                          {project.frontmatter.techStack?.slice(0, 3).map((t) => (
+                            <span key={t} className="tech-tag">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Controls & Toggles */}
+                    <div className="flex flex-wrap items-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-border shrink-0">
+                      {/* Live / Draft Visibility Switch */}
+                      <button
+                        onClick={() => toggleProjectDraft(project)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+                          isLive
+                            ? "bg-live-green/15 text-live-green border-live-green/30 hover:bg-live-green/25"
+                            : "bg-muted/15 text-muted border-border hover:bg-muted/25"
+                        }`}
+                        title="Toggle visibility on site"
+                      >
+                        <span
+                          className={`size-2 rounded-full ${
+                            isLive ? "bg-live-green animate-pulse" : "bg-muted"
+                          }`}
+                        />
+                        <span>{isLive ? "ON (Live)" : "OFF (Draft)"}</span>
+                      </button>
+
+                      {/* Home Spotlight Quick Toggle */}
+                      {project.frontmatter.featuredOnHome ? (
+                        <span className="px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-signal/15 text-fg border border-signal/40 flex items-center gap-1 shadow-sm">
+                          ⭐ On Home
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setHomepageSpotlight(project.slug)}
+                          className="px-2.5 py-1.5 rounded-xl text-xs font-medium text-muted hover:text-fg bg-bg-subtle hover:bg-surface border border-border hover:border-signal/40 transition-colors"
+                          title="Feature this project as the single spotlight on the homepage"
+                        >
+                          ⭐ Set on Home
+                        </button>
+                      )}
+
+                      {/* Section Selector */}
+                      <div className="flex items-center bg-bg-subtle border border-border rounded-xl p-0.5 text-xs">
+                        <button
+                          onClick={() => changeProjectSection(project, "portfolio")}
+                          className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                            currentSection === "portfolio"
+                              ? "bg-surface text-fg font-bold shadow-sm"
+                              : "text-muted hover:text-fg"
+                          }`}
+                        >
+                          Portfolio
+                        </button>
+                        <button
+                          onClick={() => changeProjectSection(project, "labs")}
+                          className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                            currentSection === "labs"
+                              ? "bg-surface text-fg font-bold shadow-sm"
+                              : "text-muted hover:text-fg"
+                          }`}
+                        >
+                          Labs
+                        </button>
+                      </div>
+
+                      {/* Status Dropdown */}
+                      <select
+                        value={project.frontmatter.status || "live"}
+                        onChange={(e) => changeProjectStatus(project, e.target.value)}
+                        className="px-2.5 py-1.5 bg-bg-subtle border border-border rounded-xl text-xs text-fg font-medium focus:outline-none"
+                      >
+                        <option value="live">Live</option>
+                        <option value="in-progress">Building Now</option>
+                        <option value="featured">Featured</option>
+                        <option value="archived">Archived</option>
+                      </select>
+
+                      {/* Thumbnail Upload Button */}
+                      <button
+                        onClick={() => triggerUploadForProject(project.slug)}
+                        disabled={uploadingImage === project.slug}
+                        className="px-3 py-1.5 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center gap-1.5"
+                        title="Upload/replace image"
+                      >
+                        <span>📷</span>
+                        <span>{uploadingImage === project.slug ? "Uploading..." : "Upload Image"}</span>
+                      </button>
+
+                      {/* Edit Full Details */}
+                      <button
+                        onClick={() => openEditModal(project)}
+                        className="px-3 py-1.5 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
+                      >
+                        Edit
+                      </button>
+
+                      {/* View Live Case Study */}
+                      <Link
+                        href={`/projects/${project.slug}`}
+                        target="_blank"
+                        className="p-2 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs text-muted hover:text-fg transition-colors"
+                        title="View Page"
+                      >
+                        ↗
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* VIEW MODE 2: VISUAL STUDIO GRID (16:10 Cards) */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => {
+                const isBlob = Boolean(project.frontmatter.cover?.includes("blob.vercel-storage.com"));
+                return (
+                  <div
+                    key={project.slug}
+                    className="bg-surface border border-border rounded-2xl overflow-hidden shadow-card hover:border-border-hover transition-all flex flex-col justify-between group"
+                  >
+                    {/* Top 16:10 Thumbnail Canvas with Direct Upload Trigger */}
+                    <div
+                      onClick={() => triggerUploadForProject(project.slug)}
+                      className="relative aspect-16/10 bg-bg-subtle border-b border-border overflow-hidden cursor-pointer group"
+                    >
+                      {project.frontmatter.cover ? (
+                        <Image
+                          src={project.frontmatter.cover}
+                          alt={project.frontmatter.coverAlt || project.frontmatter.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover group-hover:scale-103 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="size-full flex flex-col items-center justify-center p-6 text-center text-muted">
+                          <span className="text-3xl mb-2 opacity-50">🖼️</span>
+                          <span className="text-xs font-mono font-semibold">Click to Upload Thumbnail</span>
+                          <span className="text-[10px] opacity-70">PNG, JPG, WebP</span>
+                        </div>
+                      )}
+
+                      {/* Hover Upload Overlay */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity">
+                        <span className="text-xl mb-1">📷</span>
+                        <span className="text-xs font-semibold">Replace Thumbnail</span>
+                      </div>
+
+                      {uploadingImage === project.slug && (
+                        <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-white text-xs gap-2">
+                          <span className="size-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Uploading image...</span>
+                        </div>
+                      )}
+
+                      {/* Badges Overlay */}
+                      <div className="absolute top-3 left-3 flex items-center gap-2">
+                        <span className="badge-kind text-[10px] font-mono shadow-sm">
+                          {project.frontmatter.section || "portfolio"}
+                        </span>
+                        {project.frontmatter.featuredOnHome && (
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-signal text-black shadow-sm">
+                            ⭐ Home
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="absolute top-3 right-3">
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shadow-sm ${
+                          isBlob
+                            ? "bg-blue-600 text-white border-blue-400 font-semibold"
+                            : "bg-surface/90 text-fg border-border"
+                        }`}>
+                          {isBlob ? "☁️ Vercel Blob" : "📁 Local"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Content & Action Bar */}
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-base font-bold text-fg mb-1">
+                          {project.frontmatter.title}
+                        </h3>
+                        <p className="text-xs font-mono text-muted mb-2">
+                          /{project.slug}
+                        </p>
+                        <p className="text-xs text-muted line-clamp-2 mb-4">
+                          {project.frontmatter.summary}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => triggerUploadForProject(project.slug)}
+                          disabled={uploadingImage === project.slug}
+                          className="flex-1 py-2 px-3 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <span>📷</span>
+                          <span>Upload</span>
+                        </button>
+
+                        <button
+                          onClick={() => openEditModal(project)}
+                          className="py-2 px-4 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: DISCOVERED WORKBENCH INBOX */}
       {activeTab === "inbox" && (
         <div>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-bold text-fg">Automatic Inclusion & Vetting Inbox</h2>
               <p className="text-sm text-muted">
-                Repositories found on GitHub ({githubUser}). Review and approve which ones to feature on the site and choose their section.
+                Repositories scanned from GitHub ({githubUser}). Review and approve which ones to add to the site.
               </p>
             </div>
 
@@ -742,345 +1152,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 2: MANAGED PROJECTS & SECTIONS */}
-      {activeTab === "projects" && (
-        <div>
-          {/* Homepage Spotlight Project Selector */}
-          <div className="p-4 bg-surface border border-signal/30 rounded-2xl shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">⭐</span>
-              <div>
-                <span className="text-xs font-mono text-signal uppercase tracking-wider font-bold block">
-                  Homepage Spotlight Project
-                </span>
-                <span className="text-xs text-muted">
-                  Choose which single project is highlighted on the home screen.
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <select
-                value={projects.find((p) => p.frontmatter.featuredOnHome)?.slug || projects[0]?.slug || ""}
-                onChange={(e) => setHomepageSpotlight(e.target.value)}
-                className="px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg focus:outline-none focus:border-accent"
-              >
-                {projects.map((p) => (
-                  <option key={p.slug} value={p.slug}>
-                    {p.frontmatter.title} ({p.frontmatter.section || "portfolio"})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setSectionFilter("all")}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  sectionFilter === "all"
-                    ? "bg-fg text-bg border-fg"
-                    : "bg-surface text-muted border-border hover:border-border-hover"
-                }`}
-              >
-                All ({projects.length})
-              </button>
-              <button
-                onClick={() => setSectionFilter("portfolio")}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  sectionFilter === "portfolio"
-                    ? "bg-fg text-bg border-fg"
-                    : "bg-surface text-muted border-border hover:border-border-hover"
-                }`}
-              >
-                Portfolio Only
-              </button>
-              <button
-                onClick={() => setSectionFilter("labs")}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  sectionFilter === "labs"
-                    ? "bg-fg text-bg border-fg"
-                    : "bg-surface text-muted border-border hover:border-border-hover"
-                }`}
-              >
-                Labs Only
-              </button>
-              <button
-                onClick={() => setSectionFilter("drafts")}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  sectionFilter === "drafts"
-                    ? "bg-fg text-bg border-fg"
-                    : "bg-surface text-muted border-border hover:border-border-hover"
-                }`}
-              >
-                Drafts / Hidden
-              </button>
-            </div>
-
-            <div className="w-full sm:w-64">
-              <input
-                type="text"
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-xs text-fg placeholder:text-faint focus:outline-none focus:border-accent"
-              />
-            </div>
-          </div>
-
-          {/* Project List */}
-          <div className="space-y-4">
-            {filteredProjects.map((project) => {
-              const isLive = !project.frontmatter.draft;
-              const currentSection =
-                project.frontmatter.section ||
-                (project.frontmatter.kind === "website" ? "portfolio" : "labs");
-
-              return (
-                <div
-                  key={project.slug}
-                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-5 bg-surface border border-border rounded-2xl shadow-card hover:border-border-hover transition-all"
-                >
-                  {/* Left: Thumbnail & Project Meta */}
-                  <div className="flex items-start sm:items-center gap-4 flex-1">
-                    {/* Thumbnail preview / quick upload */}
-                    <div
-                      onClick={() => triggerUploadForProject(project.slug)}
-                      className="relative group size-20 sm:size-24 rounded-xl overflow-hidden bg-bg-subtle border border-border shrink-0 cursor-pointer"
-                      title="Click to replace thumbnail"
-                    >
-                      {project.frontmatter.cover ? (
-                        <Image
-                          src={project.frontmatter.cover}
-                          alt={project.frontmatter.coverAlt || project.frontmatter.title}
-                          fill
-                          sizes="96px"
-                          className="object-cover group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="size-full flex items-center justify-center text-xl font-bold text-muted">
-                          {project.frontmatter.title.charAt(0)}
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white font-mono transition-opacity">
-                        {uploadingImage === project.slug ? "Uploading..." : "Replace"}
-                      </div>
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span
-                          className="size-2.5 rounded-full shrink-0"
-                          style={{ background: project.frontmatter.accent || "#3855d6" }}
-                        />
-                        <h3 className="text-base font-bold text-fg truncate">
-                          {project.frontmatter.title}
-                        </h3>
-                        <span className="text-xs font-mono text-muted">
-                          /projects/{project.slug}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-muted line-clamp-2 mb-2 max-w-2xl">
-                        {project.frontmatter.summary}
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <span className="badge-kind">{project.frontmatter.kind || "app"}</span>
-                        {project.frontmatter.techStack?.slice(0, 3).map((t) => (
-                          <span key={t} className="tech-tag">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Controls (Visibility Toggle, Section Selector, Status, Edit) */}
-                  <div className="flex flex-wrap items-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-border shrink-0">
-                    {/* Live / Draft Visibility Switch */}
-                    <button
-                      onClick={() => toggleProjectDraft(project)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
-                        isLive
-                          ? "bg-live-green/15 text-live-green border-live-green/30 hover:bg-live-green/25"
-                          : "bg-muted/15 text-muted border-border hover:bg-muted/25"
-                      }`}
-                      title="Toggle visibility on site"
-                    >
-                      <span
-                        className={`size-2 rounded-full ${
-                          isLive ? "bg-live-green animate-pulse" : "bg-muted"
-                        }`}
-                      />
-                      <span>{isLive ? "ON (Live)" : "OFF (Draft)"}</span>
-                    </button>
-
-                    {/* Home Spotlight Quick Toggle */}
-                    {project.frontmatter.featuredOnHome ? (
-                      <span className="px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono bg-signal/15 text-fg border border-signal/40 flex items-center gap-1 shadow-sm">
-                        ⭐ On Home
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => setHomepageSpotlight(project.slug)}
-                        className="px-2.5 py-1.5 rounded-xl text-xs font-medium text-muted hover:text-fg bg-bg-subtle hover:bg-surface border border-border hover:border-signal/40 transition-colors"
-                        title="Feature this project as the single spotlight on the homepage"
-                      >
-                        ⭐ Set on Home
-                      </button>
-                    )}
-
-                    {/* Section Selector */}
-                    <div className="flex items-center bg-bg-subtle border border-border rounded-xl p-0.5 text-xs">
-                      <button
-                        onClick={() => changeProjectSection(project, "portfolio")}
-                        className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                          currentSection === "portfolio"
-                            ? "bg-surface text-fg font-bold shadow-sm"
-                            : "text-muted hover:text-fg"
-                        }`}
-                      >
-                        Portfolio
-                      </button>
-                      <button
-                        onClick={() => changeProjectSection(project, "labs")}
-                        className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                          currentSection === "labs"
-                            ? "bg-surface text-fg font-bold shadow-sm"
-                            : "text-muted hover:text-fg"
-                        }`}
-                      >
-                        Labs
-                      </button>
-                    </div>
-
-                    {/* Status Dropdown */}
-                    <select
-                      value={project.frontmatter.status || "live"}
-                      onChange={(e) => changeProjectStatus(project, e.target.value)}
-                      className="px-2.5 py-1.5 bg-bg-subtle border border-border rounded-xl text-xs text-fg font-medium focus:outline-none"
-                    >
-                      <option value="live">Live</option>
-                      <option value="in-progress">Building Now</option>
-                      <option value="featured">Featured</option>
-                      <option value="archived">Archived</option>
-                    </select>
-
-                    {/* Thumbnail Upload Button */}
-                    <button
-                      onClick={() => triggerUploadForProject(project.slug)}
-                      className="p-2 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs text-muted hover:text-fg transition-colors"
-                      title="Update Thumbnail"
-                    >
-                      📷
-                    </button>
-
-                    {/* Edit Full Details */}
-                    <button
-                      onClick={() => openEditModal(project)}
-                      className="px-3 py-1.5 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs font-semibold text-fg transition-colors"
-                    >
-                      Edit
-                    </button>
-
-                    {/* View Live Case Study */}
-                    <Link
-                      href={`/projects/${project.slug}`}
-                      target="_blank"
-                      className="p-2 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs text-muted hover:text-fg transition-colors"
-                      title="View Page"
-                    >
-                      ↗
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: THUMBNAIL STUDIO */}
-      {activeTab === "thumbnails" && (
-        <div>
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-fg">Project Thumbnail Studio</h2>
-            <p className="text-sm text-muted">
-              Easily update cover screenshots and images for all projects. Images are saved to{" "}
-              <code className="text-accent">public/images/projects/</code> and linked directly in MDX.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <div
-                key={project.slug}
-                className="bg-surface border border-border rounded-2xl overflow-hidden shadow-card hover:border-border-hover transition-all flex flex-col"
-              >
-                {/* 16:10 Aspect Ratio Card Cover */}
-                <div className="relative w-full aspect-[16/10] bg-bg-subtle border-b border-border overflow-hidden group">
-                  {project.frontmatter.cover ? (
-                    <Image
-                      src={project.frontmatter.cover}
-                      alt={project.frontmatter.coverAlt || project.frontmatter.title}
-                      fill
-                      sizes="(min-width: 1024px) 33vw, 50vw"
-                      className="object-cover group-hover:scale-102 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="size-full flex flex-col items-center justify-center text-muted p-4 text-center">
-                      <span className="text-3xl font-bold mb-1 opacity-40">
-                        {project.frontmatter.title.charAt(0)}
-                      </span>
-                      <span className="text-xs font-mono">No thumbnail set</span>
-                    </div>
-                  )}
-
-                  {/* Upload overlay */}
-                  <div
-                    onClick={() => triggerUploadForProject(project.slug)}
-                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 text-white transition-opacity cursor-pointer p-4"
-                  >
-                    <span className="text-2xl">📸</span>
-                    <span className="text-xs font-semibold">Click to upload new image</span>
-                    <span className="text-[10px] text-white/70 font-mono">PNG, JPG, WebP, SVG</span>
-                  </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <h3 className="text-base font-bold text-fg truncate">
-                        {project.frontmatter.title}
-                      </h3>
-                      <span className="badge-kind">{project.frontmatter.section || "portfolio"}</span>
-                    </div>
-                    <p className="text-xs font-mono text-muted mb-3">
-                      {project.frontmatter.cover || "Uses initial placeholder"}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 pt-3 border-t border-border">
-                    <button
-                      onClick={() => triggerUploadForProject(project.slug)}
-                      disabled={uploadingImage === project.slug}
-                      className="w-full py-2 px-3 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-                    >
-                      <span>{uploadingImage === project.slug ? "Uploading..." : "Upload New File"}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* VETTING & EDIT MODAL */}
+      {/* VETTING & EDIT MODAL WITH INTEGRATED THUMBNAIL UPLOADER */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-2xl bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-2xl my-8">
@@ -1090,7 +1162,7 @@ export default function AdminDashboardPage() {
                   {editingSlug ? `Edit Project: ${formData.title}` : "Vet & Add New Project"}
                 </h2>
                 <p className="text-xs text-muted mt-0.5">
-                  Configure section placement, visibility, metadata, and thumbnail.
+                  Configure section placement, spotlight, metadata, story, and image.
                 </p>
               </div>
               <button
@@ -1100,6 +1172,15 @@ export default function AdminDashboardPage() {
                 ✕
               </button>
             </div>
+
+            {/* Hidden file input for modal uploads */}
+            <input
+              type="file"
+              ref={modalFileInputRef}
+              onChange={handleModalFileUpload}
+              accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
+              className="hidden"
+            />
 
             <form onSubmit={handleSaveProject} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1131,7 +1212,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Section & Status Controls */}
+              {/* Section, Visibility & Spotlight Controls */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-bg-subtle border border-border rounded-xl">
                 <div>
                   <label className="block text-xs font-mono uppercase text-muted mb-1 font-bold">
@@ -1205,11 +1286,110 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
+              {/* Highlights List */}
+              <div>
+                <label className="block text-xs font-mono uppercase text-muted mb-1">
+                  Key Highlights / Bullet Points (one per line)
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.highlights}
+                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
+                  placeholder="High-contrast magazine aesthetic tailored for music collectors&#10;Dynamic release catalog indexing rare pressings&#10;Fast search with instant genre and decade filtering"
+                  className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent font-mono"
+                />
+              </div>
+
+              {/* MDX Case Study Body */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-mono uppercase text-muted">
+                    Case Study Story & Body (Markdown / MDX)
+                  </label>
+                  <span className="text-[10px] font-mono text-muted">
+                    Supports ## headings, bullet points & code
+                  </span>
+                </div>
+                <textarea
+                  rows={6}
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="## The Brief&#10;&#10;Describe the challenge and problem solved...&#10;&#10;## The Architecture&#10;&#10;- Key engineering decisions..."
+                  className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent font-mono leading-relaxed"
+                />
+              </div>
+
+              {/* Thumbnail Image Studio in Modal */}
+              <div className="p-4 bg-bg-subtle border border-border rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono uppercase text-muted font-bold">
+                    Project Thumbnail Image (Blob / Local)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => modalFileInputRef.current?.click()}
+                    disabled={uploadingImage === "modal"}
+                    className="px-3 py-1 bg-fg text-bg font-semibold rounded-lg text-xs hover:opacity-90 transition-opacity flex items-center gap-1"
+                  >
+                    <span>📷</span>
+                    <span>{uploadingImage === "modal" ? "Uploading..." : "Upload New File"}</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                  {/* Thumbnail Preview Box */}
+                  <div
+                    onClick={() => modalFileInputRef.current?.click()}
+                    className="sm:col-span-4 relative aspect-16/10 rounded-xl overflow-hidden bg-surface border border-border cursor-pointer group flex items-center justify-center"
+                    title="Click to choose a file"
+                  >
+                    {formData.cover ? (
+                      <Image
+                        src={formData.cover}
+                        alt={formData.coverAlt || "Thumbnail"}
+                        fill
+                        sizes="160px"
+                        className="object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-3 text-center text-muted text-xs">
+                        <span className="text-xl mb-1">🖼️</span>
+                        <span className="text-[10px] font-mono">No Image Set</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity">
+                      Upload
+                    </div>
+                  </div>
+
+                  {/* Manual Inputs for Cover URL & Alt */}
+                  <div className="sm:col-span-8 space-y-2">
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.cover}
+                        onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
+                        placeholder="/images/projects/cover.png or https://...blob.vercel-storage.com/..."
+                        className="w-full px-3 py-1.5 bg-surface border border-border rounded-lg text-xs text-fg font-mono focus:outline-none focus:border-accent"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.coverAlt}
+                        onChange={(e) => setFormData({ ...formData, coverAlt: e.target.value })}
+                        placeholder="Image description (Alt text)"
+                        className="w-full px-3 py-1.5 bg-surface border border-border rounded-lg text-xs text-fg focus:outline-none focus:border-accent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Extra Meta Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Kind
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">Kind</label>
                   <select
                     value={formData.kind}
                     onChange={(e) => setFormData({ ...formData, kind: e.target.value })}
@@ -1224,9 +1404,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Accent Color
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">Accent Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -1244,9 +1422,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Date (YYYY-MM-DD)
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">Date</label>
                   <input
                     type="text"
                     value={formData.date}
@@ -1258,9 +1434,7 @@ export default function AdminDashboardPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Tech Stack (comma separated)
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">Tech Stack</label>
                   <input
                     type="text"
                     value={formData.techStack}
@@ -1271,9 +1445,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Tags (comma separated)
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">Tags</label>
                   <input
                     type="text"
                     value={formData.tags}
@@ -1286,9 +1458,7 @@ export default function AdminDashboardPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Live URL (optional)
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">Live URL (optional)</label>
                   <input
                     type="url"
                     value={formData.url}
@@ -1299,92 +1469,13 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    GitHub Repo URL (optional)
-                  </label>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1">GitHub Repo URL</label>
                   <input
                     type="url"
                     value={formData.repo}
                     onChange={(e) => setFormData({ ...formData, repo: e.target.value })}
                     placeholder="https://github.com/..."
                     className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-sm text-fg font-mono"
-                  />
-                </div>
-              </div>
-
-              {formData.status === "in-progress" && (
-                <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Building Now / Progress Note
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.wipProgress}
-                    onChange={(e) => setFormData({ ...formData, wipProgress: e.target.value })}
-                    placeholder="Phase 1 · Core API integration & UI prototype"
-                    className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-sm text-fg"
-                  />
-                </div>
-              )}
-
-              {/* Project Highlights (bullets) */}
-              <div>
-                <label className="block text-xs font-mono uppercase text-muted mb-1">
-                  Key Highlights / Bullet Points (one per line)
-                </label>
-                <textarea
-                  rows={3}
-                  value={formData.highlights}
-                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
-                  placeholder="High-contrast magazine aesthetic tailored for music collectors&#10;Dynamic release catalog indexing rare pressings&#10;Fast search with instant genre and decade filtering"
-                  className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent font-mono"
-                />
-              </div>
-
-              {/* MDX Case Study Body Content */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-mono uppercase text-muted">
-                    Case Study Story & Body (Markdown / MDX)
-                  </label>
-                  <span className="text-[10px] font-mono text-muted">
-                    Supports ## headings, bullet points & code
-                  </span>
-                </div>
-                <textarea
-                  rows={7}
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="## The Brief&#10;&#10;Describe the challenge and problem solved...&#10;&#10;## The Architecture&#10;&#10;- Key engineering decisions...&#10;- Performance & accessibility..."
-                  className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent font-mono leading-relaxed"
-                />
-              </div>
-
-              {/* Cover thumbnail path */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Cover Image Path (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cover}
-                    onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
-                    placeholder="/images/projects/example.png"
-                    className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-sm text-fg font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono uppercase text-muted mb-1">
-                    Cover Alt Text
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.coverAlt}
-                    onChange={(e) => setFormData({ ...formData, coverAlt: e.target.value })}
-                    placeholder="Screenshot of interface"
-                    className="w-full px-3 py-2 bg-bg-subtle border border-border rounded-xl text-sm text-fg"
                   />
                 </div>
               </div>
