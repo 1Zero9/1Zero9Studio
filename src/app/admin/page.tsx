@@ -518,7 +518,7 @@ export default function AdminDashboardPage() {
   // Open Media Library
   async function openMediaLibrary(context: "modal" | "quick-slug", targetSlug?: string) {
     setLibraryTargetContext(context);
-    setLibraryTargetSlug(targetSlug || null);
+    setLibraryTargetSlug(targetSlug || (context === "modal" ? (formData.slug || editingSlug) : null));
     setLibraryModalOpen(true);
     setLoadingLibrary(true);
     try {
@@ -538,39 +538,44 @@ export default function AdminDashboardPage() {
 
   // Select an image from library
   async function handleSelectLibraryImage(img: LibraryImageItem) {
-    if (libraryTargetContext === "modal") {
-      setFormData((prev: ProjectFormData) => ({
-        ...prev,
-        cover: img.url,
-        coverAlt: prev.coverAlt || `${prev.title || "Project"} screenshot`,
-      }));
-      setLibraryModalOpen(false);
-      showToast(`Selected "${img.name}" from library!`);
-    } else if (libraryTargetContext === "quick-slug" && libraryTargetSlug) {
-      setUploadingImage(libraryTargetSlug);
+    const slugToUpdate = libraryTargetSlug || (libraryTargetContext === "modal" ? (formData.slug || editingSlug) : null);
+
+    // Update modal form state
+    setFormData((prev: ProjectFormData) => ({
+      ...prev,
+      cover: img.url,
+      coverAlt: prev.coverAlt || `${prev.title || "Project"} screenshot`,
+    }));
+
+    // If we have a target slug, commit immediately to server so it updates everywhere in real time!
+    if (slugToUpdate) {
+      setUploadingImage(slugToUpdate);
       try {
         const res = await fetch("/api/admin/upload-thumbnail", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            slug: libraryTargetSlug,
+            slug: slugToUpdate,
             coverUrl: img.url,
-            alt: `${libraryTargetSlug} screenshot`,
+            alt: `${formData.title || slugToUpdate} screenshot`,
           }),
         });
         if (!res.ok) {
           const errJson = await res.json();
           throw new Error(errJson.error || "Failed to assign thumbnail");
         }
-        showToast(`Thumbnail set for ${libraryTargetSlug}!`);
-        setLibraryModalOpen(false);
+        showToast(`Thumbnail assigned & saved for ${formData.title || slugToUpdate}!`);
         await loadProjects();
       } catch (err: unknown) {
         showToast(err instanceof Error ? err.message : "Failed to assign image", "error");
       } finally {
         setUploadingImage(null);
       }
+    } else {
+      showToast(`Selected "${img.name}" from library!`);
     }
+
+    setLibraryModalOpen(false);
   }
 
   // Filter projects
@@ -1712,7 +1717,7 @@ export default function AdminDashboardPage() {
                                     : "bg-surface/90 text-fg border-border"
                                 }`}
                               >
-                                {isBlob ? "☁️ Blob" : "📁 Local"}
+                                {isBlob ? "☁️ Vercel CDN" : "📁 Local Asset"}
                               </span>
                             </div>
                           </div>
