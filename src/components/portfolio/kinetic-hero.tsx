@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
 import { KineticSignalField } from "@/components/brand/kinetic-signal-field";
 
 export function KineticHero({
@@ -10,11 +11,11 @@ export function KineticHero({
 }) {
   return (
     <section className="hero-section relative overflow-hidden">
-      {/* Ambient Interactive Mouse-Following Signal Field */}
-      <KineticSignalField className="opacity-90" />
+      {/* Ambient Interactive Mouse-Following Wide Waveform Signal Field */}
+      <KineticSignalField className="opacity-95" />
 
       {/* Hero Content */}
-      <div className="relative z-10 flex flex-col items-start gap-5">
+      <div className="relative z-10 flex flex-col items-start gap-6">
         <div className="hero-status-pill group backdrop-blur-sm bg-surface/80 border-border/80 hover:border-signal/50 transition-colors">
           <div className="flex items-center gap-1.5 py-0.5">
             <span className="size-2 rounded-full bg-signal animate-pulse" />
@@ -57,6 +58,31 @@ export function KineticHero({
             <span>About</span>
             <span aria-hidden="true">↗</span>
           </Link>
+        </div>
+
+        {/* Sleek Wide Active Site & Studio Signal Bar */}
+        <div className="w-full mt-2 p-4 sm:px-6 rounded-2xl bg-surface/80 backdrop-blur-md border border-border shadow-card flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <Logo className="h-6 w-auto text-fg shrink-0" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-signal animate-pulse shrink-0" />
+                <span className="text-xs font-mono font-bold text-signal uppercase tracking-wider">
+                  Signal Active · 1Zero9 Studio
+                </span>
+              </div>
+              <span className="text-xs sm:text-sm font-semibold text-fg block mt-0.5">
+                Product Architecture · Interface Design · Working Software
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-mono text-muted bg-bg-subtle/80 px-3 py-1.5 rounded-xl border border-border shrink-0">
+            <span className="text-signal font-bold">●</span>
+            <span>Workshop Online</span>
+            <span className="opacity-40">·</span>
+            <span>Dublin, IE</span>
+          </div>
         </div>
       </div>
     </section>
