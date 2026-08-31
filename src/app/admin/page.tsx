@@ -54,6 +54,15 @@ interface DiscoveredProject {
   managedSlug?: string;
 }
 
+interface LibraryImageItem {
+  url: string;
+  name: string;
+  type: "vercel-blob" | "local" | "project-cover";
+  size?: number;
+  uploadedAt?: string;
+  sourceProject?: string;
+}
+
 interface ProjectFormData {
   title: string;
   slug: string;
@@ -89,6 +98,14 @@ export default function AdminDashboardPage() {
   const [sectionFilter, setSectionFilter] = useState<"all" | "portfolio" | "labs" | "drafts">("all");
   const [githubUser, setGithubUser] = useState("1Zero9");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Media library picker state
+  const [libraryModalOpen, setLibraryModalOpen] = useState(false);
+  const [libraryImages, setLibraryImages] = useState<LibraryImageItem[]>([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
+  const [librarySearch, setLibrarySearch] = useState("");
+  const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
+  const [libraryTargetSlug, setLibraryTargetSlug] = useState<string | null>(null);
 
   // Vetting / Edit modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -495,6 +512,64 @@ export default function AdminDashboardPage() {
     } finally {
       setUploadingImage(null);
       if (modalFileInputRef.current) modalFileInputRef.current.value = "";
+    }
+  }
+
+  // Open Media Library
+  async function openMediaLibrary(context: "modal" | "quick-slug", targetSlug?: string) {
+    setLibraryTargetContext(context);
+    setLibraryTargetSlug(targetSlug || null);
+    setLibraryModalOpen(true);
+    setLoadingLibrary(true);
+    try {
+      const res = await fetch("/api/admin/media-library");
+      if (res.ok) {
+        const json = await res.json();
+        setLibraryImages(json.images || []);
+      } else {
+        throw new Error("Failed to load library");
+      }
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to load library", "error");
+    } finally {
+      setLoadingLibrary(false);
+    }
+  }
+
+  // Select an image from library
+  async function handleSelectLibraryImage(img: LibraryImageItem) {
+    if (libraryTargetContext === "modal") {
+      setFormData((prev: ProjectFormData) => ({
+        ...prev,
+        cover: img.url,
+        coverAlt: prev.coverAlt || `${prev.title || "Project"} screenshot`,
+      }));
+      setLibraryModalOpen(false);
+      showToast(`Selected "${img.name}" from library!`);
+    } else if (libraryTargetContext === "quick-slug" && libraryTargetSlug) {
+      setUploadingImage(libraryTargetSlug);
+      try {
+        const res = await fetch("/api/admin/upload-thumbnail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug: libraryTargetSlug,
+            coverUrl: img.url,
+            alt: `${libraryTargetSlug} screenshot`,
+          }),
+        });
+        if (!res.ok) {
+          const errJson = await res.json();
+          throw new Error(errJson.error || "Failed to assign thumbnail");
+        }
+        showToast(`Thumbnail set for ${libraryTargetSlug}!`);
+        setLibraryModalOpen(false);
+        await loadProjects();
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to assign image", "error");
+      } finally {
+        setUploadingImage(null);
+      }
     }
   }
 
@@ -937,10 +1012,20 @@ export default function AdminDashboardPage() {
                         onClick={() => triggerUploadForProject(project.slug)}
                         disabled={uploadingImage === project.slug}
                         className="px-3 py-1.5 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center gap-1.5"
-                        title="Upload/replace image"
+                        title="Upload/replace image file"
                       >
                         <span>📷</span>
-                        <span>{uploadingImage === project.slug ? "Uploading..." : "Upload Image"}</span>
+                        <span>{uploadingImage === project.slug ? "Uploading..." : "Upload"}</span>
+                      </button>
+
+                      {/* Pick from Library Button */}
+                      <button
+                        onClick={() => openMediaLibrary("quick-slug", project.slug)}
+                        className="px-3 py-1.5 bg-bg-subtle hover:bg-surface border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center gap-1.5"
+                        title="Pick from stored library"
+                      >
+                        <span>🖼️</span>
+                        <span>Library</span>
                       </button>
 
                       {/* Edit Full Details */}
@@ -1046,19 +1131,27 @@ export default function AdminDashboardPage() {
                         </p>
                       </div>
 
-                      <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
+                      <div className="pt-3 border-t border-border flex items-center justify-between gap-1.5">
                         <button
                           onClick={() => triggerUploadForProject(project.slug)}
                           disabled={uploadingImage === project.slug}
-                          className="flex-1 py-2 px-3 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center justify-center gap-1.5"
+                          className="flex-1 py-1.5 px-2 bg-surface hover:bg-surface-hover border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center justify-center gap-1"
                         >
                           <span>📷</span>
                           <span>Upload</span>
                         </button>
 
                         <button
+                          onClick={() => openMediaLibrary("quick-slug", project.slug)}
+                          className="flex-1 py-1.5 px-2 bg-bg-subtle hover:bg-surface border border-border rounded-xl text-xs font-semibold text-fg transition-colors flex items-center justify-center gap-1"
+                        >
+                          <span>🖼️</span>
+                          <span>Library</span>
+                        </button>
+
+                        <button
                           onClick={() => openEditModal(project)}
-                          className="py-2 px-4 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
+                          className="py-1.5 px-3 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
                         >
                           Edit
                         </button>
@@ -1344,19 +1437,29 @@ export default function AdminDashboardPage() {
 
               {/* Thumbnail Image Studio in Modal */}
               <div className="p-4 bg-bg-subtle border border-border rounded-xl space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="block text-xs font-mono uppercase text-muted font-bold">
                     Project Thumbnail Image (Blob / Local)
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => modalFileInputRef.current?.click()}
-                    disabled={uploadingImage === "modal"}
-                    className="px-3 py-1 bg-fg text-bg font-semibold rounded-lg text-xs hover:opacity-90 transition-opacity flex items-center gap-1"
-                  >
-                    <span>📷</span>
-                    <span>{uploadingImage === "modal" ? "Uploading..." : "Upload New File"}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openMediaLibrary("modal")}
+                      className="px-2.5 py-1 bg-surface hover:bg-surface-hover border border-border text-fg font-semibold rounded-lg text-xs transition-colors flex items-center gap-1"
+                    >
+                      <span>🖼️</span>
+                      <span>Pick from Library</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => modalFileInputRef.current?.click()}
+                      disabled={uploadingImage === "modal"}
+                      className="px-2.5 py-1 bg-fg text-bg font-semibold rounded-lg text-xs hover:opacity-90 transition-opacity flex items-center gap-1"
+                    >
+                      <span>📷</span>
+                      <span>{uploadingImage === "modal" ? "Uploading..." : "Upload File"}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
@@ -1519,6 +1622,143 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: MEDIA LIBRARY PICKER */}
+      {libraryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface border border-border rounded-3xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-fg flex items-center gap-2">
+                  <span>🖼️</span>
+                  <span>Media & Thumbnail Library</span>
+                </h2>
+                <p className="text-xs text-muted mt-0.5">
+                  Select any previously uploaded Vercel Blob, local asset, or project cover to apply immediately.
+                </p>
+              </div>
+              <button
+                onClick={() => setLibraryModalOpen(false)}
+                className="text-muted hover:text-fg font-bold text-xl p-2 rounded-xl hover:bg-bg-subtle transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Filter / Search Bar */}
+            <div className="p-4 bg-bg-subtle border-b border-border flex items-center justify-between gap-3">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search library images..."
+                  value={librarySearch}
+                  onChange={(e) => setLibrarySearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-surface border border-border rounded-xl text-xs text-fg focus:outline-none focus:border-accent"
+                />
+                <span className="absolute left-3 top-2.5 text-xs text-muted">🔍</span>
+              </div>
+
+              <div className="text-xs font-mono text-muted shrink-0">
+                {libraryImages.length} {libraryImages.length === 1 ? "Image" : "Images"} Found
+              </div>
+            </div>
+
+            {/* Image Grid */}
+            <div className="p-6 overflow-y-auto flex-1">
+              {loadingLibrary ? (
+                <div className="py-16 text-center text-sm font-mono text-muted flex flex-col items-center gap-3">
+                  <div className="size-6 border-2 border-fg/20 border-t-fg rounded-full animate-spin" />
+                  <span>Loading image library from Vercel Blob and local storage...</span>
+                </div>
+              ) : libraryImages.length === 0 ? (
+                <div className="py-16 text-center text-sm text-muted">
+                  No images found in library. Upload a new file from your device.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {libraryImages
+                    .filter((img) =>
+                      librarySearch.trim()
+                        ? img.name.toLowerCase().includes(librarySearch.toLowerCase()) ||
+                          img.url.toLowerCase().includes(librarySearch.toLowerCase()) ||
+                          (img.sourceProject && img.sourceProject.toLowerCase().includes(librarySearch.toLowerCase()))
+                        : true
+                    )
+                    .map((img) => {
+                      const isBlob = img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com");
+                      return (
+                        <div
+                          key={img.url}
+                          className="group relative rounded-2xl border border-border bg-bg-subtle overflow-hidden hover:border-accent transition-all flex flex-col justify-between shadow-sm"
+                        >
+                          {/* Image preview */}
+                          <div className="relative aspect-16/10 bg-surface flex items-center justify-center overflow-hidden">
+                            <Image
+                              src={img.url}
+                              alt={img.name}
+                              fill
+                              sizes="(max-width: 768px) 50vw, 25vw"
+                              className="object-cover group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute top-2 right-2">
+                              <span
+                                className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full border shadow-sm ${
+                                  isBlob
+                                    ? "bg-blue-600 text-white border-blue-400 font-semibold"
+                                    : "bg-surface/90 text-fg border-border"
+                                }`}
+                              >
+                                {isBlob ? "☁️ Blob" : "📁 Local"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Image info & select button */}
+                          <div className="p-3 flex flex-col justify-between flex-1 gap-2">
+                            <div>
+                              <p className="text-xs font-bold text-fg truncate" title={img.name}>
+                                {img.name}
+                              </p>
+                              {img.sourceProject && (
+                                <p className="text-[10px] text-muted truncate">
+                                  Used in {img.sourceProject}
+                                </p>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleSelectLibraryImage(img)}
+                              className="w-full py-1.5 px-2 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
+                            >
+                              <span>✓</span>
+                              <span>Select Image</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-bg-subtle border-t border-border flex items-center justify-between">
+              <span className="text-xs font-mono text-muted">
+                Tip: Click &quot;Select Image&quot; to assign it to this project immediately.
+              </span>
+              <button
+                type="button"
+                onClick={() => setLibraryModalOpen(false)}
+                className="px-4 py-1.5 text-xs font-semibold text-fg bg-surface hover:bg-surface-hover border border-border rounded-xl transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
