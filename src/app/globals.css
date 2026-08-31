@@ -2,6 +2,52 @@
 @plugin "@tailwindcss/typography";
 
 :root {
+  color-scheme: light;
+  --bg: #fcfdfc;
+  --bg-subtle: #f1f4f2;
+  --surface: #ffffff;
+  --surface-hover: #f4f7f5;
+  --surface-glass: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.22);
+  --fg: #0f172a;
+  --muted: #475569;
+  --faint: #64748b;
+  --accent: #2563eb;
+  --signal: #16a34a;
+  --signal-glow: rgba(22, 163, 74, 0.18);
+  --live-green: #059669;
+  --wip-amber: #d97706;
+  --glow-color: rgba(37, 99, 235, 0.07);
+  --shadow-card: 0 4px 20px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--border);
+  --shadow-card-hover: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 0 20px -2px var(--card-accent, rgba(37, 99, 235, 0.2));
+  --shadow-header: 0 8px 30px -6px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #fcfdfc;
+  --bg-subtle: #f1f4f2;
+  --surface: #ffffff;
+  --surface-hover: #f4f7f5;
+  --surface-glass: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.22);
+  --fg: #0f172a;
+  --muted: #475569;
+  --faint: #64748b;
+  --accent: #2563eb;
+  --signal: #16a34a;
+  --signal-glow: rgba(22, 163, 74, 0.18);
+  --live-green: #059669;
+  --wip-amber: #d97706;
+  --glow-color: rgba(37, 99, 235, 0.07);
+  --shadow-card: 0 4px 20px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--border);
+  --shadow-card-hover: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 0 20px -2px var(--card-accent, rgba(37, 99, 235, 0.2));
+  --shadow-header: 0 8px 30px -6px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border);
+}
+
+[data-theme="dark"] {
   color-scheme: dark;
   --bg: #090a0f;
   --bg-subtle: #0f121a;
@@ -21,28 +67,7 @@
   --glow-color: rgba(59, 130, 246, 0.16);
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border);
   --shadow-card-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.8), 0 0 24px -4px var(--card-accent, rgba(59, 130, 246, 0.35));
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-  --bg: #fcfdfc;
-  --bg-subtle: #f1f4f2;
-  --surface: #ffffff;
-  --surface-hover: #f4f7f5;
-  --surface-glass: rgba(255, 255, 255, 0.96);
-  --border: rgba(0, 0, 0, 0.1);
-  --border-hover: rgba(0, 0, 0, 0.25);
-  --fg: #0f172a;
-  --muted: #475569;
-  --faint: #64748b;
-  --accent: #2563eb;
-  --signal: #16a34a;
-  --signal-glow: rgba(22, 163, 74, 0.2);
-  --live-green: #059669;
-  --wip-amber: #d97706;
-  --glow-color: rgba(37, 99, 235, 0.08);
-  --shadow-card: 0 4px 20px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--border);
-  --shadow-card-hover: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 0 20px -2px var(--card-accent, rgba(37, 99, 235, 0.2));
+  --shadow-header: 0 12px 40px -8px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--border);
 }
 
 @theme inline {
@@ -304,8 +329,8 @@
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border);
   border-radius: 9999px;
-  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.7);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  box-shadow: var(--shadow-header);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .site-header:hover {

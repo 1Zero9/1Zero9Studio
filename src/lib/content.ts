@@ -10,6 +10,7 @@ export const allProjects = generatedProjects
   .filter((project) => project.slug !== "_template")
   .filter((project) => !hideDrafts || !project.draft)
   .filter((project) => project.status !== "archived")
+  .filter((project) => project.section !== "hidden")
   .sort((a, b) => {
     if (a.order !== undefined && b.order !== undefined) {
       return a.order - b.order;
@@ -29,20 +30,27 @@ export function inProgressProjects() {
 
 export function portfolioProjects() {
   // Production portfolio: live websites, client platforms, and standalone applications
-  return allProjects.filter(
-    (project) =>
+  return allProjects.filter((project) => {
+    if (project.section === "portfolio") return true;
+    if (project.section === "labs" || project.section === "hidden") return false;
+
+    return (
       project.kind === "website" ||
       (project.status !== "in-progress" &&
         !project.tags.includes("experiment") &&
         project.kind !== "experiment" &&
-        project.kind !== "tool"),
-  );
+        project.kind !== "tool")
+    );
+  });
 }
 
 export function labsProjects() {
   // Active labs: in-progress work, game experiments, AI workflow prototypes, and utility tools
-  return allProjects.filter(
-    (project) =>
+  return allProjects.filter((project) => {
+    if (project.section === "labs") return true;
+    if (project.section === "portfolio" || project.section === "hidden") return false;
+
+    return (
       project.status === "in-progress" ||
       project.tags.includes("experiment") ||
       project.kind === "experiment" ||
@@ -50,8 +58,9 @@ export function labsProjects() {
       project.slug === "swgoh" ||
       project.slug === "prompt-builder" ||
       project.slug === "jobjar" ||
-      project.slug === "holiday-concierge",
-  );
+      project.slug === "holiday-concierge"
+    );
+  });
 }
 
 export function getProject(slug: string) {

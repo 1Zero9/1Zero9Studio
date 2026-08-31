@@ -28,6 +28,7 @@ export function Footer() {
             <div className="site-footer__nav-group">
               <span className="site-footer__nav-title">Studio & Info</span>
               <Link href="/colophon" className="site-footer__nav-link">Colophon</Link>
+              <Link href="/admin" className="site-footer__nav-link">Workbench Admin</Link>
               <a href="mailto:onezeronine@gmail.com" className="site-footer__nav-link">
                 onezeronine@gmail.com ↗
               </a>
