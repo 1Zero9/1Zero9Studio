@@ -354,6 +354,19 @@ export async function updateProjectThumbnail(
   return await saveAdminProject(slug, updatedFrontmatter as unknown as Record<string, unknown>, project.content);
 }
 
+// Removes a project's entry from the Blob overrides store (and in-memory
+// cache). Used when a project is permanently deleted from disk so it
+// doesn't resurrect via the "override-only" merge path in
+// getAllAdminProjects().
+export async function deleteAdminProjectOverride(slug: string): Promise<void> {
+  const overrides = await fetchBlobOverrides();
+  if (slug in overrides) {
+    delete overrides[slug];
+  }
+  memoryOverrides.delete(slug);
+  await saveBlobOverrides(overrides);
+}
+
 export async function setHomepageSpotlightProject(targetSlug: string): Promise<void> {
   const projects = await getAllAdminProjects();
   for (const p of projects) {

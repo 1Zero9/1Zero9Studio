@@ -72,7 +72,6 @@ interface ProjectFormData {
   status: "live" | "in-progress" | "featured" | "archived";
   kind: "website" | "app" | "pwa" | "tool" | "experiment";
   accent: string;
-  featured: boolean;
   featuredOnHome: boolean;
   draft: boolean;
   tags: string;
@@ -128,7 +127,6 @@ export default function AdminDashboardPage() {
     status: "live",
     kind: "website",
     accent: "#3855d6",
-    featured: false,
     featuredOnHome: false,
     draft: false,
     tags: "",
@@ -315,6 +313,29 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Permanently delete a project
+  async function handleDeleteProject(project: AdminProject) {
+    if (
+      !confirm(
+        `Delete "${project.frontmatter.title}"? This permanently removes it from the site and cannot be undone.`
+      )
+    )
+      return;
+
+    try {
+      const res = await fetch(
+        `/api/admin/projects?slug=${encodeURIComponent(project.slug)}`,
+        { method: "DELETE" }
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to delete project");
+      showToast(`Deleted "${project.frontmatter.title}"`);
+      await loadProjects();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to delete project", "error");
+    }
+  }
+
   // Open Vetting Modal for a discovered candidate
   function openVettingModalForDiscovered(item: DiscoveredProject) {
     setEditingSlug(null);
@@ -327,7 +348,6 @@ export default function AdminDashboardPage() {
       status: item.suggestedStatus === "in-progress" ? "in-progress" : "live",
       kind: item.suggestedKind,
       accent: item.suggestedSection === "labs" ? "#f59e0b" : "#3855d6",
-      featured: false,
       featuredOnHome: false,
       draft: false,
       tags: item.topics.join(", "),
@@ -355,7 +375,6 @@ export default function AdminDashboardPage() {
       status: (project.frontmatter.status as "live" | "in-progress" | "featured" | "archived") || "live",
       kind: project.frontmatter.kind || "app",
       accent: project.frontmatter.accent || "#3855d6",
-      featured: Boolean(project.frontmatter.featured),
       featuredOnHome: Boolean(project.frontmatter.featuredOnHome),
       draft: Boolean(project.frontmatter.draft),
       tags: (project.frontmatter.tags || []).join(", "),
@@ -393,7 +412,6 @@ export default function AdminDashboardPage() {
         status: formData.status,
         kind: formData.kind,
         accent: formData.accent,
-        featured: formData.featured,
         featuredOnHome: formData.featuredOnHome,
         draft: formData.draft,
         tags: tagsArray,
@@ -496,7 +514,11 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // Upload thumbnail directly within modal
+  // Upload a thumbnail file from within the edit modal. This only uploads
+  // the file and stages the returned URL into the form — it does NOT write
+  // to the project yet, so it behaves like every other field in the modal
+  // (only takes effect when "Save Changes" is submitted, and is discarded
+  // on Cancel).
   async function handleModalFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -509,6 +531,7 @@ export default function AdminDashboardPage() {
       data.append("file", file);
       data.append("slug", targetSlug);
       data.append("alt", formData.coverAlt || `${formData.title || targetSlug} screenshot`);
+      data.append("attach", "false");
 
       const res = await fetch("/api/admin/upload-thumbnail", {
         method: "POST",
@@ -527,8 +550,7 @@ export default function AdminDashboardPage() {
       }));
 
       const storageMsg = json.storageType === "vercel-blob" ? " to Vercel Blob" : "";
-      showToast(`Image uploaded${storageMsg}!`);
-      await loadProjects();
+      showToast(`Image uploaded${storageMsg}. Click "Save Changes" to apply it.`);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Failed to upload", "error");
     } finally {
@@ -560,16 +582,23 @@ export default function AdminDashboardPage() {
 
   // Select an image from library
   async function handleSelectLibraryImage(img: LibraryImageItem) {
-    const slugToUpdate = libraryTargetSlug || (libraryTargetContext === "modal" ? (formData.slug || editingSlug) : null);
+    // Picking from the library while editing a project in the modal only
+    // stages the choice into the form — it's applied when "Save Changes" is
+    // submitted, same as an uploaded file or a manually typed cover URL.
+    if (libraryTargetContext === "modal") {
+      setFormData((prev: ProjectFormData) => ({
+        ...prev,
+        cover: img.url,
+        coverAlt: prev.coverAlt || `${prev.title || "Project"} screenshot`,
+      }));
+      showToast(`Thumbnail staged. Click "Save Changes" to apply it.`);
+      setLibraryModalOpen(false);
+      return;
+    }
 
-    // Update modal form state
-    setFormData((prev: ProjectFormData) => ({
-      ...prev,
-      cover: img.url,
-      coverAlt: prev.coverAlt || `${prev.title || "Project"} screenshot`,
-    }));
-
-    // If we have a target slug, commit immediately to server so it updates everywhere in real time!
+    // Quick-action from the project list (no open form/Save step) — commit
+    // immediately so it updates everywhere in real time.
+    const slugToUpdate = libraryTargetSlug;
     if (slugToUpdate) {
       setUploadingImage(slugToUpdate);
       try {
@@ -579,14 +608,14 @@ export default function AdminDashboardPage() {
           body: JSON.stringify({
             slug: slugToUpdate,
             coverUrl: img.url,
-            alt: `${formData.title || slugToUpdate} screenshot`,
+            alt: `${slugToUpdate} screenshot`,
           }),
         });
         if (!res.ok) {
           const errJson = await res.json();
           throw new Error(errJson.error || "Failed to assign thumbnail");
         }
-        showToast(`Thumbnail assigned & saved for ${formData.title || slugToUpdate}!`);
+        showToast(`Thumbnail assigned & saved for ${slugToUpdate}!`);
         await loadProjects();
       } catch (err: unknown) {
         showToast(err instanceof Error ? err.message : "Failed to assign image", "error");
@@ -702,7 +731,6 @@ export default function AdminDashboardPage() {
         status: p.suggestedStatus,
         kind: p.suggestedKind,
         accent: "#3855d6",
-        featured: false,
         featuredOnHome: false,
         draft: false,
         tags: p.topics.length > 0 ? p.topics.join(", ") : "Platform, Management",
@@ -874,7 +902,6 @@ export default function AdminDashboardPage() {
                 status: "live",
                 kind: "website",
                 accent: "#3855d6",
-                featured: false,
                 featuredOnHome: false,
                 draft: false,
                 tags: "web, design",
@@ -1212,6 +1239,15 @@ export default function AdminDashboardPage() {
                       >
                         ↗
                       </Link>
+
+                      {/* Delete Project */}
+                      <button
+                        onClick={() => handleDeleteProject(project)}
+                        className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl text-xs transition-colors"
+                        title="Delete project permanently"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                 );
@@ -1321,6 +1357,14 @@ export default function AdminDashboardPage() {
                           className="py-1.5 px-3 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
                         >
                           Edit
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteProject(project)}
+                          className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl text-xs transition-colors"
+                          title="Delete project permanently"
+                        >
+                          🗑️
                         </button>
                       </div>
                     </div>
@@ -1531,6 +1575,13 @@ export default function AdminDashboardPage() {
 
               {/* Section, Visibility & Spotlight Controls */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-bg-subtle border border-border rounded-xl">
+                <p className="sm:col-span-3 text-xs text-muted leading-relaxed">
+                  <strong className="text-fg">Visibility</strong> is the master on/off switch — a draft never
+                  appears anywhere. <strong className="text-fg">Section</strong> picks which page it lives on.
+                  <strong className="text-fg"> Status</strong> is the badge shown on the card, but{" "}
+                  <em>Archived</em> also hides it everywhere (like a second draft toggle), and{" "}
+                  <em>Featured</em> can win the homepage spotlight below if nothing else is pinned there.
+                </p>
                 <div>
                   <label className="block text-xs font-mono uppercase text-muted mb-1 font-bold">
                     Section Placement *

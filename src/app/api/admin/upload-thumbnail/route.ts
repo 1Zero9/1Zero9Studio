@@ -26,6 +26,11 @@ export async function POST(req: NextRequest) {
       const file = formData.get("file") as File | null;
       const slug = (formData.get("slug") as string) || "project";
       const alt = formData.get("alt") as string | null;
+      // When false, only upload the file and return its URL — don't write
+      // it to the project's frontmatter yet. Used by the edit modal so a
+      // thumbnail pick behaves like every other field (staged until Save),
+      // instead of persisting immediately and ignoring Cancel.
+      const attach = formData.get("attach") !== "false";
 
       if (!slug) {
         return NextResponse.json({ error: "Slug is required" }, { status: 400 });
@@ -94,6 +99,10 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      if (!attach) {
+        return NextResponse.json({ success: true, coverUrl, storageType });
+      }
+
       // Update project metadata
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);
       if (!project) {
@@ -118,13 +127,17 @@ export async function POST(req: NextRequest) {
     } else {
       // JSON body for direct URL-based thumbnail update
       const body = await req.json();
-      const { slug, coverUrl, alt } = body;
+      const { slug, coverUrl, alt, attach = true } = body;
 
       if (!slug || !coverUrl) {
         return NextResponse.json(
           { error: "Slug and coverUrl are required" },
           { status: 400 }
         );
+      }
+
+      if (!attach) {
+        return NextResponse.json({ success: true, coverUrl });
       }
 
       const project = await updateProjectThumbnail(slug, coverUrl, alt || undefined);

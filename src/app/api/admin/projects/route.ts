@@ -6,6 +6,7 @@ import {
   getAdminProjectBySlug,
   saveAdminProject,
   setHomepageSpotlightProject,
+  deleteAdminProjectOverride,
 } from "@/lib/admin-content";
 import fs from "fs/promises";
 import path from "path";
@@ -188,11 +189,30 @@ export async function DELETE(req: NextRequest) {
     }
 
     const projectDir = path.join(PROJECTS_DIR, slug);
+    let removedFromDisk = false;
     try {
       await fs.rm(projectDir, { recursive: true, force: true });
+      removedFromDisk = true;
     } catch {
-      // In read-only serverless environment, mark project hidden in overrides
-      await saveAdminProject(slug, { section: "hidden", draft: true });
+      removedFromDisk = false;
+    }
+
+    if (removedFromDisk) {
+      // Disk is writable, so the project's on-disk copy (if any) is gone
+      // for good. Also clear any Blob override for this slug — otherwise
+      // getAllAdminProjects() re-adds override-only entries and the
+      // "deleted" project resurrects in the admin list.
+      await deleteAdminProjectOverride(slug);
+    } else {
+      // Read-only serverless environment: the bundled MDX file can't be
+      // removed, so soft-delete by marking it hidden + draft while
+      // preserving the rest of its existing metadata.
+      const existing = await getAdminProjectBySlug(slug);
+      await saveAdminProject(slug, {
+        ...(existing?.frontmatter || {}),
+        section: "hidden",
+        draft: true,
+      });
     }
 
     revalidatePath("/", "layout");
