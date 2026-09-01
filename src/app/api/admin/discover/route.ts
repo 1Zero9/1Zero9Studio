@@ -322,13 +322,23 @@ export async function POST(req: NextRequest) {
     };
     let readmeText = "";
 
-    try {
-      const apiRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
-      if (apiRes.ok) {
-        repoData = await apiRes.json();
-      }
-    } catch {
-      // If network/private error, fallback to parsed URL details
+    const apiRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
+    if (apiRes.ok) {
+      repoData = await apiRes.json();
+    } else if (apiRes.status === 404) {
+      return NextResponse.json(
+        {
+          error: token
+            ? `"${owner}/${repoName}" was not found or this token doesn't have access to it.`
+            : `"${owner}/${repoName}" was not found. If it's a private repository, paste a GitHub token with access to it above.`,
+        },
+        { status: 404 }
+      );
+    } else if (apiRes.status === 401 || apiRes.status === 403) {
+      return NextResponse.json(
+        { error: "GitHub token is invalid or lacks permission to view this repository." },
+        { status: apiRes.status }
+      );
     }
 
     // Try fetching README to extract rich context

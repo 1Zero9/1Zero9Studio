@@ -472,6 +472,16 @@ export default function AdminDashboardPage() {
     }
   }
 
+  function closeModal() {
+    if (!editingSlug && modalOpen) {
+      const proceed = confirm(
+        `Discard "${formData.title || "this project"}"? It has not been saved yet — click "Approve & Publish to Site" instead if you want to keep it.`
+      );
+      if (!proceed) return;
+    }
+    setModalOpen(false);
+  }
+
   // Trigger file upload for project
   function triggerUploadForProject(slug: string) {
     setSelectedProjectForUpload(slug);
@@ -748,7 +758,7 @@ export default function AdminDashboardPage() {
       setImportModalOpen(false);
       setImportUrlInput("");
       setModalOpen(true);
-      showToast(`Imported ${p.title}! You can now review, add cover, and save.`);
+      showToast(`Loaded ${p.title} into the editor — nothing is saved yet. Click "Approve & Publish to Site" to add it.`);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Failed to import repository", "error");
     } finally {
@@ -1515,9 +1525,21 @@ export default function AdminDashboardPage() {
 
       {/* VETTING & EDIT MODAL WITH INTEGRATED THUMBNAIL UPLOADER */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-2xl my-8">
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          {/* Hidden file input for modal uploads */}
+          <input
+            type="file"
+            ref={modalFileInputRef}
+            onChange={handleModalFileUpload}
+            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
+            className="hidden"
+          />
+
+          <form
+            onSubmit={handleSaveProject}
+            className="w-full max-w-2xl max-h-[88vh] bg-surface border border-border rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+          >
+            <div className="flex items-center justify-between p-6 sm:p-8 pb-4 border-b border-border shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-fg">
                   {editingSlug ? `Edit Project: ${formData.title}` : "Vet & Add New Project"}
@@ -1527,23 +1549,20 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
               <button
-                onClick={() => setModalOpen(false)}
+                type="button"
+                onClick={closeModal}
                 className="size-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-fg"
               >
                 ✕
               </button>
             </div>
 
-            {/* Hidden file input for modal uploads */}
-            <input
-              type="file"
-              ref={modalFileInputRef}
-              onChange={handleModalFileUpload}
-              accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
-              className="hidden"
-            />
-
-            <form onSubmit={handleSaveProject} className="space-y-4">
+            <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-4">
+              {!editingSlug && (
+                <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-400">
+                  Draft — not saved yet. This project will not appear anywhere else until you click &quot;Approve &amp; Publish to Site&quot; below.
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono uppercase text-muted mb-1">
@@ -1857,24 +1876,24 @@ export default function AdminDashboardPage() {
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-muted hover:text-fg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="py-2.5 px-6 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
-                >
-                  {editingSlug ? "Save Changes" : "Approve & Publish to Site →"}
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex items-center justify-end gap-3 p-6 sm:p-8 pt-4 border-t border-border shrink-0">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="px-4 py-2 text-xs font-semibold text-muted hover:text-fg"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="py-2.5 px-6 bg-fg text-bg font-semibold rounded-xl text-xs hover:opacity-90 transition-opacity"
+              >
+                {editingSlug ? "Save Changes" : "Approve & Publish to Site →"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
