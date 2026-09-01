@@ -96,7 +96,14 @@ async function fetchBlobOverrides(): Promise<Record<string, { frontmatter: Recor
       blobs[0];
 
     if (overrideBlob?.url) {
-      const res = await fetch(overrideBlob.url, { cache: "no-store" });
+      // Vercel Blob's public URLs are served through a CDN with a long
+      // default cache lifetime. `cache: "no-store"` only disables Next.js's
+      // own fetch cache — it does nothing to bypass the upstream CDN edge
+      // cache, so reads right after a write could return stale data (e.g. a
+      // newly created project or thumbnail update silently "disappearing").
+      // Appending a cache-busting query param forces a fresh edge fetch.
+      const bustedUrl = `${overrideBlob.url}?t=${overrideBlob.uploadedAt?.getTime() ?? Date.now()}`;
+      const res = await fetch(bustedUrl, { cache: "no-store" });
       if (res.ok) {
         const data = (await res.json()) || {};
         for (const [k, v] of Object.entries(data)) {
@@ -246,6 +253,7 @@ export async function getAdminProjectBySlug(slug: string): Promise<AdminProject 
 
     let diskFrontmatter: Record<string, unknown> = {};
     let diskContent = "";
+    let foundOnDisk = false;
 
     try {
       const mdxPath = path.join(PROJECTS_DIR, slug, "index.mdx");
@@ -253,11 +261,17 @@ export async function getAdminProjectBySlug(slug: string): Promise<AdminProject 
       const parsed = parseMdxFile(raw);
       diskFrontmatter = parsed.frontmatter;
       diskContent = parsed.content;
+      foundOnDisk = true;
     } catch {
       // If not on disk, may be in overrides
     }
 
-    if (!diskContent && !override) {
+    // A project exists if we found it on disk (regardless of whether its
+    // body content is empty, e.g. a freshly created project) or it has an
+    // override entry. Previously this checked `!diskContent`, which treated
+    // legitimately empty content as "project not found" and broke thumbnail
+    // uploads/edits on any brand-new project.
+    if (!foundOnDisk && !override) {
       return null;
     }
 
