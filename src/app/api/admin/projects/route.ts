@@ -13,7 +13,7 @@ import path from "path";
 
 const PROJECTS_DIR = path.join(process.cwd(), "content", "projects");
 
-import { resolveCoverUrl } from "@/lib/content";
+import { resolveCoverUrl, getLiveHomeSpotlightProject, getLiveProjects } from "@/lib/content";
 
 export async function GET(req: NextRequest) {
   const isAuthed = await verifyAdminRequest(req);
@@ -22,6 +22,15 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    if (req.nextUrl.searchParams.get("debug") === "spotlight") {
+      const spotlight = await getLiveHomeSpotlightProject();
+      const live = await getLiveProjects();
+      return NextResponse.json({
+        spotlightSlug: spotlight?.slug,
+        live: live.map((p) => ({ slug: p.slug, featuredOnHome: p.featuredOnHome, featured: p.featured, status: p.status, date: p.date })),
+      });
+    }
+
     const projects = await getAllAdminProjects();
     const mappedProjects = projects.map((p) => ({
       ...p,
