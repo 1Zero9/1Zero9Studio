@@ -507,41 +507,74 @@ export async function deleteAdminProjectOverride(slug: string): Promise<void> {
 // as the spotlight. This now does a single batched Blob read + single
 // batched Blob write, with per-project disk writes attempted best-effort
 // (they're a no-op on read-only serverless filesystems anyway).
+//
+// Because this is a read-full-overrides-object, mutate, write-full-object
+// cycle, it's vulnerable to a lost update from a *different* concurrent
+// admin request (e.g. another save landing on a different serverless
+// instance) whose own read-modify-write cycle started from an older
+// snapshot and finishes writing after this one — silently reverting this
+// change for keys it didn't itself touch. That's been observed in
+// production as the spotlight selection quietly reverting some time after
+// being set. Since the desired end state here ("exactly this slug is
+// featuredOnHome") is fully self-describing — it doesn't depend on what
+// the stale snapshot looked like — we can detect that with a post-write
+// read-back and self-heal by recomputing against a fresh snapshot and
+// retrying, instead of just hoping the single write sticks.
 export async function setHomepageSpotlightProject(targetSlug: string): Promise<void> {
   await withOverridesLock(async () => {
-    const projects = await getAllAdminProjects();
-    const overrides = await fetchBlobOverrides();
-    let changed = false;
+    const maxAttempts = 4;
 
-    for (const p of projects) {
-      const isTarget = p.slug === targetSlug;
-      if (Boolean(p.frontmatter.featuredOnHome) !== isTarget) {
-        const updatedFrontmatter = {
-          ...p.frontmatter,
-          featuredOnHome: isTarget,
-        };
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const projects = await getAllAdminProjects();
+      const overrides = await fetchBlobOverrides();
+      let changed = false;
 
-        const dirPath = path.join(PROJECTS_DIR, p.slug);
-        const mdxPath = path.join(dirPath, "index.mdx");
-        try {
-          await fs.mkdir(dirPath, { recursive: true });
-          await fs.writeFile(mdxPath, stringifyMdxFile(updatedFrontmatter, p.content), "utf-8");
-        } catch {
-          // Read-only filesystem (serverless) — the Blob overrides written
-          // below are the source of truth in that environment.
+      for (const p of projects) {
+        const isTarget = p.slug === targetSlug;
+        if (Boolean(p.frontmatter.featuredOnHome) !== isTarget) {
+          const updatedFrontmatter = {
+            ...p.frontmatter,
+            featuredOnHome: isTarget,
+          };
+
+          const dirPath = path.join(PROJECTS_DIR, p.slug);
+          const mdxPath = path.join(dirPath, "index.mdx");
+          try {
+            await fs.mkdir(dirPath, { recursive: true });
+            await fs.writeFile(mdxPath, stringifyMdxFile(updatedFrontmatter, p.content), "utf-8");
+          } catch {
+            // Read-only filesystem (serverless) — the Blob overrides written
+            // below are the source of truth in that environment.
+          }
+
+          overrides[p.slug] = {
+            frontmatter: updatedFrontmatter,
+            content: p.content,
+          };
+          deletedTombstones.delete(p.slug);
+          changed = true;
         }
-
-        overrides[p.slug] = {
-          frontmatter: updatedFrontmatter,
-          content: p.content,
-        };
-        deletedTombstones.delete(p.slug);
-        changed = true;
       }
-    }
 
-    if (changed) {
-      await saveBlobOverrides(overrides);
+      if (changed) {
+        await saveBlobOverrides(overrides);
+      }
+
+      // Re-read from scratch (not from the in-memory `overrides` we just
+      // wrote) to confirm the change actually stuck.
+      const verifyProjects = await getAllAdminProjects();
+      const isCorrect = verifyProjects.every(
+        (p) => Boolean(p.frontmatter.featuredOnHome) === (p.slug === targetSlug)
+      );
+      if (isCorrect) return;
+
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
+      } else {
+        console.warn(
+          `setHomepageSpotlightProject("${targetSlug}") could not be verified as durably set after ${maxAttempts} attempts.`
+        );
+      }
     }
   });
 }
