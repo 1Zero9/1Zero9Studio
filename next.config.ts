@@ -2,30 +2,6 @@ import { withContentCollections } from "@content-collections/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.public.blob.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "*.blob.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.blob.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "blob.vercel-storage.com",
-      },
-    ],
-  },
   async redirects() {
     return [
       { source: "/portfolio", destination: "/projects", permanent: true },

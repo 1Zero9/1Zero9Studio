@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { updateProjectThumbnail, getBlobToken, safePutBlob } from "@/lib/admin-content";
-import fs from "fs/promises";
+import { updateProjectThumbnail, saveProjectImage } from "@/lib/admin-content";
 import path from "path";
-
-const PUBLIC_PROJECTS_IMG_DIR = path.join(
-  process.cwd(),
-  "public",
-  "images",
-  "projects"
-);
 
 export async function POST(req: NextRequest) {
   const isAuthed = await verifyAdminRequest(req);
@@ -52,55 +44,16 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const timestamp = Date.now();
-      const fileName = `${slug}-${timestamp}${ext}`;
-      let coverUrl = "";
-      let storageType = "local-filesystem";
-      const blobToken = getBlobToken();
-
-      // 1. Try Vercel Blob if token is found
-      if (blobToken) {
-        try {
-          const blob = await safePutBlob(`projects/${fileName}`, file, {
-            addRandomSuffix: false,
-            allowOverwrite: true,
-            token: blobToken,
-          });
-          coverUrl = blob.url;
-          storageType = "vercel-blob";
-        } catch (blobErr: unknown) {
-          console.error("Vercel blob put error:", blobErr);
-          const message = blobErr instanceof Error ? blobErr.message : "Unknown error";
-          return NextResponse.json(
-            { error: `Failed to upload to Vercel Blob storage: ${message}` },
-            { status: 502 }
-          );
-        }
-      } else if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
-        // 2. Local development fallback (no Blob token configured yet)
-        await fs.mkdir(PUBLIC_PROJECTS_IMG_DIR, { recursive: true });
-        const filePath = path.join(PUBLIC_PROJECTS_IMG_DIR, fileName);
-        const arrayBuffer = await file.arrayBuffer();
-        await fs.writeFile(filePath, Buffer.from(arrayBuffer));
-        coverUrl = `/images/projects/${fileName}`;
-        storageType = "local-filesystem";
-      } else {
-        // 3. Serverless environment (Vercel) without a Blob token: the
-        // filesystem is read-only and there's nowhere durable to store the
-        // file. Previously this silently fell back to a base64 data: URL,
-        // which next/image cannot render — so thumbnails appeared broken
-        // with no explanation. Fail loudly instead.
-        return NextResponse.json(
-          {
-            error:
-              "Vercel Blob storage isn't configured for this deployment (BLOB_READ_WRITE_TOKEN is missing). Add it to your Vercel project's Production environment variables, then redeploy, before uploading images.",
-          },
-          { status: 400 }
-        );
-      }
+      const arrayBuffer = await file.arrayBuffer();
+      const { url: coverUrl } = await saveProjectImage(
+        originalName,
+        file.type || "application/octet-stream",
+        Buffer.from(arrayBuffer),
+        slug
+      );
 
       if (!attach) {
-        return NextResponse.json({ success: true, coverUrl, storageType });
+        return NextResponse.json({ success: true, coverUrl });
       }
 
       // Update project metadata
@@ -121,7 +74,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         coverUrl,
-        storageType,
         project,
       });
     } else {

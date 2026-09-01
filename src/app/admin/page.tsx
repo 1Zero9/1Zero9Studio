@@ -57,7 +57,7 @@ interface DiscoveredProject {
 interface LibraryImageItem {
   url: string;
   name: string;
-  type: "vercel-blob" | "local" | "project-cover";
+  type: "database" | "local" | "project-cover";
   size?: number;
   uploadedAt?: string;
   sourceProject?: string;
@@ -106,9 +106,8 @@ export default function AdminDashboardPage() {
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [libraryImages, setLibraryImages] = useState<LibraryImageItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
-  const [syncingBlob, setSyncingBlob] = useState(false);
   const [uploadingToLibrary, setUploadingToLibrary] = useState(false);
-  const [libraryFilterTab, setLibraryFilterTab] = useState<"all" | "blob" | "local" | "unused">("all");
+  const [libraryFilterTab, setLibraryFilterTab] = useState<"all" | "database" | "local" | "unused">("all");
   const [cleaningUpLibrary, setCleaningUpLibrary] = useState(false);
   const [librarySearch, setLibrarySearch] = useState("");
   const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
@@ -532,8 +531,7 @@ export default function AdminDashboardPage() {
         throw new Error(json.error || "Failed to upload thumbnail");
       }
 
-      const storageMsg = json.storageType === "vercel-blob" ? " (saved to Vercel Blob)" : "";
-      showToast(`Thumbnail uploaded for ${targetSlug}!${storageMsg}`);
+      showToast(`Thumbnail uploaded for ${targetSlug}!`);
       await loadProjects();
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Failed to upload thumbnail", "error");
@@ -579,8 +577,7 @@ export default function AdminDashboardPage() {
         coverAlt: prev.coverAlt || `${prev.title || targetSlug} preview`,
       }));
 
-      const storageMsg = json.storageType === "vercel-blob" ? " to Vercel Blob" : "";
-      showToast(`Image uploaded${storageMsg}. Click "Save Changes" to apply it.`);
+      showToast(`Image uploaded. Click "Save Changes" to apply it.`);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Failed to upload", "error");
     } finally {
@@ -659,23 +656,6 @@ export default function AdminDashboardPage() {
     setLibraryModalOpen(false);
   }
 
-  // Push all local and project assets to Vercel Blob CDN
-  async function handleSyncAllToBlob() {
-    setSyncingBlob(true);
-    try {
-      const res = await fetch("/api/admin/sync-blob", { method: "POST" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Sync failed");
-      showToast(json.message || "All assets synced to Vercel Blob CDN!");
-      await openMediaLibrary(libraryTargetContext, libraryTargetSlug || undefined);
-      await loadProjects();
-    } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : "Failed to sync to Vercel Blob", "error");
-    } finally {
-      setSyncingBlob(false);
-    }
-  }
-
   // Direct upload inside library
   async function handleLibraryFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -706,7 +686,7 @@ export default function AdminDashboardPage() {
 
   // Delete image from library
   async function handleDeleteLibraryImage(url: string) {
-    if (!confirm("Are you sure you want to delete this image from your cloud storage?")) return;
+    if (!confirm("Are you sure you want to delete this image?")) return;
 
     try {
       const res = await fetch("/api/admin/media-library", {
@@ -716,27 +696,27 @@ export default function AdminDashboardPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to delete");
-      showToast("Image deleted from cloud storage");
+      showToast("Image deleted");
       await openMediaLibrary(libraryTargetContext, libraryTargetSlug || undefined);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Failed to delete image", "error");
     }
   }
 
-  // Bulk-delete every Cloud CDN image flagged as unused (not referenced by
-  // any project's cover or gallery) — cleans up stale re-uploads left
-  // behind by earlier thumbnail replacements or abandoned imports.
+  // Bulk-delete every database-stored image flagged as unused (not
+  // referenced by any project's cover or gallery) — cleans up stale
+  // re-uploads left behind by earlier thumbnail replacements or abandoned
+  // imports. Local static files aren't included since they can't be
+  // deleted from the read-only serverless filesystem anyway.
   async function handleCleanupUnused() {
-    const unused = libraryImages.filter(
-      (img) => img.isUnused && (img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com"))
-    );
+    const unused = libraryImages.filter((img) => img.isUnused && img.type === "database");
     if (unused.length === 0) {
       showToast("No unused images to clean up");
       return;
     }
     if (
       !confirm(
-        `Delete ${unused.length} unused image${unused.length === 1 ? "" : "s"} from cloud storage? This can't be undone.`
+        `Delete ${unused.length} unused image${unused.length === 1 ? "" : "s"}? This can't be undone.`
       )
     ) {
       return;
@@ -1186,7 +1166,7 @@ export default function AdminDashboardPage() {
                 const currentSection =
                   project.frontmatter.section ||
                   (project.frontmatter.kind === "website" ? "portfolio" : "labs");
-                const isBlob = Boolean(project.frontmatter.cover?.includes("blob.vercel-storage.com"));
+                const isDbImage = Boolean(project.frontmatter.cover?.startsWith("/api/images/"));
 
                 return (
                   <div
@@ -1242,11 +1222,11 @@ export default function AdminDashboardPage() {
                           {/* Storage Pill */}
                           {project.frontmatter.cover && (
                             <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-                              isBlob
+                              isDbImage
                                 ? "bg-blue-500/10 text-blue-500 border-blue-500/30 font-semibold"
                                 : "bg-bg-subtle text-muted border-border"
                             }`}>
-                              {isBlob ? "☁️ Vercel Blob" : "📁 Local Image"}
+                              {isDbImage ? "☁️ Database" : "📁 Local Image"}
                             </span>
                           )}
                         </div>
@@ -1393,7 +1373,7 @@ export default function AdminDashboardPage() {
             /* VIEW MODE 2: VISUAL STUDIO GRID (16:10 Cards) */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProjects.map((project) => {
-                const isBlob = Boolean(project.frontmatter.cover?.includes("blob.vercel-storage.com"));
+                const isDbImage = Boolean(project.frontmatter.cover?.startsWith("/api/images/"));
                 return (
                   <div
                     key={project.slug}
@@ -1447,11 +1427,11 @@ export default function AdminDashboardPage() {
 
                       <div className="absolute top-3 right-3">
                         <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shadow-sm ${
-                          isBlob
+                          isDbImage
                             ? "bg-blue-600 text-white border-blue-400 font-semibold"
                             : "bg-surface/90 text-fg border-border"
                         }`}>
-                          {isBlob ? "☁️ Vercel Blob" : "📁 Local"}
+                          {isDbImage ? "☁️ Database" : "📁 Local"}
                         </span>
                       </div>
                     </div>
@@ -1853,7 +1833,7 @@ export default function AdminDashboardPage() {
               <div className="p-4 bg-bg-subtle border border-border rounded-xl space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="block text-xs font-mono uppercase text-muted font-bold">
-                    Project Thumbnail Image (Blob / Local)
+                    Project Thumbnail Image
                   </label>
                   <div className="flex items-center gap-2">
                     <button
@@ -1909,7 +1889,7 @@ export default function AdminDashboardPage() {
                         type="text"
                         value={formData.cover}
                         onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
-                        placeholder="/images/projects/cover.png or https://...blob.vercel-storage.com/..."
+                        placeholder="/images/projects/cover.png"
                         className="w-full px-3 py-1.5 bg-surface border border-border rounded-lg text-xs text-fg font-mono focus:outline-none focus:border-accent"
                       />
                     </div>
@@ -2059,7 +2039,7 @@ export default function AdminDashboardPage() {
                   <span>Media & Thumbnail Library</span>
                 </h2>
                 <p className="text-xs text-muted mt-0.5">
-                  Select any asset to set as thumbnail, upload new media, or sync all local assets to Vercel CDN.
+                  Select any asset to set as thumbnail, or upload new media.
                 </p>
               </div>
 
@@ -2075,24 +2055,13 @@ export default function AdminDashboardPage() {
                   <span>{uploadingToLibrary ? "Uploading..." : "Upload New Image"}</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleSyncAllToBlob}
-                  disabled={syncingBlob}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-sm"
-                  title="Push all local images and covers to Vercel CDN storage"
-                >
-                  <span>☁️</span>
-                  <span>{syncingBlob ? "Pushing to CDN..." : "Push All to Vercel CDN"}</span>
-                </button>
-
                 {libraryImages.some((i) => i.isUnused) && (
                   <button
                     type="button"
                     onClick={handleCleanupUnused}
                     disabled={cleaningUpLibrary}
                     className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-50 text-red-500 border border-red-500/20 font-semibold rounded-xl text-xs transition-colors flex items-center gap-1.5"
-                    title="Delete all cloud images not currently used as any project's cover or gallery image"
+                    title="Delete all database images not currently used as any project's cover or gallery image"
                   >
                     <span>🧹</span>
                     <span>
@@ -2129,14 +2098,14 @@ export default function AdminDashboardPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setLibraryFilterTab("blob")}
+                  onClick={() => setLibraryFilterTab("database")}
                   className={`px-3 py-1 rounded-lg transition-all ${
-                    libraryFilterTab === "blob"
+                    libraryFilterTab === "database"
                       ? "bg-blue-600 text-white shadow-sm"
                       : "text-muted hover:text-fg"
                   }`}
                 >
-                  ☁️ Cloud CDN ({libraryImages.filter((i) => i.type === "vercel-blob" || i.url.includes("blob.vercel-storage.com")).length})
+                  ☁️ Database ({libraryImages.filter((i) => i.type === "database").length})
                 </button>
                 <button
                   type="button"
@@ -2147,7 +2116,7 @@ export default function AdminDashboardPage() {
                       : "text-muted hover:text-fg"
                   }`}
                 >
-                  📁 Local Files ({libraryImages.filter((i) => i.type === "local" || !i.url.includes("blob.vercel-storage.com")).length})
+                  📁 Local Files ({libraryImages.filter((i) => i.type !== "database").length})
                 </button>
                 {libraryImages.some((i) => i.isUnused) && (
                   <button
@@ -2192,9 +2161,9 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {libraryImages
                     .filter((img) => {
-                      const isBlob = img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com");
-                      if (libraryFilterTab === "blob" && !isBlob) return false;
-                      if (libraryFilterTab === "local" && isBlob) return false;
+                      const isDb = img.type === "database";
+                      if (libraryFilterTab === "database" && !isDb) return false;
+                      if (libraryFilterTab === "local" && isDb) return false;
                       if (libraryFilterTab === "unused" && !img.isUnused) return false;
 
                       if (!librarySearch.trim()) return true;
@@ -2206,7 +2175,7 @@ export default function AdminDashboardPage() {
                       );
                     })
                     .map((img) => {
-                      const isBlob = img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com");
+                      const isDb = img.type === "database";
                       const isActive =
                         formData.cover === img.url ||
                         (libraryTargetSlug &&
@@ -2235,12 +2204,12 @@ export default function AdminDashboardPage() {
                             <div className="absolute top-2 right-2 flex items-center gap-1">
                               <span
                                 className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full border shadow-sm ${
-                                  isBlob
+                                  isDb
                                     ? "bg-blue-600 text-white border-blue-400 font-semibold"
                                     : "bg-surface/90 text-fg border-border font-medium"
                                 }`}
                               >
-                                {isBlob ? "☁️ Cloud CDN" : "📁 Local"}
+                                {isDb ? "☁️ Database" : "📁 Local"}
                               </span>
                             </div>
 
@@ -2307,12 +2276,12 @@ export default function AdminDashboardPage() {
                                   <span>Copy URL</span>
                                 </button>
 
-                                {isBlob && (
+                                {isDb && (
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteLibraryImage(img.url)}
                                     className="py-1 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-[10px] transition-colors"
-                                    title="Delete this image from cloud storage"
+                                    title="Delete this image from the database"
                                   >
                                     🗑️
                                   </button>

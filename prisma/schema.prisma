@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Replaces the old Vercel Blob "data/project-overrides.json" JSON blob.
+// One row per project slug that has admin-made edits (new projects,
+// frontmatter/content changes, homepage spotlight flag, etc). Projects with
+// no row here fall back entirely to their on-disk MDX content.
+model ProjectOverride {
+  slug        String   @id
+  frontmatter Json
+  content     String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+// Replaces Vercel Blob for project images uploaded via the admin panel
+// (cover thumbnails, media library uploads). `slug` records which project
+// an image was uploaded for/attached to (nullable — media library uploads
+// aren't always assigned to a project immediately), but the image itself
+// is addressed by `id`, served back out via /api/images/[id].
+model ProjectImage {
+  id          String   @id @default(cuid())
+  slug        String?
+  filename    String
+  contentType String
+  data        Bytes
+  createdAt   DateTime @default(now())
+
+  @@index([slug])
+}

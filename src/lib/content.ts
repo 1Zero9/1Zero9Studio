@@ -1,22 +1,19 @@
 /*
  * The single source of truth for content data.
- * Merges build-time static MDX collection with live cloud Blob/disk overrides.
+ * Merges build-time static MDX collection with live database/disk overrides.
  */
 import { allProjects as generatedProjects } from "content-collections";
 import { getAllAdminProjects, getAdminProjectBySlug } from "./admin-content";
 
 const hideDrafts = process.env.NODE_ENV === "production";
 
+// Covers are either static files under /public/images/projects or served
+// from the DB-backed /api/images/[slug] route (for images uploaded via the
+// admin panel) — both are already same-origin relative paths, so no
+// rewriting is needed. Kept as a passthrough so callers don't need to know
+// which case they're in.
 export function resolveCoverUrl(url?: string): string | undefined {
-  if (!url) return undefined;
-  // If it's a private vercel blob URL (not public.blob.vercel-storage.com)
-  if (
-    url.includes(".blob.vercel-storage.com") &&
-    !url.includes(".public.blob.vercel-storage.com")
-  ) {
-    return `/api/blob/image?url=${encodeURIComponent(url)}`;
-  }
-  return url;
+  return url || undefined;
 }
 
 // Synchronous base projects fallback
