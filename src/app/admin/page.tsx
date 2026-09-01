@@ -152,6 +152,19 @@ export default function AdminDashboardPage() {
     setTimeout(() => setNotification(null), 4000);
   }
 
+  // Lock background page scroll while any modal is open, so mouse-wheel
+  // input scrolls the modal's own content instead of the page behind it.
+  useEffect(() => {
+    const anyModalOpen = modalOpen || libraryModalOpen || importModalOpen;
+    if (!anyModalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [modalOpen, libraryModalOpen, importModalOpen]);
+
   const loadProjects = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/projects");
