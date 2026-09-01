@@ -95,6 +95,9 @@ export default function AdminDashboardPage() {
   const [scanning, setScanning] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectionFilter, setSectionFilter] = useState<"all" | "portfolio" | "labs" | "drafts">("all");
+  const [sortBy, setSortBy] = useState<"date-desc" | "date-asc" | "name-asc" | "name-desc" | "status">("date-desc");
+  const [discoverSearch, setDiscoverSearch] = useState("");
+  const [discoverSort, setDiscoverSort] = useState<"pushed-desc" | "pushed-asc" | "name-asc" | "name-desc">("pushed-desc");
   const [githubUser, setGithubUser] = useState("1Zero9");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -767,27 +770,66 @@ export default function AdminDashboardPage() {
   }
 
   // Filter projects
-  const filteredProjects = projects.filter((p) => {
-    // Section filtering
-    const section = p.frontmatter.section || (p.frontmatter.kind === "website" ? "portfolio" : "labs");
-    if (sectionFilter === "portfolio" && section !== "portfolio") return false;
-    if (sectionFilter === "labs" && section !== "labs") return false;
-    if (sectionFilter === "drafts" && !p.frontmatter.draft && section !== "hidden") return false;
+  const filteredProjects = projects
+    .filter((p) => {
+      // Section filtering
+      const section = p.frontmatter.section || (p.frontmatter.kind === "website" ? "portfolio" : "labs");
+      if (sectionFilter === "portfolio" && section !== "portfolio") return false;
+      if (sectionFilter === "labs" && section !== "labs") return false;
+      if (sectionFilter === "drafts" && !p.frontmatter.draft && section !== "hidden") return false;
 
-    // Search query filtering
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = p.frontmatter.title?.toLowerCase().includes(q);
-      const matchSlug = p.slug.toLowerCase().includes(q);
-      const matchTech = (p.frontmatter.techStack || []).some((t) => t.toLowerCase().includes(q));
-      const matchTags = (p.frontmatter.tags || []).some((t) => t.toLowerCase().includes(q));
-      return matchTitle || matchSlug || matchTech || matchTags;
-    }
+      // Search query filtering
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchTitle = p.frontmatter.title?.toLowerCase().includes(q);
+        const matchSlug = p.slug.toLowerCase().includes(q);
+        const matchTech = (p.frontmatter.techStack || []).some((t) => t.toLowerCase().includes(q));
+        const matchTags = (p.frontmatter.tags || []).some((t) => t.toLowerCase().includes(q));
+        return matchTitle || matchSlug || matchTech || matchTags;
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          return (a.frontmatter.title || a.slug).localeCompare(b.frontmatter.title || b.slug);
+        case "name-desc":
+          return (b.frontmatter.title || b.slug).localeCompare(a.frontmatter.title || a.slug);
+        case "status":
+          return (a.frontmatter.status || "").localeCompare(b.frontmatter.status || "");
+        case "date-asc":
+          return (a.frontmatter.date || "").localeCompare(b.frontmatter.date || "");
+        case "date-desc":
+        default:
+          return (b.frontmatter.date || "").localeCompare(a.frontmatter.date || "");
+      }
+    });
 
-  const pendingDiscovered = discovered.filter((d) => !d.isAlreadyManaged);
+  const pendingDiscovered = discovered
+    .filter((d) => !d.isAlreadyManaged)
+    .filter((d) => {
+      if (!discoverSearch.trim()) return true;
+      const q = discoverSearch.toLowerCase();
+      return (
+        d.title.toLowerCase().includes(q) ||
+        d.slug.toLowerCase().includes(q) ||
+        d.techStack.some((t) => t.toLowerCase().includes(q))
+      );
+    })
+    .sort((a, b) => {
+      switch (discoverSort) {
+        case "name-asc":
+          return a.title.localeCompare(b.title);
+        case "name-desc":
+          return b.title.localeCompare(a.title);
+        case "pushed-asc":
+          return (a.pushedAt || "").localeCompare(b.pushedAt || "");
+        case "pushed-desc":
+        default:
+          return (b.pushedAt || "").localeCompare(a.pushedAt || "");
+      }
+    });
 
   if (loading) {
     return (
@@ -1049,6 +1091,19 @@ export default function AdminDashboardPage() {
                   className="w-full px-3 py-1.5 bg-bg-subtle border border-border rounded-xl text-xs text-fg placeholder:text-faint focus:outline-none focus:border-accent"
                 />
               </div>
+
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="px-3 py-1.5 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg focus:outline-none focus:border-accent"
+              >
+                <option value="date-desc">Date Added (Newest)</option>
+                <option value="date-asc">Date Added (Oldest)</option>
+                <option value="name-asc">Name (A–Z)</option>
+                <option value="name-desc">Name (Z–A)</option>
+                <option value="status">Status</option>
+              </select>
             </div>
           </div>
 
@@ -1397,7 +1452,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 type="text"
                 value={githubUser}
@@ -1412,6 +1467,23 @@ export default function AdminDashboardPage() {
               >
                 {scanning ? "Scanning..." : "Rescan"}
               </button>
+              <input
+                type="text"
+                placeholder="Search discovered..."
+                value={discoverSearch}
+                onChange={(e) => setDiscoverSearch(e.target.value)}
+                className="px-3 py-1.5 bg-surface border border-border rounded-lg text-xs text-fg placeholder:text-faint focus:outline-none focus:border-accent"
+              />
+              <select
+                value={discoverSort}
+                onChange={(e) => setDiscoverSort(e.target.value as typeof discoverSort)}
+                className="px-3 py-1.5 bg-surface border border-border rounded-lg text-xs font-semibold text-fg focus:outline-none focus:border-accent"
+              >
+                <option value="pushed-desc">Last Pushed (Newest)</option>
+                <option value="pushed-asc">Last Pushed (Oldest)</option>
+                <option value="name-asc">Name (A–Z)</option>
+                <option value="name-desc">Name (Z–A)</option>
+              </select>
             </div>
           </div>
 
