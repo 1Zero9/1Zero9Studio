@@ -46,3 +46,10 @@ way out: once it had real users and its own release cadence (versioned
 changelog, review packs for external inspection), it graduated to a
 standalone app with proper separation. Products tell you when they've
 outgrown their scaffolding — the skill is listening.
+
+## Under the hood
+
+Next.js on Vercel with a Neon Postgres database, TMDb for title metadata,
+and a live EPG feed for broadcast schedules. Access is a single shared
+password rather than full multi-user auth — deliberately, since this is
+a household tool, not a public product.

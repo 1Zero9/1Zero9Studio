@@ -14,6 +14,7 @@ accent: "#8b5cf6"
 status: featured
 order: 1
 url: https://astra.1zero9.com
+repo: https://github.com/1Zero9/astra-web
 cover: /images/projects/astra.png
 coverAlt: Astra's welcome screen introducing its AI security modules — Prompt
   Builder, Cybershare Pro, LUCID and TeachMe
@@ -47,3 +48,13 @@ security problems, wrapped in a product that non-technical people can
 actually use. The hard part was never the generation — it was designing
 the guardrails and workflows so output lands ready-to-edit rather than
 ready-to-regret.
+
+## Under the hood
+
+Next.js 14 (App Router) on Vercel, with PostgreSQL via Prisma and
+Google's Gemini API for generation. The platform has grown into four
+suites — Operations Cloud, Surface Intelligence, Trust & Compliance, and
+CyberAware Studio — sharing one identity/RBAC layer and a tenant-aware
+guardrail system, so scans, policy drafting, and awareness training all
+inherit the same consent, audit-trail, and human-in-the-loop rules
+rather than each reinventing them.

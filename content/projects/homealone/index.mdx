@@ -1,0 +1,56 @@
+---
+title: Home Alone
+summary: A light-mode household expense and subscription tracker — one place
+  to see every recurring charge, renewal date, and budget-saving switch,
+  synced across every device in the house.
+date: 2026-09-01
+tags:
+  - product
+  - finance
+  - family
+kind: pwa
+accent: "#3b82f6"
+status: in-progress
+section: labs
+techStack:
+  - Next.js
+  - TypeScript
+  - React
+  - Supabase
+highlights:
+  - Tracks streaming, AI tools, and household utility subscriptions in
+    one euro-denominated ledger
+  - Multi-device cloud sync via Supabase, with an offline localStorage
+    fallback
+  - Flags redundant subscriptions — e.g. running ChatGPT and Claude
+    concurrently — and annual-plan savings opportunities
+  - Installable as a PWA on iOS and Android
+url: https://homealone-xi.vercel.app
+repo: https://github.com/1Zero9/homealone
+draft: false
+---
+
+## The idea
+
+Every household loses track of what it's actually paying for — a
+streaming trial that never got cancelled, two AI subscriptions doing
+the same job, a broadband contract that rolled onto a worse rate.
+Home Alone is a single, honest ledger for all of it.
+
+## What's inside
+
+- **One ledger, every renewal** — streaming, AI tools, and home
+  utilities (electricity, broadband, water, property tax) in a single
+  chronological payment schedule with renewal countdowns.
+- **Redundancy checks** — flags overlapping subscriptions doing the
+  same job, and calculates annual-plan discount opportunities.
+- **Sync without lock-in** — Supabase-backed multi-device sync, with a
+  local-storage fallback so the app still works with no account
+  configured, plus CSV export and JSON backup.
+
+## Why it matters to me
+
+A deliberately small, personal tool — light-mode by design, built for
+five-minute check-ins rather than a finance dashboard you have to sit
+down with. It's still under active development, currently running as a
+household tool rather than a public product.

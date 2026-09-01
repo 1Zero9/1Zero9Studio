@@ -1,0 +1,60 @@
+---
+title: Eolas
+summary: A local-first idea-to-project system — capture an idea, decide
+  deliberately whether to build it, then assemble it from approved,
+  reusable code accelerators instead of regenerating the same foundations
+  every time.
+date: 2026-08-02
+tags:
+  - product
+  - tools
+  - developer-tools
+kind: tool
+accent: "#6366f1"
+status: in-progress
+section: labs
+techStack:
+  - Next.js
+  - TypeScript
+  - PostgreSQL
+highlights:
+  - Explicit approval boundary at every stage — workspace, dependency
+    install, build, commit, and GitHub backup each require a separate
+    sign-off
+  - Reusable "accelerator" units so validated implementation patterns
+    get reused rather than regenerated from scratch
+  - Runs a local worker process alongside the web app for build and
+    backup stages
+url: https://eolas-seven.vercel.app
+repo: https://github.com/1Zero9/eolas
+cover: /images/projects/eolas.png
+coverAlt: Eolas's password-gated entry screen — "Ideas · Iteration ·
+  Acceleration"
+draft: false
+---
+
+## The idea
+
+Building the same scaffolding repeatedly — the auth boilerplate, the
+CRUD layer, the deploy config — is a tax every new idea pays before it
+proves itself worth building. Eolas's premise: capture the idea
+honestly, make the decision to build it deliberate rather than
+automatic, and reuse reliable implementation instead of paying that tax
+again.
+
+## What's inside
+
+A staged pipeline — capture → incubate → validate → assemble → approve
+workspace → approve dependency install → approve build → approve local
+commit → approve GitHub backup — where every stage is visible and
+requires a separate, explicit approval before a local worker process
+acts on it. Approved, reusable "accelerators" carry validated
+implementation patterns forward into new projects rather than starting
+from a blank file every time.
+
+## Why it matters to me
+
+This is the tool behind the tools — a way of being honest about which
+ideas are worth building, and giving each approval step in "just build
+it" real friction instead of letting an agent run unattended. Named
+after the Irish word for knowledge.

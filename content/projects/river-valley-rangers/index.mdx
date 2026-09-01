@@ -17,6 +17,13 @@ url: https://www.rivervalleyrangers.ie
 cover: /images/projects/river-valley-rangers.png
 coverAlt: rivervalleyrangers.ie homepage — "Swords football since 1981", club
   stats and join links over a pitch photo
+gallery:
+  - url: /images/projects/river-valley-rangers-gallery-1.png
+    alt: rivervalleyrangers.ie live matchday fixtures list with team filters,
+      a running fundraiser campaign banner, and online fee payment in the
+      header
+    caption: The matchday hub and fixtures list, filterable by team, plus
+      live campaigns and online fee payment
 draft: false
 ---
 
@@ -39,6 +46,16 @@ This is the project that never ships "done":
   making that person's job easy.
 - **2026 redesign** — a full refresh currently rolling out, carrying
   years of accumulated content forward onto a cleaner, faster platform.
+
+## Under the hood
+
+Next.js with NextAuth for role-based logins, Prisma over Postgres, and
+Stripe wired in for online fee payment — registrations and subs no
+longer mean a separate spreadsheet or a bank transfer chased over text.
+Bulk fixture and squad data comes in via CSV/Excel import rather than
+hand-entry, and the platform runs campaigns (fundraisers, sign-up
+pushes) and safeguarding workflows alongside the day-to-day match-day
+content.
 
 ## Lessons
 

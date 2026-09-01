@@ -15,6 +15,12 @@ url: https://astra.1zero9.com/prompt-builder
 cover: /images/projects/prompt-builder.png
 coverAlt: Prompt Builder's start screen offering Start Simple and Prompt Builder
   workspaces
+gallery:
+  - url: /images/projects/prompt-builder-gallery-1.png
+    alt: Prompt Builder navigation showing Start Simple, Onboarding, Academy,
+      Dashboard, and Governance tools
+    caption: The full toolset — from a 15-minute onboarding path through to
+      a coaching dashboard and governance controls
 draft: false
 ---
 
@@ -38,3 +44,12 @@ AI UX is mostly about legibility. When people can see how the
 instruction is assembled, they trust the output more, debug their own
 results, and stop blaming the model for what was really a prompt
 problem.
+
+## Under the hood
+
+Shipped in phases rather than all at once: v1.0 is the core loop (type,
+shape, transform, practise with offline scoring, no database required),
+with a second phase — saved prompts, a coaching dashboard, and
+governance controls — built and gated behind a feature flag until it
+earns its place. Covered by Playwright end-to-end tests and a dedicated
+smoke-test script rather than shipped on faith.

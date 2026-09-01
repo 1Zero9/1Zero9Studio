@@ -1,0 +1,63 @@
+---
+title: Life Admin System
+summary: AI-powered document capture that turns family paperwork into
+  actionable intelligence — upload anything, no filing decisions required,
+  and let AI extract dates, amounts, and renewal alerts automatically.
+date: 2026-01-11
+tags:
+  - ai
+  - automation
+  - family
+kind: tool
+accent: "#0f766e"
+status: active
+section: labs
+techStack:
+  - Python
+  - FastAPI
+  - SQLite
+  - Tesseract OCR
+  - Cloudflare R2
+highlights:
+  - Zero-friction capture — upload, drag-and-drop, or Gmail auto-sync,
+    with no categories or tags required at intake
+  - OCR plus AI summaries extract dates, amounts, vendors, and document
+    type automatically
+  - 14 category-specific intelligence agents (vehicle, medical,
+    utilities, tax, and more) generate proactive alerts
+  - Multi-entity aware — tracks documents against specific people,
+    vehicles, pets, and properties, not just a flat inbox
+  - Running in production on a Mac Mini with 500+ documents ingested
+url: ""
+repo: https://github.com/1Zero9/life-admin-system
+draft: false
+---
+
+## The idea
+
+Family paperwork — insurance renewals, NCT/car tax, medical letters,
+utility bills — has a way of surviving as loose PDFs and photos nobody
+files properly, until something is needed and can't be found. This
+system is built to run for 10-20+ years: capture everything with zero
+filing decisions at intake, then let AI do the organising work
+afterwards.
+
+## What's inside
+
+Documents come in via drag-and-drop, mobile upload, or Gmail
+auto-sync, get OCR'd with Tesseract, and are summarised by Claude for
+dates, amounts, vendors, and document type. Fourteen category-specific
+intelligence agents then generate proactive, cross-document insights —
+"car insurance renewed but no payment found", "electricity bill jumped
+40% versus last month" — and everything is scoped to specific people,
+vehicles, pets, or properties rather than one undifferentiated pile.
+A native macOS menu-bar app sits on top for status and quick actions.
+
+## Why it matters to me
+
+The most "in production" of the household tools — genuinely operational
+since January 2026, with 500+ real documents ingested and running on a
+Mac Mini rather than a dev laptop. It's also the most opinionated:
+documentation is the source of truth for the system's behaviour, and
+the core principle — zero decision-making at intake — is treated as
+non-negotiable rather than aspirational.

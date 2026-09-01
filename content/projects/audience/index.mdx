@@ -1,0 +1,55 @@
+---
+title: Audience
+summary: Live audience intelligence for discovery workshops — anonymous
+  room signal, AI-surfaced themes and tensions, and a one-click decision
+  brief, built as a Slido-style tool for facilitators rather than marketers.
+date: 2026-08-13
+tags:
+  - ai
+  - product
+  - workshops
+kind: tool
+accent: "#6366f1"
+status: concept
+section: labs
+techStack:
+  - Next.js
+  - Tailwind CSS
+  - Serwist
+highlights:
+  - Three-act workshop loop — collect anonymous responses, understand
+    themes with an AI co-pilot, decide with a one-click brief
+  - Works entirely on localStorage with no database, with an optional
+    Anthropic or OpenAI key for richer AI features
+  - AI features degrade to built-in heuristics with no API key
+    configured, rather than failing outright
+  - Installable as a PWA via Serwist, with API routes explicitly
+    excluded from caching
+draft: false
+---
+
+## The idea
+
+Workshop polling tools tend to be built for marketing sentiment, not
+for a facilitator trying to get a room of stakeholders to an actual
+decision. Audience is a proof of concept for the latter: collect
+anonymous signal, let an AI co-pilot surface themes and split votes
+with evidence, then generate a decision brief the room can act on.
+
+## What's inside
+
+A three-act loop — Collect (polls, ratings, word clouds via a join
+code), Understand (a co-pilot panel analysing live responses for
+themes and tensions), and Decide (a one-click session brief for
+stakeholders) — plus a Discovery Workshop builder that can generate a
+tailored interaction set from an agenda before a session even starts.
+It runs entirely on localStorage, so a workshop needs no backend setup;
+AI features work with built-in heuristics out of the box and get
+sharper with an optional Anthropic or OpenAI key.
+
+## Why it matters to me
+
+A deliberately scrappy proof of concept — the interesting question
+wasn't "can AI summarise workshop responses" (it can), it was whether a
+facilitator would trust a one-click brief enough to actually walk into
+a stakeholder meeting with it. Still a POC, not in regular use yet.

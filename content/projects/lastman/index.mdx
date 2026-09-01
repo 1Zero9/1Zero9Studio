@@ -1,0 +1,62 @@
+---
+title: Last Man Standing
+summary: A reusable fundraising competition platform — entrants pick a team
+  each round, wrong picks are out, and the last entrant standing wins —
+  built for community clubs running "Last Man Standing" fundraisers.
+date: 2026-07-19
+tags:
+  - community
+  - fundraising
+  - sport
+kind: app
+accent: "#22c55e"
+status: active
+section: labs
+techStack:
+  - Next.js
+  - TypeScript
+  - Tailwind CSS
+  - Prisma
+  - PostgreSQL
+  - NextAuth
+highlights:
+  - Live member view of picks, results, and standings each gameweek
+  - Invite-only accounts — no public sign-up — with a break-glass
+    recovery role deliberately blocked from participant data
+  - Hourly cron job locks overdue gameweeks and assigns
+    eligibility-aware autopicks automatically
+  - Payments are recorded and confirmed by an administrator rather than
+    handled in-app — money stays off-platform by design
+draft: false
+url: https://lastman-delta.vercel.app
+repo: https://github.com/1Zero9/lastman
+cover: /images/projects/lastman.png
+coverAlt: Last Man Standing's landing page — "Play. Survive. Stand." with a
+  sign-in-to-play call to action
+---
+
+## The idea
+
+Community "Last Man Standing" competitions usually run on a shared
+spreadsheet and a lot of trust. This platform gives the competition a
+proper member view — picks, results, an audit trail — while keeping
+the money itself firmly outside the app, recorded and confirmed by an
+organiser rather than processed automatically.
+
+## What's inside
+
+Entrant management, weekly picks, results, prize/fundraising totals,
+and a full audit trail, sitting behind invite-only NextAuth accounts.
+A hourly Vercel Cron job locks gameweeks once they're overdue and
+assigns eligibility-aware autopicks, so a missed pick doesn't silently
+break the competition. Access roles are split deliberately: a
+platform-admin role for the organiser, and a separate break-glass
+recovery account that can restore organiser access but is explicitly
+blocked from seeing participant names, contacts, or picks.
+
+## Why it matters to me
+
+Built out of the same world as River Valley Rangers — a genuine
+community fundraising mechanic that deserved better than a shared
+spreadsheet, without pretending the app should be the one handling
+people's money.

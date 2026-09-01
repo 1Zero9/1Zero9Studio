@@ -1,0 +1,50 @@
+---
+title: Marvin
+summary: A private household cooking, cookbook, and meal-planning companion —
+  keeping recipes, meal plans, and kitchen health notes in one place instead
+  of scattered across bookmarks and screenshots.
+date: 2026-08-05
+tags:
+  - product
+  - food
+  - family
+kind: app
+accent: "#ea580c"
+status: in-progress
+section: labs
+techStack:
+  - Next.js
+  - PostgreSQL
+highlights:
+  - Household cookbook, meal planner, and health companion in one app
+  - Health-check probes (/api/health/live, /api/health/ready) built in
+    from the start rather than bolted on later
+draft: false
+url: https://marvin-tawny.vercel.app
+repo: https://github.com/1Zero9/marvin
+cover: /images/projects/marvin.png
+coverAlt: Marvin's sign-in screen — "Sign in to your household kitchen"
+---
+
+## The idea
+
+Recipes end up everywhere — a screenshot here, a bookmark there, a
+half-remembered version of something that worked once. Marvin is the
+household's single kitchen: recipes, meal plans, and a running sense of
+what's actually being cooked and eaten.
+
+## What's inside
+
+Cookbook and meal-planning views sit alongside a lighter "health
+companion" layer for tracking how meals fit the household's wider
+goals — built on Next.js and Postgres, with production-readiness taken
+seriously from the start: dedicated liveness/readiness health endpoints
+and a documented operations runbook, not just a weekend script.
+
+## Why it matters to me
+
+The smallest and most domestic of the household tools, and a good
+test of restraint — the temptation with a cooking app is to build a
+recipe-import engine, a nutrition API integration, a shopping-list
+optimiser. Marvin stays deliberately close to what the household
+actually uses day to day.
