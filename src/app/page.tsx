@@ -108,7 +108,7 @@ export default async function Home() {
                     <ul className="space-y-1.5 mb-6 text-xs text-muted font-sans">
                       {spotlight.highlights.slice(0, 3).map((item, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <span className="text-signal font-bold">✓</span>
+                          <span className="text-signal-text font-bold">✓</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -158,10 +158,10 @@ export default async function Home() {
               className="p-5 rounded-2xl bg-surface border border-border hover:border-border-hover transition-all flex items-center justify-between group"
             >
               <div>
-                <span className="text-xs font-mono text-signal uppercase tracking-wider block mb-1">
+                <span className="text-xs font-mono text-signal-text uppercase tracking-wider block mb-1">
                   Full Catalog
                 </span>
-                <span className="text-base font-bold text-fg group-hover:text-signal transition-colors">
+                <span className="text-base font-bold text-fg group-hover:text-signal-text transition-colors">
                   Explore All Portfolio Projects ({prodProjects.length}) →
                 </span>
               </div>

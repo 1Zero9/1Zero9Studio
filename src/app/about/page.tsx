@@ -14,12 +14,12 @@ export default function AboutPage() {
   return (
     <Container className="py-12 md:py-20 max-w-4xl">
       <header className="mb-12">
-        <p className="font-mono text-xs text-signal uppercase tracking-wider mb-3">
+        <p className="font-mono text-xs text-signal-text uppercase tracking-wider mb-3">
           About / Stephen Cranfield
         </p>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-fg leading-tight">
           Taking an idea all the way to{" "}
-          <span className="text-signal">working software.</span>
+          <span className="text-signal-text">working software.</span>
         </h1>
       </header>
 

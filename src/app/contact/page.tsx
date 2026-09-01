@@ -14,11 +14,11 @@ export default function ContactPage() {
   return (
     <Container className="py-12 md:py-20 max-w-4xl">
       <header className="mb-12">
-        <p className="font-mono text-xs text-signal uppercase tracking-wider mb-3">
+        <p className="font-mono text-xs text-signal-text uppercase tracking-wider mb-3">
           Contact / Get in Touch
         </p>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-fg leading-tight">
-          Have a project or problem you’d like to <span className="text-signal">explore?</span>
+          Have a project or problem you’d like to <span className="text-signal-text">explore?</span>
         </h1>
       </header>
 

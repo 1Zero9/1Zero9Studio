@@ -20,6 +20,7 @@ export interface LibraryImageItem {
   size?: number;
   uploadedAt?: string;
   sourceProject?: string;
+  isUnused?: boolean;
 }
 
 export async function GET(req: NextRequest) {
@@ -30,6 +31,30 @@ export async function GET(req: NextRequest) {
 
   try {
     const imagesMap = new Map<string, LibraryImageItem>();
+
+    // Build the set of image URLs actively referenced by a project (as a
+    // cover or gallery image) so we can flag everything else as unused —
+    // e.g. stale timestamped re-uploads left behind by earlier thumbnail
+    // replacements, or imports for repos that were never actually saved.
+    const usedUrls = new Set<string>();
+    try {
+      const allProjects = await getAllAdminProjects();
+      for (const p of allProjects) {
+        const cover = p.frontmatter.cover;
+        if (cover) {
+          usedUrls.add(cover);
+          usedUrls.add(resolveCoverUrl(cover) || cover);
+        }
+        for (const g of p.frontmatter.gallery || []) {
+          if (g?.url) {
+            usedUrls.add(g.url);
+            usedUrls.add(resolveCoverUrl(g.url) || g.url);
+          }
+        }
+      }
+    } catch {
+      // If this fails, isUnused just won't be computed — non-fatal.
+    }
 
     // 1. Fetch images from Vercel Blob if token is available
     const blobToken = getBlobToken();
@@ -49,6 +74,8 @@ export async function GET(req: NextRequest) {
               type: "vercel-blob",
               size: blob.size,
               uploadedAt: blob.uploadedAt ? new Date(blob.uploadedAt).toISOString() : undefined,
+              isUnused:
+                usedUrls.size > 0 && !usedUrls.has(blob.url) && !usedUrls.has(resolvedUrl),
             });
           }
         }

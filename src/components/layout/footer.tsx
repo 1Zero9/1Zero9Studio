@@ -7,10 +7,10 @@ export function Footer() {
       <div className="site-footer__inner">
         <div className="site-footer__top">
           <div className="site-footer__brand-block">
-            <h3>
+            <p className="site-footer__brand-name">
               <Logo className="h-6 w-auto text-signal" />
               <span>1Zero9 Studio</span>
-            </h3>
+            </p>
             <p>
               Product thinking, interface design, and working software. Designed for live platforms, client deliverables, and open-source experiments.
             </p>

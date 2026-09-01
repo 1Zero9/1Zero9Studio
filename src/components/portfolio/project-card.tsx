@@ -51,11 +51,11 @@ export function ProjectCard({
           ) : null}
         </div>
 
-        <h3 className="project-card__title">
+        <h2 className="project-card__title">
           <Link href={`/projects/${project.slug}`} className="hover:underline">
             {project.title}
           </Link>
-        </h3>
+        </h2>
 
         <p className="project-card__summary">{project.summary}</p>
 

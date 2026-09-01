@@ -61,6 +61,7 @@ interface LibraryImageItem {
   size?: number;
   uploadedAt?: string;
   sourceProject?: string;
+  isUnused?: boolean;
 }
 
 interface ProjectFormData {
@@ -107,7 +108,8 @@ export default function AdminDashboardPage() {
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [syncingBlob, setSyncingBlob] = useState(false);
   const [uploadingToLibrary, setUploadingToLibrary] = useState(false);
-  const [libraryFilterTab, setLibraryFilterTab] = useState<"all" | "blob" | "local">("all");
+  const [libraryFilterTab, setLibraryFilterTab] = useState<"all" | "blob" | "local" | "unused">("all");
+  const [cleaningUpLibrary, setCleaningUpLibrary] = useState(false);
   const [librarySearch, setLibrarySearch] = useState("");
   const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
   const [libraryTargetSlug, setLibraryTargetSlug] = useState<string | null>(null);
@@ -314,6 +316,21 @@ export default function AdminDashboardPage() {
     } catch {
       showToast("Failed to set homepage spotlight", "error");
     }
+  }
+
+  // Pick a random published project as the homepage spotlight
+  async function randomizeHomepageSpotlight() {
+    const eligible = projects.filter(
+      (p) => p.frontmatter.section !== "hidden" && !p.frontmatter.draft
+    );
+    const pool = eligible.length > 0 ? eligible : projects;
+    if (pool.length === 0) return;
+    const current = projects.find((p) => p.frontmatter.featuredOnHome)?.slug;
+    const choices = pool.filter((p) => p.slug !== current);
+    const finalPool = choices.length > 0 ? choices : pool;
+    const pick = finalPool[Math.floor(Math.random() * finalPool.length)];
+    if (!pick) return;
+    await setHomepageSpotlight(pick.slug);
   }
 
   // Permanently delete a project
@@ -706,6 +723,49 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Bulk-delete every Cloud CDN image flagged as unused (not referenced by
+  // any project's cover or gallery) — cleans up stale re-uploads left
+  // behind by earlier thumbnail replacements or abandoned imports.
+  async function handleCleanupUnused() {
+    const unused = libraryImages.filter(
+      (img) => img.isUnused && (img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com"))
+    );
+    if (unused.length === 0) {
+      showToast("No unused images to clean up");
+      return;
+    }
+    if (
+      !confirm(
+        `Delete ${unused.length} unused image${unused.length === 1 ? "" : "s"} from cloud storage? This can't be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setCleaningUpLibrary(true);
+    let failed = 0;
+    for (const img of unused) {
+      try {
+        const res = await fetch("/api/admin/media-library", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: img.url }),
+        });
+        if (!res.ok) failed++;
+      } catch {
+        failed++;
+      }
+    }
+    setCleaningUpLibrary(false);
+    showToast(
+      failed === 0
+        ? `Deleted ${unused.length} unused image${unused.length === 1 ? "" : "s"}`
+        : `Deleted ${unused.length - failed} of ${unused.length} — ${failed} failed`,
+      failed === 0 ? "success" : "error"
+    );
+    await openMediaLibrary(libraryTargetContext, libraryTargetSlug || undefined);
+  }
+
   // Copy Image URL to clipboard
   function handleCopyImageUrl(url: string) {
     navigator.clipboard.writeText(url);
@@ -983,7 +1043,7 @@ export default function AdminDashboardPage() {
             <div className="flex items-center gap-3">
               <span className="text-2xl">⭐</span>
               <div>
-                <span className="text-xs font-mono text-signal uppercase tracking-wider font-bold block">
+                <span className="text-xs font-mono text-signal-text uppercase tracking-wider font-bold block">
                   Homepage Spotlight Project
                 </span>
                 <span className="text-xs text-muted">
@@ -996,6 +1056,7 @@ export default function AdminDashboardPage() {
               <select
                 value={projects.find((p) => p.frontmatter.featuredOnHome)?.slug || projects[0]?.slug || ""}
                 onChange={(e) => setHomepageSpotlight(e.target.value)}
+                aria-label="Homepage spotlight project"
                 className="px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg focus:outline-none focus:border-accent font-mono"
               >
                 {projects.map((p) => (
@@ -1004,6 +1065,15 @@ export default function AdminDashboardPage() {
                   </option>
                 ))}
               </select>
+              <button
+                type="button"
+                onClick={randomizeHomepageSpotlight}
+                className="px-3 py-2 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg hover:border-border-hover transition-colors flex items-center gap-1.5"
+                title="Randomly pick a different project to spotlight on the homepage"
+              >
+                <span>🎲</span>
+                <span>Random</span>
+              </button>
             </div>
           </div>
 
@@ -1096,6 +1166,7 @@ export default function AdminDashboardPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                aria-label="Sort projects by"
                 className="px-3 py-1.5 bg-bg-subtle border border-border rounded-xl text-xs font-semibold text-fg focus:outline-none focus:border-accent"
               >
                 <option value="date-desc">Date Added (Newest)</option>
@@ -1161,9 +1232,9 @@ export default function AdminDashboardPage() {
                       {/* Info & Badges */}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="text-base font-bold text-fg truncate">
+                          <h2 className="text-base font-bold text-fg truncate">
                             {project.frontmatter.title}
-                          </h3>
+                          </h2>
                           <span className="text-xs font-mono text-muted">
                             ({project.slug})
                           </span>
@@ -1388,9 +1459,9 @@ export default function AdminDashboardPage() {
                     {/* Card Content & Action Bar */}
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
-                        <h3 className="text-base font-bold text-fg mb-1">
+                        <h2 className="text-base font-bold text-fg mb-1">
                           {project.frontmatter.title}
-                        </h3>
+                        </h2>
                         <p className="text-xs font-mono text-muted mb-2">
                           /{project.slug}
                         </p>
@@ -2015,6 +2086,23 @@ export default function AdminDashboardPage() {
                   <span>{syncingBlob ? "Pushing to CDN..." : "Push All to Vercel CDN"}</span>
                 </button>
 
+                {libraryImages.some((i) => i.isUnused) && (
+                  <button
+                    type="button"
+                    onClick={handleCleanupUnused}
+                    disabled={cleaningUpLibrary}
+                    className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-50 text-red-500 border border-red-500/20 font-semibold rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                    title="Delete all cloud images not currently used as any project's cover or gallery image"
+                  >
+                    <span>🧹</span>
+                    <span>
+                      {cleaningUpLibrary
+                        ? "Cleaning up..."
+                        : `Clean Up ${libraryImages.filter((i) => i.isUnused).length} Unused`}
+                    </span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => setLibraryModalOpen(false)}
                   className="text-muted hover:text-fg font-bold text-xl p-2 rounded-xl hover:bg-bg-subtle transition-colors"
@@ -2061,6 +2149,19 @@ export default function AdminDashboardPage() {
                 >
                   📁 Local Files ({libraryImages.filter((i) => i.type === "local" || !i.url.includes("blob.vercel-storage.com")).length})
                 </button>
+                {libraryImages.some((i) => i.isUnused) && (
+                  <button
+                    type="button"
+                    onClick={() => setLibraryFilterTab("unused")}
+                    className={`px-3 py-1 rounded-lg transition-all ${
+                      libraryFilterTab === "unused"
+                        ? "bg-red-500 text-white shadow-sm"
+                        : "text-muted hover:text-fg"
+                    }`}
+                  >
+                    🧹 Unused ({libraryImages.filter((i) => i.isUnused).length})
+                  </button>
+                )}
               </div>
 
               {/* Search input */}
@@ -2094,6 +2195,7 @@ export default function AdminDashboardPage() {
                       const isBlob = img.type === "vercel-blob" || img.url.includes("blob.vercel-storage.com");
                       if (libraryFilterTab === "blob" && !isBlob) return false;
                       if (libraryFilterTab === "local" && isBlob) return false;
+                      if (libraryFilterTab === "unused" && !img.isUnused) return false;
 
                       if (!librarySearch.trim()) return true;
                       const q = librarySearch.toLowerCase();
@@ -2148,6 +2250,19 @@ export default function AdminDashboardPage() {
                                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-live-green text-white shadow-sm flex items-center gap-1">
                                   <span>✓</span>
                                   <span>Active</span>
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Unused badge */}
+                            {!isActive && img.isUnused && (
+                              <div className="absolute top-2 left-2">
+                                <span
+                                  className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white shadow-sm flex items-center gap-1"
+                                  title="Not used as any project's cover or gallery image"
+                                >
+                                  <span>🧹</span>
+                                  <span>Unused</span>
                                 </span>
                               </div>
                             )}

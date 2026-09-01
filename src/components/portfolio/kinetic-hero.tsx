@@ -70,7 +70,7 @@ export function KineticHero({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-signal animate-pulse shrink-0" />
-                  <span className="text-xs font-mono font-bold text-signal uppercase tracking-wider">
+                  <span className="text-xs font-mono font-bold text-signal-text uppercase tracking-wider">
                     Signal Active · 1Zero9 Studio
                   </span>
                 </div>
@@ -81,7 +81,7 @@ export function KineticHero({
             </div>
 
             <div className="flex items-center gap-2 text-xs font-mono text-muted bg-bg-subtle/80 px-3 py-1.5 rounded-xl border border-border shrink-0">
-              <span className="text-signal font-bold">●</span>
+              <span className="text-signal-text font-bold">●</span>
               <span>Workshop Online</span>
               <span className="opacity-40">·</span>
               <span>Dublin, IE</span>

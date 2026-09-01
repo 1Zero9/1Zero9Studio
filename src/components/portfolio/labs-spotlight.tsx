@@ -53,7 +53,7 @@ export function LabsSpotlight({
 
               {project.wipProgress && (
                 <div className="lab-card__progress">
-                  <span className="font-mono text-xs text-signal">Status:</span>
+                  <span className="font-mono text-xs text-signal-text">Status:</span>
                   <span className="text-xs text-muted">{project.wipProgress}</span>
                 </div>
               )}

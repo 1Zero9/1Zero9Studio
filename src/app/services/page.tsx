@@ -13,11 +13,11 @@ export default function ServicesPage() {
   return (
     <Container className="py-12 md:py-20 max-w-4xl">
       <header className="mb-12">
-        <p className="font-mono text-xs text-signal uppercase tracking-wider mb-3">
+        <p className="font-mono text-xs text-signal-text uppercase tracking-wider mb-3">
           Studio / Collaborating
         </p>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-fg leading-tight">
-          Good collaborations start with an <span className="text-signal">interesting problem.</span>
+          Good collaborations start with an <span className="text-signal-text">interesting problem.</span>
         </h1>
       </header>
 

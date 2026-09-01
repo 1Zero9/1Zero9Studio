@@ -79,7 +79,7 @@ export function ProjectFilter({
               className={`filter-btn ${filter === btn.key ? "active" : ""}`}
             >
               <span>{btn.label}</span>
-              <span className="ml-1.5 opacity-60 text-xs font-mono">
+              <span className="ml-1.5 opacity-90 text-xs font-mono">
                 ({btn.count})
               </span>
             </button>

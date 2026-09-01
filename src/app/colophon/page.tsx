@@ -12,11 +12,11 @@ export default function ColophonPage() {
   return (
     <Container className="py-12 md:py-20 max-w-4xl">
       <header className="mb-12">
-        <p className="font-mono text-xs text-signal uppercase tracking-wider mb-3">
+        <p className="font-mono text-xs text-signal-text uppercase tracking-wider mb-3">
           Colophon / Behind the Studio
         </p>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-fg leading-tight">
-          A studio platform built for <span className="text-signal">speed and clarity.</span>
+          A studio platform built for <span className="text-signal-text">speed and clarity.</span>
         </h1>
       </header>
 

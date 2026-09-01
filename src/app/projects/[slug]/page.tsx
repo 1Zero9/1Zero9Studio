@@ -174,7 +174,7 @@ export default async function ProjectPage({
       {/* Highlights / Outcomes */}
       {project.highlights && project.highlights.length > 0 && (
         <section className="case-study__highlights" aria-label="Key highlights">
-          <h3>Key Features & Outcomes</h3>
+          <h2>Key Features & Outcomes</h2>
           <ul>
             {project.highlights.map((h, i) => (
               <li key={i}>{h}</li>
@@ -224,11 +224,11 @@ export default async function ProjectPage({
         <aside className="p-6 md:p-8 rounded-2xl bg-surface border border-border flex items-center justify-between gap-4 mt-12 hover:border-border-hover transition-colors">
           <div>
             <span className="font-mono text-xs text-muted uppercase">Next Project</span>
-            <h4 className="text-xl font-bold text-fg mt-1">
+            <h3 className="text-xl font-bold text-fg mt-1">
               <Link href={`/projects/${nextProject.slug}`} className="hover:underline">
                 {nextProject.title}
               </Link>
-            </h4>
+            </h3>
             <p className="text-sm text-muted line-clamp-1 mt-0.5">{nextProject.summary}</p>
           </div>
           <Link
