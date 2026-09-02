@@ -22,10 +22,10 @@ export function StudioBadge() {
               <span>About the maker</span>
               <span aria-hidden="true">→</span>
             </Link>
-            <a href="mailto:onezeronine@gmail.com" className="btn-secondary">
+            <Link href="/contact" className="btn-secondary">
               <span>Discuss a collaboration</span>
               <span aria-hidden="true">↗</span>
-            </a>
+            </Link>
           </div>
         </div>
 

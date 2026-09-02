@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { createMetadata } from "@/lib/metadata";
-import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
   title: "Collaborating with 1Zero9",
@@ -40,7 +39,7 @@ export default function ServicesPage() {
           </p>
 
           <p>
-            I work directly across product vision, UI/UX design, and production engineering. The best way to evaluate fit is to check the projects—and simply drop an email to discuss what you’re planning.
+            I work directly across product vision, UI/UX design, and production engineering. The best way to evaluate fit is to check the projects—and simply get in touch to discuss what you’re planning.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-border">
@@ -48,10 +47,10 @@ export default function ServicesPage() {
               <span>View Selected Work</span>
               <span aria-hidden="true">→</span>
             </Link>
-            <a href={`mailto:${site.author.email}`} className="btn-secondary">
+            <Link href="/contact" className="btn-secondary">
               <span>Start a Conversation</span>
               <span aria-hidden="true">↗</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

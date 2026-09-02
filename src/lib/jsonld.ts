@@ -12,7 +12,6 @@ export const personJsonLd: WithContext<Person> = {
   "@type": "Person",
   name: site.author.name,
   url: site.url,
-  email: site.author.email,
 };
 
 export const webSiteJsonLd: WithContext<WebSite> = {

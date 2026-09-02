@@ -17,7 +17,6 @@ export function GET() {
     },
     author: {
       name: site.author.name,
-      email: site.author.email,
       link: site.url,
     },
   });

@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function AdminLoginPage() {
   const [authMode, setAuthMode] = useState<"magic" | "passcode">("magic");
-  const [email, setEmail] = useState("onezeronine@gmail.com");
+  const [email, setEmail] = useState("");
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");

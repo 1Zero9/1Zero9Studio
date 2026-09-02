@@ -3,7 +3,6 @@ import { Container } from "@/components/layout/container";
 import { Logo } from "@/components/brand/logo";
 import { ContactForm } from "@/components/contact/contact-form";
 import { createMetadata } from "@/lib/metadata";
-import { site } from "@/lib/site";
 
 export const metadata = createMetadata({
   title: "Contact 1Zero9 Studio",
@@ -28,24 +27,11 @@ export default function ContactPage() {
           <Logo className="h-8 w-auto text-signal" />
           <h2 className="text-2xl font-bold text-fg">Let’s start a conversation.</h2>
           <p className="text-muted leading-relaxed">
-            Whether you want to discuss a new digital product, a website collaboration, an AI workflow experiment, or general engineering questions, my inbox is open.
+            Whether you want to discuss a new digital product, a website collaboration, an AI workflow experiment, or general engineering questions — fill out the form below and I&apos;ll get back to you.
           </p>
-          <a
-            href={`mailto:${site.author.email}`}
-            className="text-lg md:text-xl font-bold text-accent hover:underline font-mono"
-          >
-            {site.author.email} ↗
-          </a>
         </div>
 
         <div className="flex flex-col gap-3 w-full md:w-auto">
-          <a
-            href={`mailto:${site.author.email}`}
-            className="btn-primary justify-center text-center w-full"
-          >
-            <span>Send an Email</span>
-            <span aria-hidden="true">↗</span>
-          </a>
           <Link
             href="/projects"
             className="btn-secondary justify-center text-center w-full"
@@ -57,9 +43,9 @@ export default function ContactPage() {
       </div>
 
       <div className="mt-8 p-8 md:p-12 rounded-3xl bg-surface border border-border shadow-xl">
-        <h2 className="text-xl font-bold text-fg mb-1">Or send a message directly</h2>
+        <h2 className="text-xl font-bold text-fg mb-1">Send a message</h2>
         <p className="text-muted text-sm mb-6">
-          Prefer a form? Fill this out and it&apos;ll land straight in my inbox.
+          Fill this out and it&apos;ll land straight in my inbox.
         </p>
         <div className="max-w-xl">
           <ContactForm />
