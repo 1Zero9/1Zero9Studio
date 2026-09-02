@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { Logo } from "@/components/brand/logo";
+import { ContactForm } from "@/components/contact/contact-form";
 import { createMetadata } from "@/lib/metadata";
 import { site } from "@/lib/site";
 
@@ -52,6 +53,16 @@ export default function ContactPage() {
             <span>Explore Work First</span>
             <span aria-hidden="true">→</span>
           </Link>
+        </div>
+      </div>
+
+      <div className="mt-8 p-8 md:p-12 rounded-3xl bg-surface border border-border shadow-xl">
+        <h2 className="text-xl font-bold text-fg mb-1">Or send a message directly</h2>
+        <p className="text-muted text-sm mb-6">
+          Prefer a form? Fill this out and it&apos;ll land straight in my inbox.
+        </p>
+        <div className="max-w-xl">
+          <ContactForm />
         </div>
       </div>
     </Container>

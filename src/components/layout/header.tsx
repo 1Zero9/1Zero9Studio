@@ -34,7 +34,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`site-header__link ${isActive ? "text-fg font-semibold" : ""}`}
+                className={`site-header__link ${isActive ? "is-active" : ""}`}
               >
                 {link.label}
               </Link>

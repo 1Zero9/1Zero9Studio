@@ -27,6 +27,7 @@ interface AdminProject {
     repo?: string;
     cover?: string;
     coverAlt?: string;
+    gallery?: GalleryImage[];
     order?: number;
   };
   content: string;
@@ -64,6 +65,12 @@ interface LibraryImageItem {
   isUnused?: boolean;
 }
 
+interface GalleryImage {
+  url: string;
+  alt: string;
+  caption?: string;
+}
+
 interface ProjectFormData {
   title: string;
   slug: string;
@@ -84,6 +91,7 @@ interface ProjectFormData {
   repo: string;
   cover: string;
   coverAlt: string;
+  gallery: GalleryImage[];
 }
 
 export default function AdminDashboardPage() {
@@ -110,7 +118,7 @@ export default function AdminDashboardPage() {
   const [libraryFilterTab, setLibraryFilterTab] = useState<"all" | "database" | "local" | "unused">("all");
   const [cleaningUpLibrary, setCleaningUpLibrary] = useState(false);
   const [librarySearch, setLibrarySearch] = useState("");
-  const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug">("modal");
+  const [libraryTargetContext, setLibraryTargetContext] = useState<"modal" | "quick-slug" | "gallery">("modal");
   const [libraryTargetSlug, setLibraryTargetSlug] = useState<string | null>(null);
   // Direct Repo Import state
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -142,11 +150,14 @@ export default function AdminDashboardPage() {
     repo: "",
     cover: "",
     coverAlt: "",
+    gallery: [],
   });
 
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const modalFileInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
   const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<string | null>(null);
 
   function showToast(message: string, type: "success" | "error" = "success") {
@@ -378,6 +389,7 @@ export default function AdminDashboardPage() {
       repo: item.repoUrl || "",
       cover: "",
       coverAlt: "",
+      gallery: [],
     });
     setModalOpen(true);
   }
@@ -405,6 +417,7 @@ export default function AdminDashboardPage() {
       repo: project.frontmatter.repo || "",
       cover: project.frontmatter.cover || "",
       coverAlt: project.frontmatter.coverAlt || "",
+      gallery: project.frontmatter.gallery || [],
     });
     setModalOpen(true);
   }
@@ -445,6 +458,8 @@ export default function AdminDashboardPage() {
         frontmatterPayload.cover = formData.cover;
         frontmatterPayload.coverAlt = formData.coverAlt || `${formData.title} screenshot`;
       }
+
+      frontmatterPayload.gallery = formData.gallery.filter((img) => img.url && img.alt);
 
       if (editingSlug) {
         // Update
@@ -586,8 +601,79 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Upload a screenshot file directly into the gallery from within the edit
+  // modal. Like the thumbnail uploader, this only uploads the file and
+  // stages the returned URL into the form — it's discarded on Cancel and
+  // only persisted when "Save Changes" is submitted.
+  async function handleGalleryFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const targetSlug = formData.slug || editingSlug || "preview";
+    setUploadingGalleryImage(true);
+
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("slug", targetSlug);
+      data.append("alt", `${formData.title || targetSlug} screenshot`);
+      data.append("attach", "false");
+
+      const res = await fetch("/api/admin/upload-thumbnail", {
+        method: "POST",
+        body: data,
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Upload failed");
+      }
+
+      setFormData((prev: ProjectFormData) => ({
+        ...prev,
+        gallery: [
+          ...prev.gallery,
+          { url: json.coverUrl, alt: `${prev.title || targetSlug} screenshot`, caption: "" },
+        ],
+      }));
+
+      showToast(`Screenshot added. Click "Save Changes" to apply it.`);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Failed to upload", "error");
+    } finally {
+      setUploadingGalleryImage(false);
+      if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
+    }
+  }
+
+  function updateGalleryImage(index: number, patch: Partial<GalleryImage>) {
+    setFormData((prev: ProjectFormData) => ({
+      ...prev,
+      gallery: prev.gallery.map((img, i) => (i === index ? { ...img, ...patch } : img)),
+    }));
+  }
+
+  function removeGalleryImage(index: number) {
+    setFormData((prev: ProjectFormData) => ({
+      ...prev,
+      gallery: prev.gallery.filter((_, i) => i !== index),
+    }));
+  }
+
+  function moveGalleryImage(index: number, direction: -1 | 1) {
+    setFormData((prev: ProjectFormData) => {
+      const next = [...prev.gallery];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return prev;
+      const temp = next[index]!;
+      next[index] = next[target]!;
+      next[target] = temp;
+      return { ...prev, gallery: next };
+    });
+  }
+
   // Open Media Library
-  async function openMediaLibrary(context: "modal" | "quick-slug", targetSlug?: string) {
+  async function openMediaLibrary(context: "modal" | "quick-slug" | "gallery", targetSlug?: string) {
     setLibraryTargetContext(context);
     setLibraryTargetSlug(targetSlug || (context === "modal" ? (formData.slug || editingSlug) : null));
     setLibraryModalOpen(true);
@@ -619,6 +705,19 @@ export default function AdminDashboardPage() {
         coverAlt: prev.coverAlt || `${prev.title || "Project"} screenshot`,
       }));
       showToast(`Thumbnail staged. Click "Save Changes" to apply it.`);
+      setLibraryModalOpen(false);
+      return;
+    }
+
+    if (libraryTargetContext === "gallery") {
+      setFormData((prev: ProjectFormData) => ({
+        ...prev,
+        gallery: [
+          ...prev.gallery,
+          { url: img.url, alt: `${prev.title || "Project"} screenshot`, caption: "" },
+        ],
+      }));
+      showToast(`Screenshot added to gallery. Click "Save Changes" to apply it.`);
       setLibraryModalOpen(false);
       return;
     }
@@ -795,6 +894,7 @@ export default function AdminDashboardPage() {
         repo: p.repoUrl,
         cover: "",
         coverAlt: `${p.title} preview screenshot`,
+        gallery: [],
       });
 
       setEditingSlug(null);
@@ -1005,6 +1105,7 @@ export default function AdminDashboardPage() {
                 repo: "",
                 cover: "",
                 coverAlt: "",
+                gallery: [],
               });
               setModalOpen(true);
             }}
@@ -1657,6 +1758,13 @@ export default function AdminDashboardPage() {
             accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
             className="hidden"
           />
+          <input
+            type="file"
+            ref={galleryFileInputRef}
+            onChange={handleGalleryFileUpload}
+            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
+            className="hidden"
+          />
 
           <form
             onSubmit={handleSaveProject}
@@ -1904,6 +2012,108 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Gallery / App Screenshots Studio */}
+              <div className="p-4 bg-bg-subtle border border-border rounded-xl space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-muted font-bold">
+                      Gallery & Screenshots
+                    </label>
+                    <p className="text-[11px] text-muted mt-0.5">
+                      App Store-style previews shown on the case study page — no login required to view.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openMediaLibrary("gallery")}
+                      className="px-2.5 py-1 bg-surface hover:bg-surface-hover border border-border text-fg font-semibold rounded-lg text-xs transition-colors flex items-center gap-1"
+                    >
+                      <span>🖼️</span>
+                      <span>Pick from Library</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => galleryFileInputRef.current?.click()}
+                      disabled={uploadingGalleryImage}
+                      className="px-2.5 py-1 bg-fg text-bg font-semibold rounded-lg text-xs hover:opacity-90 transition-opacity flex items-center gap-1"
+                    >
+                      <span>📷</span>
+                      <span>{uploadingGalleryImage ? "Uploading..." : "Upload File"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {formData.gallery.length === 0 ? (
+                  <div className="text-xs text-muted text-center py-6 border border-dashed border-border rounded-lg">
+                    No screenshots yet. Add a few to show the app in action.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {formData.gallery.map((img, i) => (
+                      <div
+                        key={`${img.url}-${i}`}
+                        className="flex gap-3 p-2 bg-surface border border-border rounded-lg"
+                      >
+                        <div className="relative w-20 h-14 shrink-0 rounded-md overflow-hidden bg-bg-subtle border border-border">
+                          <Image
+                            src={img.url}
+                            alt={img.alt || "Gallery image"}
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <input
+                            type="text"
+                            value={img.alt}
+                            onChange={(e) => updateGalleryImage(i, { alt: e.target.value })}
+                            placeholder="Alt text (required)"
+                            className="w-full px-2 py-1 bg-bg-subtle border border-border rounded text-[11px] text-fg focus:outline-none focus:border-accent"
+                          />
+                          <input
+                            type="text"
+                            value={img.caption || ""}
+                            onChange={(e) => updateGalleryImage(i, { caption: e.target.value })}
+                            placeholder="Caption (optional)"
+                            className="w-full px-2 py-1 bg-bg-subtle border border-border rounded text-[11px] text-fg focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                        <div className="flex flex-col items-center justify-between shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveGalleryImage(i, -1)}
+                            disabled={i === 0}
+                            title="Move up"
+                            className="text-muted hover:text-fg disabled:opacity-30 text-xs"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryImage(i)}
+                            title="Remove"
+                            className="text-red-500 hover:text-red-400 text-xs"
+                          >
+                            ✕
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveGalleryImage(i, 1)}
+                            disabled={i === formData.gallery.length - 1}
+                            title="Move down"
+                            className="text-muted hover:text-fg disabled:opacity-30 text-xs"
+                          >
+                            ▼
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Extra Meta Grid */}
