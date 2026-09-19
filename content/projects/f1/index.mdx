@@ -1,0 +1,79 @@
+---
+title: F1
+summary: The full history of Formula 1, 1950 to now — every driver, team,
+  circuit and season, filterable instantly with no database, because the
+  whole dataset is small enough to hold in a browser tab.
+date: 2026-09-19
+tags:
+  - sports
+  - data
+  - web
+kind: website
+accent: "#e10600"
+status: live
+techStack:
+  - Next.js
+  - TypeScript
+  - Tailwind CSS
+  - Cloudflare Workers
+highlights:
+  - "No database: 26,181 real result rows fetched once at build time and
+    filtered entirely client-side — genuinely faster than a DB round-trip
+    at this scale, verified with the real row count rather than assumed"
+  - Real cross-slicing, not just search and sort — filter drivers by the
+    actual team they raced for (built from race results, not a driver's
+    listed nationality), constructors by nationality, circuits by country,
+    all with a champions-only toggle
+  - A personal layer alongside the historical one — races actually attended
+    in person (Monza 2004, Barcelona 2005) marked on their own pages
+  - Visual identity built from the real thing — the track kerb's red/white
+    stripe and the actual marshal's "SC" board photographed at a Grand Prix,
+    not an invented logo or a stock photo
+  - Found and fixed a genuine production incident after shipping — Cloudflare
+    was silently falling back to full server-rendering on every request
+    because no incremental-cache backend was configured, which only breaks
+    under real concurrent traffic; reproduced it directly with a load test,
+    fixed it, verified with the same test clean afterward
+url: https://f1.1zero9.com
+cover: /images/projects/f1.png
+coverAlt: The F1 site's home page — a dark hero reading "The full history of
+  Formula 1" beside real stat tiles for 881 drivers, 214 constructors, 78
+  circuits and 77 championship seasons
+draft: false
+---
+
+## The idea
+
+Watching every Grand Prix since Monaco 1996 builds up a lot of half-remembered
+history — who drove for whom, which circuits came and went, which season a
+particular result belongs to. The idea was a personal reference for all of it:
+every result on record, sliceable however curiosity points.
+
+## The build
+
+The Jolpica API (the open successor to the now-retired Ergast API) covers
+every season since 1950. Pulling it in reliably took three attempts — a naive
+retry loop died on a sustained rate limit, a better-paced version still
+crashed on a plain network exception because HTTP-status retry logic never
+catches `fetch()` throwing outright, and the fix that finally held pairs
+sensible pacing with a separate handler for network-level failures. That
+whole shape is now a reusable pattern rather than something the next project
+has to re-learn the hard way.
+
+The dataset itself — 1,163 races, 881 drivers, 214 constructors, 78 circuits —
+is small enough to ship as static JSON and filter in memory, so there's no
+database and no request-time API call anywhere in the app.
+
+Shipping it surfaced a second real lesson: the app looked fine right after
+deploying, then started failing under real concurrent traffic. Cloudflare's
+OpenNext adapter needs its own incremental-cache backend configured or it
+silently re-renders every page from scratch on every request — invisible in
+a quiet test, expensive enough under load to hit Cloudflare's CPU limit. Load
+testing the live site (not just the deploy log) is what actually caught it.
+
+## Why it matters
+
+Twenty-nine years of watching this sport, and two races seen in person, now
+have a proper home — one built to be trustworthy about the numbers first,
+with the branding held back until the shape of the thing had actually proven
+itself.

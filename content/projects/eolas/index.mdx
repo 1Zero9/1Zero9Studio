@@ -3,15 +3,16 @@ title: Eolas
 summary: A local-first idea-to-project system — capture an idea, decide
   deliberately whether to build it, then assemble it from approved,
   reusable code accelerators instead of regenerating the same foundations
-  every time.
+  every time. Superseded by Project-OS; its accelerators live on there.
 date: 2026-08-02
+updated: 2026-09-19
 tags:
   - product
   - tools
   - developer-tools
 kind: tool
 accent: "#6366f1"
-status: in-progress
+status: archived
 section: labs
 techStack:
   - Next.js
@@ -58,3 +59,17 @@ This is the tool behind the tools — a way of being honest about which
 ideas are worth building, and giving each approval step in "just build
 it" real friction instead of letting an agent run unattended. Named
 after the Irish word for knowledge.
+
+## Where it stands now
+
+Archived, September 2026. Eolas pursued the same mission as
+[Project-OS](https://github.com/1Zero9/project-os) — reuse reliable
+implementation instead of paying to regenerate the same foundations —
+but as its own running system: a separate web app, worker process and
+Postgres database. Project-OS pursues the same goal as files a project
+just reads and copies from, with none of that machinery. Four of Eolas's
+six accelerators (cookie-session auth, a Prisma/Postgres starter, a PWA
+shell, a Gemini API wrapper) were worth keeping and now live in
+Project-OS's kit — porting the auth one over also caught a real bug: its
+session cookie was an unsigned literal value, forgeable from a browser
+console. The repo stays up as-is; nothing here is being built on.

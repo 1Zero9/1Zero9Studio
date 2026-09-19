@@ -1,0 +1,75 @@
+---
+title: LaunchCity
+summary: A public tracker for space launches worldwide — what's launching,
+  when, by whom, on what vehicle, from where, and why — pulled from Launch
+  Library 2 and cached at the edge.
+date: 2026-09-19
+tags:
+  - space
+  - data
+  - web
+kind: website
+accent: "#0a1e3f"
+status: live
+techStack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - Workers KV
+highlights:
+  - Every upcoming and past launch worldwide — provider, vehicle, launch
+    site, payload, mission purpose and current status, not just a countdown
+  - "Ingestion runs from GitHub Actions, not the Worker itself: Launch
+    Library 2 rate-limits per source IP, and Cloudflare Workers share
+    outbound egress, so a request from this Worker's own cron could get
+    throttled while the identical request from a GitHub runner succeeds"
+  - The cache is deliberately disposable — Workers KV, rebuildable from the
+    source API at any time, never treated as the historical record of truth
+  - Found and fixed the same production incident F1 later hit independently
+    — Cloudflare silently falling back to full server-rendering with no
+    incremental-cache backend configured, invisible until real concurrent
+    traffic finds it
+url: https://launchcity.onezeronine.workers.dev
+cover: /images/projects/launchcity.png
+coverAlt: LaunchCity's home page, showing the next confirmed launch — Starlink
+  Group 15-27 on a Falcon 9 from Vandenberg — on an orbital timeline of past
+  and upcoming launches
+draft: false
+---
+
+## The idea
+
+Launch schedules are scattered across provider press pages, agency sites and
+enthusiast trackers that each cover a slice of the picture. LaunchCity pulls
+it into one place: what's launching, who's responsible, what it's carrying,
+and why — for any launch, from any organisation, not just the ones with the
+biggest marketing budget.
+
+## The build
+
+Launch Library 2 is the data source, cached in Workers KV rather than queried
+live on every request. The interesting decision wasn't the caching — it was
+where the *refresh* runs from. Launch Library 2 rate-limits by source IP, and
+Cloudflare Workers share outbound egress with every other Worker on the
+platform, so a refresh request from this Worker's own cron could get
+throttled by traffic that has nothing to do with it. The fix was moving
+ingestion to GitHub Actions, which originates from a different IP entirely —
+confirmed directly: the same request that got a 429 from Cloudflare's egress
+returned 200 from a GitHub runner eleven minutes later. The Worker still
+serves the site and reads the same KV cache; only the writer moved.
+
+The cache itself is explicitly disposable — a rebuildable projection of the
+source API, never the canonical record — so a bad refresh or an expired
+entry is a non-event, not a data-loss risk.
+
+Later, building F1 independently surfaced a real production incident —
+Cloudflare's OpenNext adapter needs its own incremental-cache backend
+configured, or every request silently falls back to a full server render,
+which only breaks under real concurrent traffic. LaunchCity had the same gap,
+found and fixed the same day once the pattern was known.
+
+## Why it matters
+
+A genuinely public reference — no login, no paywall — for a question that's
+usually only answered well if you already know which company or agency to
+look for.
