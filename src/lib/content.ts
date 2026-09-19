@@ -32,6 +32,29 @@ export const allProjects = generatedProjects
 export type Project = (typeof allProjects)[number];
 
 // Live asynchronous projects loader merging cloud/disk updates
+// Applied on every path out of getLiveProjects, including the error
+// fallback below - visibility rules (archived/hidden/draft) must never
+// depend on the admin database being reachable. This used to be inlined
+// only in the success path: when getAllAdminProjects() threw, the catch
+// block returned the raw, unfiltered MDX list instead, which meant a
+// database hiccup made archived projects, hidden-section content and
+// drafts all reappear on the live site with no visible sign anything had
+// gone wrong. Found 2026-09-19 reviewing the site after archiving eolas -
+// its status change had no effect in production because of this.
+function applyVisibilityFilters(projects: Project[]): Project[] {
+  return projects
+    .filter((project) => project.slug !== "_template")
+    .filter((project) => !hideDrafts || !project.draft)
+    .filter((project) => project.status !== "archived")
+    .filter((project) => project.section !== "hidden")
+    .sort((a, b) => {
+      if (a.order !== undefined && b.order !== undefined) {
+        return a.order - b.order;
+      }
+      return b.date.localeCompare(a.date);
+    });
+}
+
 export async function getLiveProjects(): Promise<Project[]> {
   try {
     const adminProjects = await getAllAdminProjects();
@@ -107,20 +130,14 @@ export async function getLiveProjects(): Promise<Project[]> {
       }
     }
 
-    return Array.from(mergedMap.values())
-      .filter((project) => project.slug !== "_template")
-      .filter((project) => !hideDrafts || !project.draft)
-      .filter((project) => project.status !== "archived")
-      .filter((project) => project.section !== "hidden")
-      .sort((a, b) => {
-        if (a.order !== undefined && b.order !== undefined) {
-          return a.order - b.order;
-        }
-        return b.date.localeCompare(a.date);
-      });
+    return applyVisibilityFilters(Array.from(mergedMap.values()));
   } catch (err) {
     console.error("Error loading live projects:", err);
-    return allProjects;
+    // Fail safe, not open: same visibility rules as the success path, just
+    // without any admin-database overrides layered on top of the raw MDX
+    // content. Never the unfiltered list - see the comment on
+    // applyVisibilityFilters above for why this matters.
+    return applyVisibilityFilters(allProjects);
   }
 }
 
