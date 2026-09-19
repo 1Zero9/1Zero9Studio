@@ -41,18 +41,22 @@ export type Project = (typeof allProjects)[number];
 // drafts all reappear on the live site with no visible sign anything had
 // gone wrong. Found 2026-09-19 reviewing the site after archiving eolas -
 // its status change had no effect in production because of this.
+function isVisible(project: Pick<Project, "slug" | "draft" | "status" | "section">): boolean {
+  return (
+    project.slug !== "_template" &&
+    (!hideDrafts || !project.draft) &&
+    project.status !== "archived" &&
+    project.section !== "hidden"
+  );
+}
+
 function applyVisibilityFilters(projects: Project[]): Project[] {
-  return projects
-    .filter((project) => project.slug !== "_template")
-    .filter((project) => !hideDrafts || !project.draft)
-    .filter((project) => project.status !== "archived")
-    .filter((project) => project.section !== "hidden")
-    .sort((a, b) => {
-      if (a.order !== undefined && b.order !== undefined) {
-        return a.order - b.order;
-      }
-      return b.date.localeCompare(a.date);
-    });
+  return projects.filter(isVisible).sort((a, b) => {
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    }
+    return b.date.localeCompare(a.date);
+  });
 }
 
 export async function getLiveProjects(): Promise<Project[]> {
@@ -213,15 +217,26 @@ export async function getLiveProject(slug: string): Promise<Project | undefined>
   const found = projects.find((project) => project.slug === slug);
   if (found) return found;
 
+  // Direct-by-slug lookup for a project the admin database knows about but
+  // getLiveProjects() didn't return - either it's genuinely new (not yet in
+  // generatedProjects) or, per that function's own filtering, not meant to
+  // be visible right now. This branch used to skip visibility checks
+  // entirely: any admin-database record for the slug rendered, regardless
+  // of its status - so archived/hidden/draft projects were still directly
+  // reachable by URL even after being correctly excluded from every listing
+  // and the sitemap. Found 2026-09-19 alongside the fail-open bug in
+  // getLiveProjects() - this is a separate gap in the same file, not the
+  // same bug twice.
   const direct = await getAdminProjectBySlug(slug);
   if (direct) {
     const base = generatedProjects.find((p) => p.slug === slug);
-    return {
+    const merged = {
       ...(base || {}),
       ...direct.frontmatter,
       slug: direct.slug,
       content: direct.content,
     } as unknown as Project;
+    return isVisible(merged) ? merged : undefined;
   }
 
   return undefined;
