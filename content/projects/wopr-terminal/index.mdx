@@ -1,0 +1,79 @@
+---
+title: WOPR Terminal
+summary: A WarGames-style NORAD terminal, rebuilt from scratch — talk to
+  WOPR, play tic-tac-toe, checkers or hangman, or trigger Global
+  Thermonuclear War. No framework, no backend, no live AI.
+date: 2026-09-21
+tags:
+  - games
+  - javascript
+  - experiment
+kind: app
+accent: "#33ff66"
+status: live
+techStack:
+  - HTML
+  - CSS
+  - JavaScript
+  - Cloudflare Workers
+  - Web Audio API
+url: https://wopr.1zero9.com
+repo: https://github.com/1Zero9/wopr-terminal
+cover: /images/projects/wopr-terminal.png
+coverAlt: WOPR Terminal — a green-phosphor CRT monitor showing WOPR's boot
+  sequence, "GREETINGS PROFESSOR FALKEN," on a dark tactical-grid backdrop
+highlights:
+  - "Tic-tac-toe backed by a real minimax — genuinely unbeatable, not a
+    scripted 'AI'"
+  - A scripted conversation layer in WOPR's own voice ("HELLO", "WHO ARE
+    YOU", "ARE YOU JOSHUA") — deliberately not a live model call, to stay
+    both authentic to the film and free to run
+  - Sound synthesized entirely with the Web Audio API — no audio files,
+    since the CSP a page like this runs under wouldn't allow loading one
+    anyway
+  - A physical CRT monitor, not a full-viewport terminal — a bezel, a fixed
+    4:3 screen, scanlines and phosphor glow scoped to the glass, not the
+    page
+draft: false
+---
+
+## The brief
+
+Recreate WarGames' NORAD computer interface — not the film, the *interface*.
+Boot text, phosphor glow, the menu of games WOPR lists ("Falken's Maze,"
+"Global Thermonuclear War"), and the one thing everyone actually remembers:
+an unbeatable game of tic-tac-toe.
+
+## The build
+
+Proof first: the whole interface, state machine and all three games were
+validated as a single interactive Artifact before a real repo existed at
+all — the riskiest part wasn't the games, it was whether the terminal *felt*
+right. Once it did, porting to a real, deployed project was packaging, not
+redesign.
+
+- **Three real games, not one.** Tic-tac-toe (true minimax), checkers
+  (click-to-select, legal-move highlighting, capture-preferring AI), and
+  hangman (a Cold-War word list) — all client-side, all built after the
+  interface itself was proven.
+- **A CRT that's actually bounded.** The first version filled the whole
+  browser viewport — nothing read as a physical object. Rebuilt as a real
+  monitor: a plastic bezel, a fixed aspect ratio, scanlines and vignette
+  scoped to the glass rather than the page.
+- **An original backdrop, not the film's own frames.** Reference stills
+  from the actual movie came up as an idea for backgrounds — flagged
+  instead of used directly: recreating an interface style is transformative,
+  embedding literal copyrighted film stills on a live, attributed site
+  isn't. Built an original tactical-grid backdrop (pulsing target dots,
+  dashed tracking arcs) that evokes the same mood without reproducing any
+  specific frame.
+
+## Why it matters
+
+The whole thing runs as flat, static files on Cloudflare Workers — no
+framework, no database, no server. Every "AI" in it (WOPR's dialogue,
+tic-tac-toe's unbeatability) is either scripted or a real, small,
+from-scratch algorithm, not a model call — a reminder that "feels
+intelligent" and "calls an LLM" aren't the same requirement, and conflating
+them here would have added cost and latency for a worse, less authentic
+result.
