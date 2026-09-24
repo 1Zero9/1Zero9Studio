@@ -1,0 +1,49 @@
+---
+title: DUB Airspace
+summary: A private, installable Dublin Airport companion that turns live local air traffic, runway direction, and wind into a clear picture of what is happening overhead.
+date: 2026-09-24
+tags:
+  - aviation
+  - pwa
+  - realtime
+  - mapping
+kind: pwa
+accent: "#1b86bd"
+status: active
+section: portfolio
+techStack:
+  - Next.js
+  - TypeScript
+  - Vercel
+  - ADS-B data feeds
+  - Aviation METAR
+highlights:
+  - Installable PWA with a schedule-first airport briefing
+  - Live aircraft replay on an illustrated airfield map
+  - Local wind and likely runway-direction context for nearby noise
+url: https://dub-airspace.vercel.app
+draft: false
+---
+
+## The brief
+
+DUB Airspace began as a personal answer to a very local question: why is the
+airport noisy today? Living close to Dublin Airport's north runway makes the
+direction of departures matter as much as the aircraft themselves.
+
+## The build
+
+- **Airport briefing** — a concise arrivals and departures view, rather than
+  a generic radar list.
+- **Local context** — live Dublin METAR wind is translated into a likely
+  eastbound or westbound operating pattern.
+- **Animated airfield map** — ADS-B positions are replayed with a short delay
+  so aircraft move smoothly across a simplified EIDW layout.
+- **Phone-first PWA** — an installable personal tool, built to open quickly
+  when the sound outside prompts the question.
+
+## Why it matters
+
+The interesting design problem was not showing more aviation data. It was
+making operational context legible at a glance: wind, runway, direction and
+the next movement all need to agree before the live map becomes useful.
