@@ -1,0 +1,55 @@
+---
+title: Donabate Match Helper
+summary: A stroke-allocation tool for club matchplay golf — paused
+  deliberately before release, once it became clear the club itself needed
+  to be in the loop first.
+date: 2026-09-15
+updated: 2026-09-16
+tags:
+  - sport
+  - concept
+kind: tool
+accent: "#166534"
+status: concept
+section: labs
+techStack:
+  - TypeScript
+highlights:
+  - Answers one specific question well — playing off which tees, how many
+    strokes given or received, on which holes — instead of a generic
+    handicap calculator
+  - 22 tests passing and a working build before the pause, not an idea
+    left unstarted
+  - A written pre-mortem set explicit stop conditions before a single line
+    of UI was manually exercised in a browser
+draft: false
+---
+
+## The idea
+
+A Donabate Golf Club member setting up a singles matchplay round needs to
+know exactly how many strokes they give or receive, and on which holes —
+today that means manually cross-referencing handicaps against the stroke
+index table for the specific tees being played. A small, correct answer to
+one real question.
+
+## Why it stopped
+
+It began as a technical prototype, not something the club requested or
+sponsored. The stroke-index data and matchplay allowance both needed
+verification against Donabate's own authoritative source before a real
+member could trust the output — and there was no authorised route to test
+it with real members without the club's involvement.
+
+Rather than ship a plausible-looking tool that could hand someone the wrong
+strokes in a real match, the project paused itself at a written decision
+point: a delivery baseline document recording exactly what was proven, what
+wasn't, and what would need to be true before it could resume.
+
+## Why it matters
+
+The tests passed, the build worked — the thing that stopped it wasn't a
+technical problem at all. It's the clearest example in this whole portfolio
+of a pre-mortem doing its job: catching "I have no authorised way to verify
+this is correct" before release, not after someone used it for a real
+match.

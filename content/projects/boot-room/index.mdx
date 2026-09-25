@@ -1,0 +1,62 @@
+---
+title: Boot Room
+summary: A zero-money swap shop for club sports gear — donate what you don't
+  need, reserve what you do, collect it. Multi-tenant from day one, built
+  for any number of clubs on one shared platform.
+date: 2026-09-20
+tags:
+  - product
+  - community
+  - sport
+kind: app
+accent: "#0f766e"
+status: live
+section: labs
+techStack:
+  - Next.js
+  - Cloudflare Workers
+  - Drizzle
+  - Supabase
+  - Hyperdrive
+highlights:
+  - Multi-tenant from the start — one shared platform serves any number of
+    clubs, not one deployment per club
+  - The item lifecycle (donate → reserve → collect) was proven as a
+    standalone state-machine spike before a single line of schema existed
+  - Reuses the org/role and "payments happen outside the app" patterns
+    already validated on Last Man Standing rather than re-deciding them
+  - Cloudflare Workers hosting was a deliberate choice, with the database
+    kept independent of Vercel on purpose
+url: https://boot-room.1zero9.com
+repo: https://github.com/1Zero9/boot-room
+draft: false
+---
+
+## The idea
+
+Club gear has the same problem everywhere: kids outgrow boots every season,
+good kit sits unused in a bag, and there's no shared way to pass it on. Boot
+Room is a swap shop with no money involved — donate what you don't need,
+reserve what you do, arrange collection.
+
+## The build
+
+- **Spike before schema** — the item lifecycle (donated → available →
+  reserved → collected) was validated as a runnable state-machine script
+  before any app code or database schema existed.
+- **Multi-tenant by design** — built for any number of clubs on one shared
+  platform from the first commit, not retrofitted later.
+- **Cloudflare, not Vercel** — a deliberate hosting choice, with the
+  database (Supabase via Hyperdrive) kept independent of Vercel on purpose
+  rather than bundled with it.
+
+## Why it matters
+
+Prisma's WASM query engine looked like the obvious choice and passed a
+clean build and deploy — then 401'd on the first real login. Three open
+upstream bugs meant the generated client couldn't find its own engine at
+the Worker's runtime filesystem path. The fix was porting to Drizzle, which
+needs no WASM step at all. The real lesson wasn't the specific bug: a clean
+deploy proves nothing on Cloudflare Workers until the actual thing that
+matters — a real login, a real request — has been exercised against the
+live URL.

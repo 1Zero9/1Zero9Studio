@@ -1,0 +1,57 @@
+---
+title: Chewing Gum
+summary: Bubbly sticky notes that live at the edge of your macOS screen —
+  no dock icon, no window, slide to the edge and the deck fans out.
+date: 2026-09-01
+tags:
+  - macos
+  - native
+  - product
+kind: app
+accent: "#ec4899"
+status: live
+section: labs
+techStack:
+  - Swift
+  - SwiftUI
+  - AppKit
+  - Sparkle
+highlights:
+  - Three-state interaction — a resting pill, a fanned deck of shingled
+    tabs, an expanded note — driven by pointer position, not clicks
+  - Tabs shingle like roof tiles, sized to the longest title on the deck,
+    so the whole thing stays to roughly half the screen height
+  - Every deck metric (tab width, lap, chip size) scales off one
+    multiplier, so resizing never drifts the proportions out of sync
+  - Signed, auto-updating releases via Sparkle rather than manual DMG
+    re-downloads
+repo: https://github.com/1Zero9/chewing_gum
+draft: false
+---
+
+## The idea
+
+Sticky notes that don't compete for space with everything else on screen —
+no window to manage, no dock icon, no clutter. Slide the pointer to the
+screen edge and the deck of notes fans out; move away and it tucks itself
+back to a single pill.
+
+## The build
+
+- **Three states, one movement** — rest (a coloured pill on the edge), fan
+  (notes shingle out as vertical tabs 45ms apart), expanded (a note slides
+  clear at full size, its tab staying visible behind it as a way back).
+- **Shingled tabs** — each tab is full height but only a strip shows below
+  the one before it, like a roof tile, keeping the whole deck to roughly
+  half the screen height instead of running its full length.
+- **One multiplier for everything** — deck size, tab width, the lap
+  between tabs, and the resting pill all scale off a single setting, so
+  resizing never breaks the proportions.
+
+## Why it matters
+
+Started as a fork of an existing open-source notes app ("Noty"), then
+diverged enough — a full rebrand, a different interaction model, its own
+release pipeline — that it stopped being a fork of anything. Knowing when
+to cut the upstream tie and own the direction outright was the real
+decision here, not any single feature.

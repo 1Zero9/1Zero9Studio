@@ -1,0 +1,49 @@
+---
+title: Ogham Design
+summary: A shared tattoo mockup tool — describe an idea, get back a
+  photorealistic mockup, starting with authentic Ogham script.
+date: 2026-09-23
+status: in-progress # private, shared-password gate — flip to live once ready for a public case study
+kind: tool
+accent: "#1c1917"
+featured: false
+tags:
+  - ai
+  - product
+  - design
+techStack:
+  - Next.js
+  - Cloudflare Workers
+  - D1
+  - Drizzle
+  - Gemini 3 Pro Image
+url: https://ogham.1zero9.com
+repo: https://github.com/1Zero9/ogham-design
+draft: true
+---
+
+## The brief
+
+A tattoo creation tool with minimal interaction: feed in an idea, get back a
+mockup or a plan for how to proceed. First style is Ogham script.
+
+## The build
+
+- **Proof before build** — Ogham is a real, rule-based alphabet. A bare AI
+  text prompt hallucinates a fake alphabet; the app instead renders the
+  correct glyphs deterministically first, then hands that to Gemini 3 Pro
+  Image as a reference for photorealistic styling only. Tested against real
+  Gemini output before any app code existed.
+- **Cloudflare D1, not Postgres** — the Supabase free tier was already at
+  its project cap; D1 removed an entire layer (no Hyperdrive, no external
+  account) for a small-group app with no cross-project data needs.
+- **Shared-password gate** — a known small group, not public — cookie-based
+  session, HMAC-signed.
+
+## Why it matters
+
+Server-side WASM rendering on Cloudflare Workers failed three separate ways
+before working (native bindings, runtime WASM compile restrictions, Next's
+bundler mis-parsing a static wasm import) — each confirmed only by testing
+the actual live deploy, not by a clean build. That lesson is now a
+CONVENTIONS.md guardrail for the next Cloudflare project.

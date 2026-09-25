@@ -1,0 +1,53 @@
+---
+title: Lucy
+summary: A small, private, Cloudflare-native learning and note-taking
+  workspace — capture, organise, and study in one place.
+date: 2026-09-10
+tags:
+  - product
+  - learning
+  - developer-tools
+kind: app
+accent: "#7c3aed"
+status: live
+section: labs
+techStack:
+  - Next.js
+  - Cloudflare Workers
+  - D1
+  - R2
+  - Better Auth
+highlights:
+  - Built in disciplined, tagged phases — infra first, UX polish last —
+    each one a real release rather than one long build
+  - Notes stay reliable offline, with file attachments through R2
+  - A visible dev/production banner so the two environments are never
+    mistaken for each other mid-session
+  - Its own onboarding docs carry an explicit anti-scope-creep rule
+url: https://lucy.1zero9.com
+draft: false
+---
+
+## The idea
+
+A learning workspace that stays out of the way: capture a note, organise
+it, study from it, without the app itself becoming the thing you have to
+manage.
+
+## The build
+
+- **Phased on purpose** — infrastructure, then core capture, then study
+  tools, then UX polish, each phase a tagged, working release rather than
+  one long build toward a single finish line.
+- **Cloudflare-native** — Workers, D1, and R2 for file attachments,
+  chosen deliberately for a small, private, single-owner tool rather than
+  reaching for a heavier stack.
+- **Environment-honest** — a visible banner distinguishes dev from
+  production, so it's never ambiguous which one you're looking at.
+
+## Why it matters
+
+The project's own build docs carry a rule most projects only learn the
+hard way: "do not attempt to build the complete product at once." Written
+in on day one rather than arrived at after a rewrite — the same discipline
+[Project OS](/projects/project-os) now encodes generally.

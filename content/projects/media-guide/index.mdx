@@ -1,0 +1,40 @@
+---
+title: Media Guide
+summary: A personal Ireland-only media guide — live TV, streaming
+  availability, and a tracker for shows, films, and teams you follow.
+date: 2026-06-07
+tags:
+  - product
+  - entertainment
+kind: pwa
+accent: "#f59e0b"
+status: in-progress
+section: labs
+techStack:
+  - Vite
+  - React
+  - Neon Postgres
+  - TVMaze API
+  - TMDb API
+highlights:
+  - Ireland-specific TV listings via TVMaze's IE schedule, covering Sky,
+    RTÉ, and Virgin channels — not a generic US-first guide
+  - Streaming availability and upcoming cinema releases through TMDb,
+    scoped to the Irish watch region
+  - Watchlist syncs to Postgres when configured, with a localStorage
+    fallback so the app still works with no account set up
+draft: false
+---
+
+## The idea
+
+Ireland doesn't get first-class treatment from most media-guide apps —
+schedules default to US listings, streaming availability doesn't reflect
+the Irish catalogue. Media Guide scopes every data source to Ireland
+specifically: TV listings, streaming providers, and cinema releases all
+pull from the IE region.
+
+## Why it matters
+
+A small, honest utility built to solve one real gap rather than to become
+a platform — still actively evolving rather than a finished product.

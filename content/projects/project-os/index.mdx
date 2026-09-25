@@ -1,0 +1,70 @@
+---
+title: Project OS
+summary: The internal framework every other project here is built with — a
+  small, growing kit of reusable skills and code accelerators, earned from
+  real project pain instead of written in advance.
+date: 2026-09-18
+tags:
+  - meta
+  - process
+  - developer-tools
+kind: tool
+accent: "#111827"
+status: concept
+section: labs
+techStack:
+  - Markdown
+  - Shell
+  - TypeScript
+highlights:
+  - "A single rule governs it: every addition must be something a future
+    project uses, not something it has to read"
+  - Reusable skills for the recurring decisions (starting a new project,
+    changing a visual design, taking over an inherited codebase) instead of
+    re-deciding them from scratch each time
+  - Code accelerators (auth, PWA shells, Cloudflare/Postgres wiring,
+    resilient bulk-fetch patterns) earned from specific failures on real
+    projects, not written speculatively
+  - Deliberately not a shared app, platform or database — see how it stays
+    that way below
+draft: false
+---
+
+## The problem it solves
+
+Running dozens of small projects in parallel means the same decisions get
+made over and over: how to start a new one, how to change a visual design
+without a review-reject loop, how to take over something half-built. Without
+somewhere for the *answer* to live, every project either re-derives it from
+nothing or repeats last time's mistake.
+
+## What it actually is
+
+Not a shared app, not a platform, not a shared database — those create the
+one thing this needs to avoid: a single point of failure every project
+depends on. It's a small, versioned kit of two kinds of asset:
+
+- **Skills** — encoded decision-making for recurring situations: shaping a
+  new project before writing code, changing how something looks without the
+  usual back-and-forth, taking over a project someone or something else
+  started, auditing the whole portfolio for what needs attention.
+- **Accelerators** — real code, not documentation: an auth pattern, a PWA
+  shell, a Cloudflare-Postgres wiring pattern, a resilient bulk-fetch
+  script — each one earned from a specific failure on a real project, then
+  generalised once, not written speculatively ahead of need.
+
+## The governing rule
+
+> Every addition must be something a future project **uses**, not something
+> it has to **read**.
+
+The kit grows; the documentation about the kit deliberately doesn't. An
+earlier version of this idea drifted into 16,000 lines of process
+documentation nobody was reading before that rule replaced it — the
+correction itself became the first real lesson the framework encoded.
+
+## Why it matters
+
+This is the connective tissue behind the consistency, speed, and standards
+across everything else here — not a separate product, but the reason a new
+project starts most of the way decided instead of from a blank page.

@@ -4,6 +4,7 @@ summary: A reusable fundraising competition platform — entrants pick a team
   each round, wrong picks are out, and the last entrant standing wins —
   built for community clubs running "Last Man Standing" fundraisers.
 date: 2026-07-19
+updated: 2026-09-25
 tags:
   - community
   - fundraising
@@ -20,15 +21,17 @@ techStack:
   - PostgreSQL
   - NextAuth
 highlights:
-  - Live member view of picks, results, and standings each gameweek
+  - Runs itself week to week — live fixtures and results sync hourly,
+    rounds settle automatically the moment every score is in, and the
+    season extends itself if the schedule runs out mid-competition
   - Invite-only accounts — no public sign-up — with a break-glass
     recovery role deliberately blocked from participant data
-  - Hourly cron job locks overdue gameweeks and assigns
-    eligibility-aware autopicks automatically
+  - Hourly cron locks overdue gameweeks and assigns eligibility-aware
+    autopicks so a missed pick never silently breaks the competition
   - Payments are recorded and confirmed by an administrator rather than
     handled in-app — money stays off-platform by design
 draft: false
-url: https://lastman-delta.vercel.app
+url: https://lastman.1zero9.com
 repo: https://github.com/1Zero9/lastman
 cover: /images/projects/lastman.png
 coverAlt: Last Man Standing's landing page — "Play. Survive. Stand." with a
@@ -60,3 +63,14 @@ Built out of the same world as River Valley Rangers — a genuine
 community fundraising mechanic that deserved better than a shared
 spreadsheet, without pretending the app should be the one handling
 people's money.
+
+## Proven, not yet run for real
+
+Validated hard through live multi-competition stress tests, which is how
+several real bugs surfaced before they could matter: a voided round
+permanently burning a pick it shouldn't have, a full-round wipeout settling
+silently with no one told, a season that never formally closed out on a
+normal win. Also caught: preview deployments were sharing the same database
+as production, so any branch build had live write access to real data —
+fixed by giving preview its own instance. Built and hardened; still waiting
+for its first competition with real money on the line.
